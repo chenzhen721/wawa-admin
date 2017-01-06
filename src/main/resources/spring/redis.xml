@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd"
+        default-lazy-init="true">
+
+    <bean id="redisConnectionFactory"
+          class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"
+    p:hostName="${redis.host}" p:port="${redis.port}"/>
+
+    <bean id="liveConnectionFactory"
+          class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"
+          p:hostName="${redis.mem.host}" p:port="${redis.mem.port}"/>
+
+    <bean id="userConnectionFactory"
+          class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"
+          p:hostName="${redis.user.host}" p:port="${redis.user.port}"/>
+
+    <bean id="chatConnectionFactory"
+          class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"
+          p:hostName="${redis.chat.host}" p:port="${redis.chat.port}"/>
+
+    <bean id="kgsConnectionFactory" class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"
+          p:hostName="${redis.kgs.host}" p:port="${redis.kgs.port}"/>
+
+    <bean id="mainRedis" class="org.springframework.data.redis.core.StringRedisTemplate"
+          p:connectionFactory-ref="redisConnectionFactory" />
+
+    <bean id="userRedis" class="org.springframework.data.redis.core.StringRedisTemplate"
+          p:connectionFactory-ref="userConnectionFactory" />
+
+    <bean id="chatRedis" class="org.springframework.data.redis.core.StringRedisTemplate"
+          p:connectionFactory-ref="chatConnectionFactory" />
+
+    <bean id="liveRedis" class="org.springframework.data.redis.core.StringRedisTemplate"
+          p:connectionFactory-ref="liveConnectionFactory" />
+
+    <bean id="kgsUniqueRedis" class="org.springframework.data.redis.core.StringRedisTemplate"
+          p:connectionFactory-ref="kgsConnectionFactory" />
+    <bean id="posterKGS" class="com.ttpod.rest.persistent.SimpleKGS"
+          p:nameSpace="poster" p:kgsRedis-ref="kgsUniqueRedis" p:offset="100"/>
+    <bean id="noticeKGS" class="com.ttpod.rest.persistent.SimpleKGS"
+          p:nameSpace="notice" p:kgsRedis-ref="kgsUniqueRedis" p:offset="100"/>
+    <bean id="giftKGS" class="com.ttpod.rest.persistent.SimpleKGS"
+          p:nameSpace="gift" p:kgsRedis-ref="kgsUniqueRedis" p:offset="100"/>
+    <bean id="msgKGS" class="com.ttpod.rest.persistent.SimpleKGS"
+          p:nameSpace="msg" p:kgsRedis-ref="kgsUniqueRedis" p:offset="100"/>
+    <bean id="sysPushKGS" class="com.ttpod.rest.persistent.SimpleKGS"
+          p:nameSpace="syspush" p:kgsRedis-ref="kgsUniqueRedis" p:offset="100"/>
+
+    <bean id="seqKGS" class="com.ttpod.rest.persistent.SimpleKGS" p:nameSpace="seq"
+          p:offset="12780"
+          p:kgsRedis-ref="kgsUniqueRedis"/>
+
+</beans>

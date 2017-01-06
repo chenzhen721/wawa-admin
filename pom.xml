@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.ttpod</groupId>
+        <artifactId>app</artifactId>
+        <version>1.3</version>
+    </parent>
+    <artifactId>star-admin</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>war</packaging>
+
+
+
+    <properties>
+        <contextPath></contextPath>
+        <targetJdk>1.7</targetJdk>
+
+        <maven-source-plugin-version>2.2.1</maven-source-plugin-version>
+        <maven-jar-plugin-version>2.4</maven-jar-plugin-version>
+        <maven-compiler-plugin-version>3.1</maven-compiler-plugin-version>
+
+        <groovy-all-compiler-version>2.1.3</groovy-all-compiler-version>
+        <groovy-scope>provided</groovy-scope>
+
+        <spring-version>3.2.3.RELEASE</spring-version>
+        <aspectj-version>1.7.2</aspectj-version>
+
+        <httpclient-version>4.2.3</httpclient-version>
+        <slf4j.version>1.7.5</slf4j.version>
+        <javassist.version>3.17.1-GA</javassist.version>
+        <jackson-version>1.9.12</jackson-version>
+
+        <logback-version>1.1.3</logback-version>
+        <!--<logback-version>1.0.13</logback-version>-->
+
+        <log.target>stdout</log.target>
+        <log.web.level>DEBUG</log.web.level>
+        <pic.domain>http://img.sumeme.com/</pic.domain>
+        <api.domain>http://api.memeyule.com/</api.domain>
+        <user.domain>http://user.memeyule.com/</user.domain>
+        <im.domain>http://im.memeyule.com:90</im.domain>
+        <redis.port>6379</redis.port>
+        <mongo.port>27017</mongo.port>
+
+        <aspectj-scope>compile</aspectj-scope>
+        <templateLoaderPath>file://data/website/www.2339.com/current/admin-view</templateLoaderPath>
+        <template_update_delay>10</template_update_delay>
+        <dev>product</dev>
+    </properties>
+
+    <profiles>
+
+        <profile>
+            <id>testLocal</id>
+            <properties>
+
+                <redis.host>192.168.31.246</redis.host>
+                <redis.mem.host>${redis.host}</redis.mem.host>
+                <redis.mem.port>6379</redis.mem.port>
+                <redis.chat.host>${redis.host}</redis.chat.host>
+                <redis.chat.port>6379</redis.chat.port>
+                <redis.user.host>${redis.host}</redis.user.host>
+                <redis.user.port>6379</redis.user.port>
+                <mongo.uri>${redis.host}:27017</mongo.uri>
+                <mongo_history.uri>${redis.host}:27017</mongo_history.uri>
+                <mongo.cost.write>ACKNOWLEDGED</mongo.cost.write>
+                <pic.folder>c:/upload/</pic.folder>
+                <static.folder>c:/upload/static/</static.folder>
+                <groovy-scope>provided</groovy-scope>
+                <!--<api.domain>http://test.api.ttxiu.com/</api.domain>-->
+                <api.domain>http://localhost:8080/</api.domain>
+                <user.domain>http://localhost:8082/</user.domain>
+                <im.domain>http://test.im.memeyule.com:6020</im.domain>
+            </properties>
+
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-all</artifactId>
+                    <version>${groovy-all-compiler-version}</version>
+                    <scope>runtime</scope>
+                </dependency>
+            </dependencies>
+
+        </profile>
+
+        <profile>
+            <id>test</id>
+            <properties>
+
+                <redis.host>127.0.0.1</redis.host>
+                <redis.mem.host>${redis.host}</redis.mem.host>
+                <redis.mem.port>6379</redis.mem.port>
+                <redis.chat.host>${redis.host}</redis.chat.host>
+                <redis.chat.port>6379</redis.chat.port>
+                <redis.user.host>${redis.host}</redis.user.host>
+                <redis.user.port>6384</redis.user.port>
+                <mongo.uri>192.168.31.249:10000</mongo.uri>
+                <mongo_history.uri>${mongo.uri}</mongo_history.uri>
+                <!--<mongo.uri>${redis.host}:10000,${redis.host}:20000</mongo.uri>-->
+                <mongo.cost.write>ACKNOWLEDGED</mongo.cost.write>
+
+                <pic.folder>/empty/upload/</pic.folder>
+                <static.folder>/empty/static/</static.folder>
+                <log.target>logfile</log.target>
+
+                <groovy-scope>provided</groovy-scope>
+                <aspectj-scope>provided</aspectj-scope>
+                <pic.domain>http://test.img.sumeme.com/</pic.domain>
+                <api.domain>http://test.api.memeyule.com/</api.domain>
+                <user.domain>http://test.user.memeyule.com/</user.domain>
+                <im.domain>http://test.im.memeyule.com:6020</im.domain>
+                <dev>test</dev>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>product</id>
+            <properties>
+                <redis.host>192.168.1.100</redis.host>
+                <redis.port>6379</redis.port>
+                <redis.mem.host>${redis.host}</redis.mem.host>
+                <redis.mem.port>6380</redis.mem.port>
+                <redis.chat.host>${redis.host}</redis.chat.host>
+                <redis.chat.port>6381</redis.chat.port>
+                <redis.user.host>${redis.host}</redis.user.host>
+                <redis.user.port>6383</redis.user.port>
+                <log.target>logfile</log.target>
+                <log.web.level>INFO</log.web.level>
+                <pic.folder>/empty/upload/</pic.folder>
+                <static.folder>/empty/static/</static.folder>
+
+                <groovy-scope>provided</groovy-scope>
+                <aspectj-scope>provided</aspectj-scope>
+                <api.domain>http://api.memeyule.com/</api.domain>
+                <!-- replset-->
+                <mongo.uri>192.168.1.37:10000,192.168.1.38:10000,192.168.1.47:10000</mongo.uri>
+                <mongo.cost.write>REPLICA_ACKNOWLEDGED</mongo.cost.write>
+                <mongo_history.uri>192.168.1.43:10000</mongo_history.uri>
+                <im.domain>http://im.memeyule.com:6020</im.domain>
+            </properties>
+        </profile>
+    </profiles>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.ttpod</groupId>
+            <artifactId>ttpod-rest</artifactId>
+            <version>1.0.4</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet.jsp</groupId>
+            <artifactId>jsp-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+            <version>${spring-version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-tx</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-fileupload</groupId>
+            <artifactId>commons-fileupload</artifactId>
+            <version>1.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.2.5</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.freemarker</groupId>
+            <artifactId>freemarker</artifactId>
+            <version>2.3.19</version>
+        </dependency>
+
+        <dependency>
+            <groupId>net.coobird</groupId>
+            <artifactId>thumbnailator</artifactId>
+            <version>0.4.7</version>
+        </dependency>
+
+        <dependency>
+            <groupId>gexin</groupId>
+            <artifactId>commons-httpclient</artifactId>
+            <version>3.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>gexin</groupId>
+            <artifactId>gexin-rp-sdk-base</artifactId>
+            <version>2.0.0.20</version>
+        </dependency>
+        <dependency>
+            <groupId>gexin</groupId>
+            <artifactId>gexin-rp-sdk-http</artifactId>
+            <version>3.0.0.10</version>
+        </dependency>
+        <dependency>
+            <groupId>gexin</groupId>
+            <artifactId>gexin-rp-sdk-template</artifactId>
+            <version>2.0.0.9</version>
+        </dependency>
+        <dependency>
+            <groupId>gexin</groupId>
+            <artifactId>jackson-all</artifactId>
+            <version>1.8.5</version>
+        </dependency>
+        <dependency>
+            <groupId>gexin</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>2.5.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.umeng.message</groupId>
+            <artifactId>push</artifactId>
+            <version>0.0.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test-mvc</artifactId>
+            <version>1.0.0.M1</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-context</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-webmvc</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-core</artifactId>
+            <version>1.2.1</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.jayway.jsonpath</groupId>
+            <artifactId>json-path</artifactId>
+            <version>0.5.5</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-library</artifactId>
+            <version>1.2.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jyaml</groupId>
+            <artifactId>jyaml</artifactId>
+            <version>1.3</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.10</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>1.8.5</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongo-java-driver</artifactId>
+            <version>2.14.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-mongodb</artifactId>
+            <version>1.5.6.RELEASE</version>
+        </dependency>
+
+
+
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>2.1.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-redis</artifactId>
+            <version>1.0.3.RELEASE</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.jdom</groupId>
+            <artifactId>jdom2</artifactId>
+            <version>2.0.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>0.11.8</version>
+        </dependency>
+
+    </dependencies>
+
+
+    <build>
+        <finalName>${project.artifactId}</finalName>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>*.properties</include>
+                    <include>logback.xml</include>
+                </includes>
+                <filtering>true</filtering>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*.xml</include>
+                    <include>apple/*</include>
+                    <include>unionpay/*</include>
+                </includes>
+                <filtering>false</filtering>
+            </resource>
+        </resources>
+        <plugins>
+
+        </plugins>
+    </build>
+
+
+</project>
