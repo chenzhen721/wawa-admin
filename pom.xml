@@ -93,14 +93,14 @@
             <id>test</id>
             <properties>
 
-                <redis.host>127.0.0.1</redis.host>
+                <redis.host>192.168.31.236</redis.host>
                 <redis.mem.host>${redis.host}</redis.mem.host>
                 <redis.mem.port>6379</redis.mem.port>
                 <redis.chat.host>${redis.host}</redis.chat.host>
                 <redis.chat.port>6379</redis.chat.port>
                 <redis.user.host>${redis.host}</redis.user.host>
-                <redis.user.port>6384</redis.user.port>
-                <mongo.uri>192.168.31.249:10000</mongo.uri>
+                <redis.user.port>6380</redis.user.port>
+                <mongo.uri>192.168.31.236:10000</mongo.uri>
                 <mongo_history.uri>${mongo.uri}</mongo_history.uri>
                 <!--<mongo.uri>${redis.host}:10000,${redis.host}:20000</mongo.uri>-->
                 <mongo.cost.write>ACKNOWLEDGED</mongo.cost.write>
