@@ -111,9 +111,9 @@
 
                 <groovy-scope>provided</groovy-scope>
                 <aspectj-scope>provided</aspectj-scope>
-                <pic.domain>http://test.img.sumeme.com/</pic.domain>
-                <api.domain>http://test.api.memeyule.com/</api.domain>
-                <user.domain>http://test.user.memeyule.com/</user.domain>
+                <pic.domain>http://test-aiimg.sumeme.com/</pic.domain>
+                <api.domain>http://test-aiapi.memeyule.com/</api.domain>
+                <user.domain>http://test-aiuser.memeyule.com/</user.domain>
                 <im.domain>http://test.im.memeyule.com:6020</im.domain>
                 <dev>test</dev>
             </properties>
