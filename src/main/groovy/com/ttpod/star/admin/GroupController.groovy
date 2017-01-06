@@ -51,8 +51,6 @@ class GroupController extends BaseController {
         Crud.list(req, table(), query.get(), ALL_FIELD, SJ_DESC)
     }
 
-
-
     def handle(HttpServletRequest req) {
 
         def status = req.getInt('status')
