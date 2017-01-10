@@ -100,11 +100,10 @@
                 <redis.chat.port>6379</redis.chat.port>
                 <redis.user.host>${redis.host}</redis.user.host>
                 <redis.user.port>6380</redis.user.port>
-                <mongo.uri>192.168.31.236:10000</mongo.uri>
+                <!-- replset-->
+                <mongo.uri>192.168.31.231:10000,192.168.31.236:10000,192.168.31.231:10001</mongo.uri>
+                <mongo.cost.write>REPLICA_ACKNOWLEDGED</mongo.cost.write>
                 <mongo_history.uri>${mongo.uri}</mongo_history.uri>
-                <!--<mongo.uri>${redis.host}:10000,${redis.host}:20000</mongo.uri>-->
-                <mongo.cost.write>ACKNOWLEDGED</mongo.cost.write>
-
                 <pic.folder>/empty/upload/</pic.folder>
                 <static.folder>/empty/static/</static.folder>
                 <log.target>logfile</log.target>
