@@ -1,7 +1,6 @@
 package com.ttpod.star.admin.crud
 
 import com.mongodb.BasicDBObject
-import com.ttpod.rest.anno.Rest
 import com.ttpod.rest.anno.RestWithSession
 import com.ttpod.rest.common.doc.IMessageCode
 import com.ttpod.rest.web.Crud
@@ -10,7 +9,6 @@ import com.ttpod.star.admin.Web
 import com.ttpod.star.common.util.KeyUtils
 import com.ttpod.star.model.CallApply
 import com.ttpod.star.model.CallIdentity
-import com.ttpod.star.model.CallUserStatus
 import org.apache.commons.lang.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -19,8 +17,7 @@ import javax.servlet.http.HttpServletRequest
 
 import static com.ttpod.rest.common.util.WebUtils.$$
 
-//@RestWithSession
-@Rest
+@RestWithSession
 class CallController extends BaseController {
     static final Logger logger = LoggerFactory.getLogger(CallController.class)
 
