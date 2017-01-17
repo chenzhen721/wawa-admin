@@ -85,73 +85,74 @@ class ApplyController extends BaseController{
     @Resource
     MessageController messageController
 
-    def handle(HttpServletRequest req)
-    {
+    /**
+     * 主播申请审核接口
+     * @param req
+     * @return
+     */
+    def handle(HttpServletRequest req){
         def status = req.getInt('status')
         if (status == ApplyType.通过.ordinal() || status == ApplyType.未通过.ordinal()){
 
             Long time = System.currentTimeMillis()
             def record =  table().findAndModify(new BasicDBObject(_id:req[_id],status:ApplyType.未处理.ordinal()),
-                    new BasicDBObject('$set':[status:status,lastmodif:time, lastmodif_user:Web.currentUser()]))
+                    new BasicDBObject('$set':[status:status,lastmodif:time, lastmodif_user:Web.currentUser(), remark: req['remark']]))
             if (record){
                 def user_id = record.get('xy_user_id') as Integer
                 def invite_code = record.get('invite_code') as String
                 if (status == ApplyType.通过.ordinal()){
-                   def brokerId = record.get('broker') as Integer
-                   def sex = record.get('sex') as Integer
-                   def live_type = record.get('live_type') as Integer
-                   def temp = (record.get('temp') ?: Boolean.FALSE) as Boolean //手机直播临时主播
-                   def tag = record.get('tag') as String
-                   if (users().update(new BasicDBObject(_id,user_id),
-                           new BasicDBObject($set:[priv:UserType.主播.ordinal(),star:
-                                   [room_id:user_id,timestamp:time,broker:brokerId,sex:sex]
-                           ]),false,false,writeConcern).getN() == 1){
-                       def user = users().findOne(new BasicDBObject(_id,user_id),new BasicDBObject(nick_name:1,mm_no:1))
-                       String nick_name = user?.get("nick_name")
-                       String province = getProvinceBySFZ(record);
-                       def mm_no = user?.get('mm_no') ?: user_id
-                       if(rooms().update($$(_id,user_id),$$($set:[xy_star_id:user_id,live:Boolean.FALSE, bean : 0, visiter_count:0,found_time:time,
-                               room_ids:mm_no.toString(),nick_name: nick_name ,real_sex:sex,"address.province":province,type: RoomType.主播.ordinal()
-                                ,mic_switch:"true", live_type:live_type, apply_type:live_type, temp:temp]),true, false, writeConcern).getN() == 1){
-                           if (null != brokerId){
-                               users().update(new BasicDBObject(_id,brokerId),
-                                       new BasicDBObject($addToSet:['broker.stars':user_id],$inc:['broker.star_total':1]))
-                           }
-                           if(StringUtils.isNotEmpty(tag)){
-                               starController.add_star_tag(user_id, tag)
-                           }
+                    def brokerId = record.get('broker') as Integer
+                    def sex = record.get('sex') as Integer
+                    def live_type = record.get('live_type') as Integer
+                    def temp = (record.get('temp') ?: Boolean.FALSE) as Boolean //手机直播临时主播
+                    def tag = record.get('tag') as String
+                    if (users().update(new BasicDBObject(_id,user_id),
+                            new BasicDBObject($set:[priv:UserType.主播.ordinal(),star:
+                                    [room_id:user_id,timestamp:time,broker:brokerId,sex:sex]
+                            ]),false,false,writeConcern).getN() == 1){
+                        def user = users().findOne(new BasicDBObject(_id,user_id),new BasicDBObject(nick_name:1,mm_no:1))
+                        String nick_name = user?.get("nick_name")
+                        String province = getProvinceBySFZ(record);
+                        def mm_no = user?.get('mm_no') ?: user_id
+                        if(rooms().update($$(_id,user_id),$$($set:[xy_star_id:user_id,live:Boolean.FALSE, bean : 0, visiter_count:0,found_time:time,
+                                                                   room_ids:mm_no.toString(),nick_name: nick_name ,real_sex:sex,"address.province":province,type: RoomType.主播.ordinal()
+                                                                   ,mic_switch:"true", live_type:live_type, apply_type:live_type, temp:temp]),true, false, writeConcern).getN() == 1){
+                            if (null != brokerId){
+                                users().update(new BasicDBObject(_id,brokerId),
+                                        new BasicDBObject($addToSet:['broker.stars':user_id],$inc:['broker.star_total':1]))
+                            }
+                            if(StringUtils.isNotEmpty(tag)){
+                                starController.add_star_tag(user_id, tag)
+                            }
 
-                           String token = userRedis.opsForValue().get(KeyUtils.USER.token(user_id))
-                           if (token) {
-                               userRedis.delete(KeyUtils.USER.token(user_id))
-                               userRedis.delete(KeyUtils.accessToken(token))
-                           }
-                           Web.api("java/flushuser?id1=${user_id}")
+                            String token = userRedis.opsForValue().get(KeyUtils.USER.token(user_id))
+                            if (token) {
+                                /*userRedis.delete(KeyUtils.USER.token(user_id))
+                                userRedis.delete(KeyUtils.accessToken(token))*/
+                                userRedis.opsForHash().put(KeyUtils.accessToken(token), "room_id", user_id.toString())
+                                userRedis.opsForHash().put(KeyUtils.accessToken(token), "priv", UserType.主播.ordinal().toString())
+                            }
 
-                           //设置直播间排行榜新人加成分数
-                           room_rank(user_id)
+                            //设置直播间排行榜新人加成分数
+                            //room_rank(user_id)
 
-                           //TODO 临时设置身份信息审核通过
-                           record['status'] = ApplyType.通过.ordinal()
-                           apply_sf_info().save(record)
-                       }
+                            //TODO 临时设置身份信息审核通过
+                            record['status'] = ApplyType.通过.ordinal()
+                            apply_sf_info().save(record)
+                        }
 
-                   }
+                    }
                 }
 
                 if (status == ApplyType.通过.ordinal() ) {
-                    updateInviteCodeStatus(invite_code, ApplyInviteCodeStatus.使用已通过, null)
+                    updateInviteCodeStatus(invite_code, ApplyInviteCodeStatus.使用已通过)
 
                     messageController.sendSingleMsg(user_id, '主播申请已通过', "您的主播申请已经通过啦，现在开始随时随地尽情的直播吧~", MsgType.系统消息);
 
                 } else if (status ==  ApplyType.未通过.ordinal()) {
-                    def reason = req['reason']
-                    if (StringUtils.isEmpty(reason)) {
-                        return;
-                    }
-                    updateInviteCodeStatus(invite_code, ApplyInviteCodeStatus.使用未通过, reason)
+                    updateInviteCodeStatus(invite_code, ApplyInviteCodeStatus.使用未通过)
 
-                    String msg = "尊敬的么么用户，您好！由于" + reason + "，您的主播申请未通过，谢谢您的理解和支持！"
+                    String msg = "尊敬的么么用户，您好！由于" + req['remark'] + "，您的主播申请未通过，谢谢您的理解和支持！"
                     messageController.sendSingleMsg(user_id, '主播申请已拒绝', msg, MsgType.系统消息);
                 }
                 Crud.opLog(OpType.apply_handle,[user_id:user_id,status:status])
@@ -166,10 +167,10 @@ class ApplyController extends BaseController{
     }
 
     private static final  Map mapPro = [11:"北京",12:"天津",13:"河北",14:"山西",15:"内蒙古",21:"辽宁",
-                      22:"吉林",23:"黑龙江",31:"上海",32:"江苏",33:"浙江",34:"安徽",35:"福建",36:"江西",
-                      37:"山东",41:"河南",42:"湖北",43:"湖南",44:"广东",45:"广西",46:"海南",50:"重庆",
-                      51:"四川",52:"贵州",53:"云南",54:"西藏",61:"陕西",62:"甘肃",63:"青海",64:"宁夏",
-                      65:"新疆",72:"台湾",81:"香港",91:"澳门",]
+                                        22:"吉林",23:"黑龙江",31:"上海",32:"江苏",33:"浙江",34:"安徽",35:"福建",36:"江西",
+                                        37:"山东",41:"河南",42:"湖北",43:"湖南",44:"广东",45:"广西",46:"海南",50:"重庆",
+                                        51:"四川",52:"贵州",53:"云南",54:"西藏",61:"陕西",62:"甘肃",63:"青海",64:"宁夏",
+                                        65:"新疆",72:"台湾",81:"香港",91:"澳门",]
 
     /**
      * 主播完善身份信息列表
@@ -255,7 +256,7 @@ class ApplyController extends BaseController{
         }catch (Exception e){
             return '';
         }
-       return '';
+        return '';
     }
 
     def show(HttpServletRequest req){
@@ -270,10 +271,10 @@ class ApplyController extends BaseController{
         String invite_code = generate();
         def ops = Web.getSession()
         if(ops == null)
-           return [code : 0]
+            return [code : 0]
         logger.debug("session : {}", ops)
         def invite = $$(_id : invite_code, status: ApplyInviteCodeStatus.未使用.ordinal(), timestamp : System.currentTimeMillis(),
-                            op_nick_name : ops['nick_name'], op_id : ops['_id'], op_name : ops['name'])
+                op_nick_name : ops['nick_name'], op_id : ops['_id'], op_name : ops['name'])
         try{
             apply_codes().insert(invite)
             Crud.opLog(OpType.apply_invite_code_generate,[invite_code:invite_code])
@@ -313,9 +314,9 @@ class ApplyController extends BaseController{
         }
     }
 
-    private updateInviteCodeStatus(String invite_code, ApplyInviteCodeStatus status, String reason){
+    private updateInviteCodeStatus(String invite_code, ApplyInviteCodeStatus status){
         if(StringUtils.isNotEmpty(invite_code)){
-            apply_codes().update($$(_id:invite_code), $$($set:[status:status.ordinal(), reason: reason, lastmodif : System.currentTimeMillis()]))
+            apply_codes().update($$(_id:invite_code), $$($set:[status:status.ordinal(), lastmodif : System.currentTimeMillis()]))
         }
     }
 }
