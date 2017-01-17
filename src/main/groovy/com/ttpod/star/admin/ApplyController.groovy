@@ -34,8 +34,8 @@ import static com.ttpod.rest.common.util.WebUtils.$$
  * date: 13-3-28 下午2:31
  * @author: yangyang.cong@ttpod.com
  */
-//@Rest
-@RestWithSession
+@Rest
+//@RestWithSession
 class ApplyController extends BaseController{
 
     static final Logger logger = LoggerFactory.getLogger(ApplyController.class)

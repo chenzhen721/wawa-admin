@@ -41,8 +41,8 @@ import static com.ttpod.rest.common.util.WebUtils.$$
  * date: 14-8-28 下午2:31
  */
 
-//@Rest
-@RestWithSession
+@Rest
+//@RestWithSession
 class UserController extends BaseController {
 
     @Resource
