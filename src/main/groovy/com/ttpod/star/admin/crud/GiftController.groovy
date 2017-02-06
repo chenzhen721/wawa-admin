@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory
  * date: 13-3-28 下午2:31
  * @author: yangyang.cong@ttpod.com
  */
-@Rest
+@RestWithSession
 class GiftController extends BaseController {
 
     static final Logger logger = LoggerFactory.getLogger(GiftController.class)

@@ -1055,6 +1055,7 @@ class UserController extends BaseController {
 
         String oldToken = (String) data.get("old_token");
         String old_token_key = KeyUtils.accessToken(oldToken)
+        logger.debug("new token is ${newToken},old token is ${oldToken}")
 
         if (userRedis.hasKey(old_token_key)){
             userRedis.delete(old_token_key)
