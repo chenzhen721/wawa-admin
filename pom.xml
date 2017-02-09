@@ -63,7 +63,7 @@
                 <redis.chat.port>6379</redis.chat.port>
                 <redis.user.host>${redis.host}</redis.user.host>
                 <redis.user.port>6379</redis.user.port>
-                <mongo.uri>${redis.host}:27017</mongo.uri>
+                <mongo.uri>192.168.31.246:27000</mongo.uri>
                 <mongo_history.uri>${redis.host}:27017</mongo_history.uri>
                 <mongo.cost.write>ACKNOWLEDGED</mongo.cost.write>
                 <pic.folder>c:/upload/</pic.folder>
