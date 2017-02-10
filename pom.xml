@@ -42,7 +42,7 @@
         <user.domain>http://aiuser.memeyule.com/</user.domain>
         <im.domain>http://im.memeyule.com:90</im.domain>
         <redis.port>6379</redis.port>
-        <mongo.port>27017</mongo.port>
+        <mongo.port>10000</mongo.port>
 
         <aspectj-scope>compile</aspectj-scope>
         <templateLoaderPath>file://data/website/www.2339.com/current/admin-view</templateLoaderPath>
@@ -136,7 +136,7 @@
 
                 <groovy-scope>provided</groovy-scope>
                 <aspectj-scope>provided</aspectj-scope>
-                <api.domain>http://api.memeyule.com/</api.domain>
+                <api.domain>http://aiapi.memeyule.com/</api.domain>
                 <!-- replset-->
                 <mongo.uri>192.168.2.17:10000,192.168.2.18:10000,192.168.2.19:10000</mongo.uri>
                 <mongo.cost.write>REPLICA_ACKNOWLEDGED</mongo.cost.write>
