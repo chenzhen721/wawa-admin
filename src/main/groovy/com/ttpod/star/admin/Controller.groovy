@@ -48,7 +48,7 @@ class Controller extends BaseController{
             String filePath = "${id&63}/${id&7}/${id}.jpg"
             for(Map.Entry<String, MultipartFile> entry  : req.getFileMap().entrySet()){
                 MultipartFile file = entry.getValue()
-                logger.debug("file name : {}, {}", file.getName(), file.getOriginalFilename())
+                logger.debug("file name : {}, {},{}", file.getName(), file.getOriginalFilename(), file.getContentType())
                 def target = new File(pic_folder ,filePath)
                 target.getParentFile().mkdirs()
                 file.transferTo(target)
