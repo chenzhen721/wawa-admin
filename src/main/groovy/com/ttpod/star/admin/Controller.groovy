@@ -50,7 +50,7 @@ class Controller extends BaseController{
                 MultipartFile file = entry.getValue()
                 logger.debug("file name : {}, {},{}", file.getName(), StringUtils.substringAfter(file.getOriginalFilename(),"."), file.getContentType())
 
-                //filePath = "${id&63}/${id&7}/${id}.${StringUtils.substringAfter(file.getOriginalFilename(),".")}"
+                filePath = "${id&63}/${id&7}/${id}.${StringUtils.substringAfter(file.getOriginalFilename(),".")}"
                 def target = new File(pic_folder ,filePath)
                 target.getParentFile().mkdirs()
                 file.transferTo(target)
