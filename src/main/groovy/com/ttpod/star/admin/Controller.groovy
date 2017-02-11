@@ -17,8 +17,7 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 /**
- * date: 13-2-21 下午2:10
- * @author: yangyang.cong@ttpod.com
+ * 图片上传
  */
 @Rest
 class Controller extends BaseController{
@@ -39,16 +38,19 @@ class Controller extends BaseController{
         pic_folder.mkdirs()
         println "初始化图片上传目录 : ${folder}"
     }
+
     def upload(HttpServletRequest request,HttpServletResponse response){
         def parse = new CommonsMultipartResolver()
         def req = parse.resolveMultipart(request)
 
         try{
             Long id = System.currentTimeMillis()
-
-            String filePath = "${id&63}/${id&7}/${id}.jpg"
+            String filePath = null;
             for(Map.Entry<String, MultipartFile> entry  : req.getFileMap().entrySet()){
                 MultipartFile file = entry.getValue()
+                logger.debug("file name : {}, {},{}", file.getName(), StringUtils.substringAfter(file.getOriginalFilename(),"."), file.getContentType())
+
+                filePath = "${id&63}/${id&7}/${id}.${StringUtils.substringAfter(file.getOriginalFilename(),".")}"
                 def target = new File(pic_folder ,filePath)
                 target.getParentFile().mkdirs()
                 file.transferTo(target)
