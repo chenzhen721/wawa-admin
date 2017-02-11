@@ -37,12 +37,12 @@
 
         <log.target>stdout</log.target>
         <log.web.level>DEBUG</log.web.level>
-        <pic.domain>http://img.sumeme.com/</pic.domain>
-        <api.domain>http://api.memeyule.com/</api.domain>
-        <user.domain>http://user.memeyule.com/</user.domain>
+        <pic.domain>http://aiimg.sumeme.com/</pic.domain>
+        <api.domain>http://aiapi.memeyule.com/</api.domain>
+        <user.domain>http://aiuser.memeyule.com/</user.domain>
         <im.domain>http://im.memeyule.com:90</im.domain>
         <redis.port>6379</redis.port>
-        <mongo.port>27017</mongo.port>
+        <mongo.port>10000</mongo.port>
 
         <aspectj-scope>compile</aspectj-scope>
         <templateLoaderPath>file://data/website/www.2339.com/current/admin-view</templateLoaderPath>
@@ -121,14 +121,14 @@
         <profile>
             <id>product</id>
             <properties>
-                <redis.host>192.168.1.100</redis.host>
+                <redis.host>192.168.2.15</redis.host>
                 <redis.port>6379</redis.port>
                 <redis.mem.host>${redis.host}</redis.mem.host>
                 <redis.mem.port>6380</redis.mem.port>
                 <redis.chat.host>${redis.host}</redis.chat.host>
-                <redis.chat.port>6381</redis.chat.port>
+                <redis.chat.port>6383</redis.chat.port>
                 <redis.user.host>${redis.host}</redis.user.host>
-                <redis.user.port>6383</redis.user.port>
+                <redis.user.port>6381</redis.user.port>
                 <log.target>logfile</log.target>
                 <log.web.level>INFO</log.web.level>
                 <pic.folder>/empty/upload/</pic.folder>
@@ -136,9 +136,9 @@
 
                 <groovy-scope>provided</groovy-scope>
                 <aspectj-scope>provided</aspectj-scope>
-                <api.domain>http://api.memeyule.com/</api.domain>
+                <api.domain>http://aiapi.memeyule.com/</api.domain>
                 <!-- replset-->
-                <mongo.uri>192.168.1.37:10000,192.168.1.38:10000,192.168.1.47:10000</mongo.uri>
+                <mongo.uri>192.168.2.17:10000,192.168.2.18:10000,192.168.2.19:10000</mongo.uri>
                 <mongo.cost.write>REPLICA_ACKNOWLEDGED</mongo.cost.write>
                 <mongo_history.uri>192.168.1.43:10000</mongo_history.uri>
                 <im.domain>http://im.memeyule.com:6020</im.domain>
