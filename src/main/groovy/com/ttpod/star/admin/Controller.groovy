@@ -45,10 +45,12 @@ class Controller extends BaseController{
 
         try{
             Long id = System.currentTimeMillis()
-            String filePath = "${id&63}/${id&7}/${id}.jpg"
+            String filePath = null;
             for(Map.Entry<String, MultipartFile> entry  : req.getFileMap().entrySet()){
                 MultipartFile file = entry.getValue()
-                logger.debug("file name : {}, {},{}", file.getName(), file.getOriginalFilename(), file.getContentType())
+                logger.debug("file name : {}, {},{}", file.getName(), StringUtils.substringAfter(file.getOriginalFilename(),"."), file.getContentType())
+
+                //filePath = "${id&63}/${id&7}/${id}.${StringUtils.substringAfter(file.getOriginalFilename(),".")}"
                 def target = new File(pic_folder ,filePath)
                 target.getParentFile().mkdirs()
                 file.transferTo(target)
