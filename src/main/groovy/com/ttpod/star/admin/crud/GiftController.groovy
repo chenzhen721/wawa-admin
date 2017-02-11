@@ -8,6 +8,7 @@ import com.ttpod.rest.anno.RestWithSession
 import com.ttpod.rest.persistent.KGS
 import com.ttpod.rest.web.Crud
 import com.ttpod.star.admin.BaseController
+import com.ttpod.star.common.util.KeyUtils
 import com.ttpod.star.model.BoxStatusType
 import com.ttpod.star.model.OpType
 import org.apache.commons.lang.StringUtils
@@ -34,7 +35,7 @@ class GiftController extends BaseController {
             [_id        : Int, name: Str, pic_url: Str, app_swf_url: Str, swf_url: Str, pic_pre_url: Str, sale: Ne0, isNew: Ne0, isHot: Ne0,
              ratio      : { String str -> (str == null || str.isEmpty()) ? null : str as Double }, desc: Str,star_award: Int,
              category_id: Int, order: Int, coin_price: Int, star_limit: Int, star: Eq1, status: Ne0, isHide: Ne0, star_count: Int,
-             is_mark    : Ne0, mark_pic_url: Str, is_all: Ne0 , mark_pc: Str, mark_app: Str, m_type: Int, m_icon_id:Int, m_icon_url:Str],
+             is_mark    : Ne0, mark_pic_url: Str, is_all: Ne0 , mark_pc: Str, mark_app: Str],
             new Crud.QueryCondition() {
                 public DBObject query(HttpServletRequest req) {
                     QueryBuilder query = QueryBuilder.start()
@@ -78,8 +79,7 @@ class GiftController extends BaseController {
     }
 
     public void cleanCache() {
-        String gifts_key = "all:ttxiuchang:gifts"
-        mainRedis.delete(gifts_key)
+        mainRedis.delete(KeyUtils.all_gifts())
     }
 
     static final String NEXT_WEEK_STAR_GIFT_LIST = 'next_week_star_gift_list'

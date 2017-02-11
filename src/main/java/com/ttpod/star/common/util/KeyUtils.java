@@ -9,10 +9,6 @@ import java.nio.charset.Charset;
 /**
  *
  * 约定的key 值
- *
- * date: 12-8-17 上午11:34
- *
- * @author: yangyang.cong@ttpod.com
  */
 @CompileStatic
 public  abstract class KeyUtils {
@@ -33,6 +29,13 @@ public  abstract class KeyUtils {
 
     private static final String SPLIT_CHAR = ":";
 
+    public static String gifts(Object type) {
+        return "all:aiwanzhibo:gifts:" + type;
+    }
+
+    public static String all_gifts() {
+        return "all:aiwanzhibo:gifts";
+    }
 
     public static String accessToken(String token){
         return "token:"+token;
