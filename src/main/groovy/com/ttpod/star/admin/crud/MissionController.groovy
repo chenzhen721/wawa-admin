@@ -16,8 +16,8 @@ import static com.ttpod.rest.groovy.CrudClosures.*
 class MissionController extends BaseController{
 
     @Delegate Crud crud = new Crud(adminMongo.getCollection('missions'),
-            [_id:Str,title:Str,pic_url:Str,icon_url:Str,coin_count:Int,order:Int,status:Bool,level:Int,
-                    type:{it.toString().split(',').collect{it as Integer}}],
+            [_id:Str,title:Str,pic_url:Str,icon_url:Str,coin_count:Int,order:Int,status:Bool,level:Int,total:Int,remark:Str,
+                    type:Int],
             new Crud.QueryCondition(){
                 public DBObject sortby(HttpServletRequest req) {
                     return new BasicDBObject("order",-1);
