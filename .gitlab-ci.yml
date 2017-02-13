@@ -10,6 +10,10 @@ build_staging :
           - mvn clean package -U -P test -Dmaven.test.skip=true
           ##- rsync -av target/star-admin.war webserver@192.168.31.236:~/star-admin/
           ##- ssh webserver@192.168.31.236  "source /etc/profile;cd ~/star-admin;rm -rf bak.webapp && mv -f webapp bak.webapp;unzip star-admin.war -d webapp;./restart.sh"
+    artifacts :
+        paths :
+            - target/star-admin.wa*
+        expire_in : 5 mins
     only :
         - master
     tags :
@@ -24,4 +28,3 @@ deploy_fabo :
         - master
     tags :
         - java-shell
-
