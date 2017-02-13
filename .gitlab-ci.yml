@@ -8,6 +8,7 @@ build_staging :
           - echo "java Build..."
           #- cd projects/star-admin/
           - mvn clean package -U -P test -Dmaven.test.skip=true
+          - md5sum target/star-admin.war |awk '{print $1}' > target/star-admin.war.md5
           ##- rsync -av target/star-admin.war webserver@192.168.31.236:~/star-admin/
           ##- ssh webserver@192.168.31.236  "source /etc/profile;cd ~/star-admin;rm -rf bak.webapp && mv -f webapp bak.webapp;unzip star-admin.war -d webapp;./restart.sh"
     artifacts :
@@ -23,7 +24,7 @@ deploy_fabo :
     script :
         - ls
         - pwd
-        - /opt/ci-shell/2.0/to-git --rsync-from=target/  --git-repository=online/aiwan.admin.api.com.git  --clean=false
+        - /opt/ci-shell/2.0/to-git --rsync-from=target  --git-repository=online/aiwan.admin.api.com.git  --clean=false
     only :
         - master
     tags :
