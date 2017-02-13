@@ -22,7 +22,6 @@ build_staging :
 deploy_fabo :
     stage : deploy
     script :
-        - ls
         - pwd
         - /opt/ci-shell/2.0/to-git --rsync-from=target  --git-repository=online/aiwan.admin.api.com.git  --clean=false
     only :
