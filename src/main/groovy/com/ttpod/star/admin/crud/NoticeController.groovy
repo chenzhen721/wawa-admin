@@ -49,6 +49,11 @@ class NoticeController extends BaseController{
             }
     )
 
+    /**
+     * 重写add方法
+     * @param req
+     * @return
+     */
     def add(HttpServletRequest req){
         logger.debug('Received add params  is {}',req.getParameterMap())
         def id = ServletRequestUtils.getIntParameter(req,'_id',0)
