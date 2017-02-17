@@ -58,7 +58,7 @@ class NoticeController extends BaseController{
         logger.debug('Received add params  is {}',req.getParameterMap())
         def id = ServletRequestUtils.getIntParameter(req,'_id',0)
         if(id == 0){
-            return Web.missParam()
+            id = noticeKGS.nextId();
         }
         def notice = adminMongo.getCollection('notices')
         long count = notice.count($$('_id',id))
