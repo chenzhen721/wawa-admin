@@ -45,10 +45,6 @@ public abstract class BaseController extends FreemarkerSupport7 {
     public MongoTemplate mainMongo;
     @Resource
     public MongoTemplate rankMongo;
-    @Resource
-    public MongoTemplate nestMongo;
-    @Resource
-    public MongoTemplate callMongo;
 
 //    @Resource
 //    public  MongoTemplate unionMongo;
@@ -76,16 +72,12 @@ public abstract class BaseController extends FreemarkerSupport7 {
     @Resource
     public StringRedisTemplate userRedis;
 
-    @Resource
-    public MongoTemplate singMongo;
 
     @Resource
     public WriteConcern writeConcern;
 
     public DBCollection users(){return mainMongo.getCollection("users");}
     public DBCollection rooms(){return mainMongo.getCollection("rooms");}
-    public DBCollection boxes(){return mainMongo.getCollection("boxes");}
-    public DBCollection nests(){return nestMongo.getCollection("nests");}
 
     public DBCollection table(){
         throw new UnsupportedOperationException("One shuold overried this");

@@ -57,7 +57,7 @@ class UploadController extends BaseController {
     }
 
     @Value("#{application['pic.domain']}")
-    String pic_domain = "http://img.sumeme.com/"
+    String pic_domain = "https://aiimg.sumeme.com/"
 
     /**
      * 上传swf动画

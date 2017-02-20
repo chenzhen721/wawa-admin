@@ -8,8 +8,6 @@
 				http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd"
         default-lazy-init="true">
 
-
-
     <mongo:mongo replica-set="${mongo.uri}" id="mongo">
         <mongo:options connections-per-host="80"
                         threads-allowed-to-block-for-connection-multiplier="6"
@@ -45,13 +43,10 @@
     <mongo:db-factory dbname="xyrank" id="rankFactory" mongo-ref="mongo"/>
     <mongo:db-factory dbname="xytopic" id="topicFactory" mongo-ref="mongo"/>
     <mongo:db-factory dbname="xy_admin" id="adminFactory" mongo-ref="mongo"/>
-    <mongo:db-factory dbname="xy_sing" id="singFactory" mongo-ref="mongo"/>
     <mongo:db-factory dbname="xyactive" id="activeFactory" mongo-ref="mongo"/>
     <mongo:db-factory dbname="xy_family" id="familyFactory" mongo-ref="mongo"/>
     <mongo:db-factory dbname="xylog_history" id="historyFactory" mongo-ref="mongoHistory"/>
-    <mongo:db-factory dbname="xy_nest" id="nestFactory" mongo-ref="mongo"/>
     <mongo:db-factory dbname="xy_union" id="unionFactory" mongo-ref="mongo"/>
-    <mongo:db-factory dbname="xy_call" id="callFactory" mongo-ref="mongo"/>
 
     <!--<mongo:db-factory dbname="xy" id="userFactory" mongo-ref="mongo" write-concern="REPLICA_ACKNOWLEDGED" />-->
 
@@ -80,10 +75,6 @@
         <constructor-arg ref="adminFactory"/>
     </bean>
 
-    <bean id="singMongo" class="org.springframework.data.mongodb.core.MongoTemplate">
-        <constructor-arg ref="singFactory"/>
-    </bean>
-
     <bean id="activeMongo" class="org.springframework.data.mongodb.core.MongoTemplate">
         <constructor-arg ref="activeFactory"/>
     </bean>
@@ -97,21 +88,9 @@
     <bean id="historyMongo" class="org.springframework.data.mongodb.core.MongoTemplate">
         <constructor-arg ref="historyFactory"/>
     </bean>
-    <bean id="nestMongo" class="org.springframework.data.mongodb.core.MongoTemplate">
-        <constructor-arg ref="nestFactory"/>
-    </bean>
 
     <bean id="unionMongo" class="org.springframework.data.mongodb.core.MongoTemplate">
         <constructor-arg ref="unionFactory"/>
     </bean>
-    <bean id="callMongo" class="org.springframework.data.mongodb.core.MongoTemplate">
-        <constructor-arg ref="callFactory"/>
-    </bean>
-    <!--<bean id="gMongo" class="com.gmongo.GMongo">-->
-        <!--<constructor-arg ref="mongo"/>-->
-    <!--</bean>-->
-
-
-
 
 </beans>
