@@ -37,7 +37,7 @@
 
         <log.target>stdout</log.target>
         <log.web.level>DEBUG</log.web.level>
-        <pic.domain>http://aiimg.sumeme.com/</pic.domain>
+        <pic.domain>https://aiimg.sumeme.com/</pic.domain>
         <api.domain>http://aiapi.memeyule.com/</api.domain>
         <user.domain>http://aiuser.memeyule.com/</user.domain>
         <im.domain>http://im.memeyule.com:90</im.domain>

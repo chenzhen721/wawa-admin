@@ -28,7 +28,7 @@ class Controller extends BaseController{
     SysController sysController
 
     @Value("#{application['pic.domain']}")
-    String pic_domain = "http://img.sumeme.com/"
+    String pic_domain = "https://aiimg.sumeme.com/"
 
     File pic_folder
 

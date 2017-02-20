@@ -901,7 +901,7 @@ class UserController extends BaseController {
     }
 
     @Value("#{application['pic.domain']}")
-    String pic_domain = "http://img.sumeme.com/"
+    String pic_domain = "https://aiimg.sumeme.com/"
 
     def add_union(HttpServletRequest req) {
         def path = req['path']
