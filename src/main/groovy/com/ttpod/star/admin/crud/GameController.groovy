@@ -18,7 +18,7 @@ import javax.servlet.http.HttpServletRequest
 import static com.ttpod.rest.common.util.WebUtils.$$
 import static com.ttpod.rest.groovy.CrudClosures.*
 
-@RestWithSession
+@Rest
 class GameController extends BaseController {
 
     static final Logger logger = LoggerFactory.getLogger(GameController.class)
