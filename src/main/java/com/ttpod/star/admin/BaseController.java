@@ -45,6 +45,8 @@ public abstract class BaseController extends FreemarkerSupport7 {
     public MongoTemplate mainMongo;
     @Resource
     public MongoTemplate rankMongo;
+    @Resource
+    public MongoTemplate gameLogMongo;
 
 //    @Resource
 //    public  MongoTemplate unionMongo;

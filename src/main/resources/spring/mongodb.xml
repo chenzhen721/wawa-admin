@@ -47,6 +47,7 @@
     <mongo:db-factory dbname="xy_family" id="familyFactory" mongo-ref="mongo"/>
     <mongo:db-factory dbname="xylog_history" id="historyFactory" mongo-ref="mongoHistory"/>
     <mongo:db-factory dbname="xy_union" id="unionFactory" mongo-ref="mongo"/>
+    <mongo:db-factory dbname="game_log" id="gameLogFactory" mongo-ref="mongo"/>
 
     <!--<mongo:db-factory dbname="xy" id="userFactory" mongo-ref="mongo" write-concern="REPLICA_ACKNOWLEDGED" />-->
 
@@ -91,6 +92,9 @@
 
     <bean id="unionMongo" class="org.springframework.data.mongodb.core.MongoTemplate">
         <constructor-arg ref="unionFactory"/>
+    </bean>
+    <bean id="gameLogMongo" class="org.springframework.data.mongodb.core.MongoTemplate">
+        <constructor-arg ref="gameLogFactory"/>
     </bean>
 
 </beans>

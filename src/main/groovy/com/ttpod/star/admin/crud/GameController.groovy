@@ -11,6 +11,7 @@ import com.ttpod.star.admin.Web
 import org.apache.commons.lang.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.web.bind.ServletRequestUtils
 
 import javax.servlet.http.HttpServletRequest
 
@@ -24,11 +25,17 @@ class GameController extends BaseController {
 
     def game_logs() { return logMongo.getCollection('game_logs') }
 
+    def rounds() { return gameLogMongo.getCollection('game_round') }
+
+    def bets() { return gameLogMongo.getCollection('user_bet') }
+
+    def lotterys() { return gameLogMongo.getCollection('user_lottery') }
+
     static final BasicDBObject TIMESTAMP_SORT_DESC = $$('timestamp': -1)
 
     @Delegate
     Crud crud = new Crud(adminMongo.getCollection('games'),
-            [_id: Str, name: Str, pic_url: Str, status: Bool, timestamp: Timestamp,order:Int,icon_pic_url:Str],
+            [_id: Str, name: Str, pic_url: Str, status: Bool, timestamp: Timestamp, order: Int, icon_pic_url: Str],
             new Crud.QueryCondition() {
                 public DBObject sortby(HttpServletRequest req) {
                     return new BasicDBObject("timestamp", -1);
@@ -37,26 +44,101 @@ class GameController extends BaseController {
     )
 
     /**
-     * 用户玩游戏查询
+     * 游戏日志
      * @param req
      * @return
      */
-    def log_list(HttpServletRequest req) {
-        logger.debug('Received game_log params is {}', req.getParameterMap())
-        def userId = req['user_id']
-        def roomId = req['room_id']
-        def round_id = req['round_id'] // 每一局游戏的id
+    def rounds_logs(HttpServletRequest req) {
+        logger.debug('Received rounds_logs params is {}', req.getParameterMap())
         def query = Web.fillTimeBetween(req)
-        if (StringUtils.isNotBlank(userId)) {
-            query.and('user_id').is(userId as Integer)
+        def roomId = ServletRequestUtils.getIntParameter(req, 'room_id', 0)
+        def roundId = ServletRequestUtils.getIntParameter(req, 'round_id', 0)
+        def gameId = ServletRequestUtils.getIntParameter(req, 'game_id', 0)
+        def liveId = ServletRequestUtils.getStringParameter(req, 'live_id', '')
+
+        if(StringUtils.isNotBlank(liveId)){
+            query.and('live_id').is(liveId)
         }
-        if(StringUtils.isNotBlank(roomId)){
-            query.and('room_id').is(roomId as Integer)
+        if (roomId != 0) {
+            query.and('room_id').is(roomId)
         }
-        if(StringUtils.isNotBlank(round_id)){
-            query.and('round_id').is(round_id as Integer)
+        if (roundId != 0) {
+            query.and('round_id').is(roundId)
         }
-        Crud.list(req, game_logs(), query.get(), null, TIMESTAMP_SORT_DESC)
+
+        if (gameId != 0) {
+            query.and('game_id').is(gameId)
+        }
+
+        Crud.list(req, rounds(), query.get(), null, TIMESTAMP_SORT_DESC)
     }
+
+    /**
+     * 用户下注信息
+     * @param req
+     * @return
+     */
+    def user_bet_logs(HttpServletRequest req) {
+        logger.debug('Received user_bet_logs params is {}', req.getParameterMap())
+        def query = Web.fillTimeBetween(req)
+        def userId =ServletRequestUtils.getIntParameter(req, 'user_id', 0)
+        def roomId = ServletRequestUtils.getIntParameter(req, 'room_id', 0)
+        def roundId = ServletRequestUtils.getIntParameter(req, 'round_id', 0)
+        def gameId = ServletRequestUtils.getIntParameter(req, 'game_id', 0)
+        def liveId = ServletRequestUtils.getStringParameter(req, 'live_id', '')
+        if(StringUtils.isNotBlank(liveId)){
+            query.and('live_id').is(liveId)
+        }
+        if (roomId != 0) {
+            query.and('room_id').is(roomId)
+        }
+        if (roundId != 0) {
+            query.and('round_id').is(roundId)
+        }
+
+        if (gameId != 0) {
+            query.and('game_id').is(gameId)
+        }
+        if(userId != 0){
+            query.and('user_id').is(userId)
+        }
+
+        Crud.list(req, bets(), query.get(), null, TIMESTAMP_SORT_DESC)
+    }
+
+    /**
+     * 用户输赢信息
+     * @param req
+     * @return
+     */
+    def user_lottery_logs(HttpServletRequest req) {
+        logger.debug('Received user_lottery_logs params is {}', req.getParameterMap())
+        def query = Web.fillTimeBetween(req)
+        def userId =ServletRequestUtils.getIntParameter(req, 'user_id', 0)
+        def roomId = ServletRequestUtils.getIntParameter(req, 'room_id', 0)
+        def roundId = ServletRequestUtils.getIntParameter(req, 'round_id', 0)
+        def gameId = ServletRequestUtils.getIntParameter(req, 'game_id', 0)
+        def liveId = ServletRequestUtils.getStringParameter(req, 'live_id', '')
+
+        if(StringUtils.isNotBlank(liveId)){
+            query.and('live_id').is(liveId)
+        }
+        if (roomId != 0) {
+            query.and('room_id').is(roomId)
+        }
+        if (roundId != 0) {
+            query.and('round_id').is(roundId)
+        }
+
+        if (gameId != 0) {
+            query.and('game_id').is(gameId)
+        }
+        if(userId != 0){
+            query.and('user_id').is(userId)
+        }
+
+        Crud.list(req, lotterys(), query.get(), null, TIMESTAMP_SORT_DESC)
+    }
+
 
 }
