@@ -18,12 +18,10 @@ import javax.servlet.http.HttpServletRequest
 import static com.ttpod.rest.common.util.WebUtils.$$
 import static com.ttpod.rest.groovy.CrudClosures.*
 
-@Rest
+@RestWithSession
 class GameController extends BaseController {
 
     static final Logger logger = LoggerFactory.getLogger(GameController.class)
-
-    def game_logs() { return logMongo.getCollection('game_logs') }
 
     def rounds() { return gameLogMongo.getCollection('game_round') }
 
