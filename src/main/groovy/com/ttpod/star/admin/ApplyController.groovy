@@ -3,24 +3,15 @@ package com.ttpod.star.admin
 import com.mongodb.BasicDBObject
 import com.mongodb.DBCollection
 import com.mongodb.DBObject
-import com.ttpod.rest.anno.Rest
-import com.ttpod.rest.common.doc.MongoKey
-import com.ttpod.rest.common.doc.ParamKey
 import com.ttpod.rest.anno.RestWithSession
+import com.ttpod.rest.common.doc.MongoKey
 import com.ttpod.rest.web.Crud
-import com.ttpod.rest.web.StaticSpring
+import com.ttpod.star.admin.crud.MessageController
 import com.ttpod.star.common.util.AuthCode
 import com.ttpod.star.common.util.KeyUtils
-import com.ttpod.star.model.ApplyInviteCodeStatus
-import com.ttpod.star.model.ApplyType
-import com.ttpod.star.model.MsgType
-import com.ttpod.star.model.OpType
-import com.ttpod.star.model.RoomType
-import com.ttpod.star.model.UserType
+import com.ttpod.star.model.*
 import org.apache.commons.io.FileUtils
 import org.apache.commons.lang.StringUtils
-import com.ttpod.star.admin.crud.MessageController
-import org.apache.commons.lang.math.RandomUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -34,8 +25,7 @@ import static com.ttpod.rest.common.util.WebUtils.$$
  * date: 13-3-28 下午2:31
  * @author: yangyang.cong@ttpod.com
  */
-@Rest
-//@RestWithSession
+@RestWithSession
 class ApplyController extends BaseController{
 
     static final Logger logger = LoggerFactory.getLogger(ApplyController.class)
