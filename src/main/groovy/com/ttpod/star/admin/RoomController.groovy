@@ -192,18 +192,10 @@ class RoomController extends BaseController {
     def off(HttpServletRequest req) {
         logger.debug('Received off params is {}', req.getParameterMap())
         Integer roomId = ServletRequestUtils.getIntParameter(req, 'room_id', 0)
-        def userId = ServletRequestUtils.getIntParameter(req,'user_id',0)
+        def userId = Web.getCurrentUserId()
 
-        if (roomId == 0 || userId == null) {
+        if (roomId == 0 ) {
             return Web.missParam()
-        }
-
-        def user = users().findOne($$('_id',userId));
-        logger.debug('user is {},userId is {}',user,userId)
-        def priv = user['priv'] as Integer
-
-        if (!isRoomManagement(priv)) {
-            return Web.notAllowed()
         }
 
         final time = System.currentTimeMillis()
@@ -228,17 +220,17 @@ class RoomController extends BaseController {
         def body = ['live': false, room_id: roomId]
         MessageSend.publishLiveEvent(body)
 
-        def zhuboId = oldRoom.get("xy_star_id") as Integer
-        liveRedis.opsForValue().set(KeyUtils.LIVE.blackStar(zhuboId), KeyUtils.MARK_VAL, 600L, TimeUnit.SECONDS)
-
-        def reason = req['reason']
-        def room_close_body = ['reason': reason, user_id: zhuboId, priv: priv]
-        MessageSend.publishCloseRoomByManagerEvent(room_close_body, roomId)
-        def publish_star_close_body = ['ttl': 600, 'star_id': zhuboId, 'reason': reason]
-        MessageSend.publishStarCloseEvent(publish_star_close_body, zhuboId)
-        //记录运营、代理 关闭日志
-        adminMongo.getCollection("room_terminate_ops").insert($$(_id: "${roomId}_${userId}_${time}".toString(), room_id: roomId, star_id: zhuboId as Integer,
-                t_priv: priv, t_uid: userId, reason: reason, timestamp: time));
+//        def zhuboId = oldRoom.get("xy_star_id") as Integer
+//        liveRedis.opsForValue().set(KeyUtils.LIVE.blackStar(zhuboId), KeyUtils.MARK_VAL, 600L, TimeUnit.SECONDS)
+//
+//        def reason = req['reason']
+//        def room_close_body = ['reason': reason, user_id: zhuboId, priv: priv]
+//        MessageSend.publishCloseRoomByManagerEvent(room_close_body, roomId)
+//        def publish_star_close_body = ['ttl': 600, 'star_id': zhuboId, 'reason': reason]
+//        MessageSend.publishStarCloseEvent(publish_star_close_body, zhuboId)
+//        //记录运营、代理 关闭日志
+//        adminMongo.getCollection("room_terminate_ops").insert($$(_id: "${roomId}_${userId}_${time}".toString(), room_id: roomId, star_id: zhuboId as Integer,
+//                t_priv: priv, t_uid: userId, reason: reason, timestamp: time));
 
         // 关闭直播间通知游戏端
         def game_id = oldRoom['game_id']
@@ -252,18 +244,6 @@ class RoomController extends BaseController {
         return [code: 1]
     }
 
-    /**
-     * 判断是否是管理人员
-     * @param room_id
-     * @return
-     */
-    private boolean isRoomManagement(int priv) {
-        Boolean competence = Boolean.FALSE
-        if (priv == UserType.运营人员.ordinal() || priv == UserType.客服人员.ordinal() || priv == UserType.客服人员.ordinal()) {
-            competence = Boolean.TRUE
-        }
-        return competence
-    }
 
     private void logRoomEdit(String type, Integer roomId, Integer live_type, Object data) {
         Map obj = new HashMap();
