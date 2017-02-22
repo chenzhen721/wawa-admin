@@ -191,8 +191,12 @@ class RoomController extends BaseController {
     def off(HttpServletRequest req) {
         logger.debug('Received off params is {}', req.getParameterMap())
         Integer roomId = ServletRequestUtils.getIntParameter(req, 'room_id', 0)
-        int priv = Web.currentUserType();
-
+        def user = Web.currentUser()
+        if(user == null){
+            return Web.notAllowed()
+        }
+        int priv = user['priv'] as Integer;
+        logger.debug('user is {}',user)
         if (roomId == 0) {
             return Web.missParam()
         }
