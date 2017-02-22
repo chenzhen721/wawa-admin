@@ -192,7 +192,7 @@ class RoomController extends BaseController {
         logger.debug('Received off params is {}', req.getParameterMap())
         Integer roomId = ServletRequestUtils.getIntParameter(req, 'room_id', 0)
         def userId = Web.getCurrentUserId()
-        def user = Web.currentUser();
+        def user = users().findOne($$('_id',userId));
         logger.debug('user is {}',user)
         def priv = user['priv'] as Integer
 
