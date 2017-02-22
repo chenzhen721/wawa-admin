@@ -191,12 +191,9 @@ class RoomController extends BaseController {
     def off(HttpServletRequest req) {
         logger.debug('Received off params is {}', req.getParameterMap())
         Integer roomId = ServletRequestUtils.getIntParameter(req, 'room_id', 0)
-        def user = Web.currentUser()
-        if(user == null){
-            return Web.notAllowed()
-        }
-        int priv = user['priv'] as Integer;
-        logger.debug('user is {}',user)
+        def userId = Web.getCurrentUserId()
+        def priv = Web.currentUserType();
+
         if (roomId == 0) {
             return Web.missParam()
         }
@@ -227,7 +224,6 @@ class RoomController extends BaseController {
         MessageSend.publishLiveEvent(body)
 
         def zhuboId = oldRoom.get("xy_star_id") as Integer
-        def userId = Web.getCurrentUserId()
         liveRedis.opsForValue().set(KeyUtils.LIVE.blackStar(zhuboId), KeyUtils.MARK_VAL, 600L, TimeUnit.SECONDS)
 
         def reason = req['reason']
