@@ -193,7 +193,7 @@ class RoomController extends BaseController {
         Integer roomId = ServletRequestUtils.getIntParameter(req, 'room_id', 0)
         def userId = Web.getCurrentUserId()
         def user = users().findOne($$('_id',userId));
-        logger.debug('user is {}',user)
+        logger.debug('user is {},userId is {}',user,userId)
         def priv = user['priv'] as Integer
 
         if (roomId == 0) {
