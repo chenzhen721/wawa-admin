@@ -119,8 +119,14 @@ class ApplyController extends BaseController{
                             if (token) {
                                 /*userRedis.delete(KeyUtils.USER.token(user_id))
                                 userRedis.delete(KeyUtils.accessToken(token))*/
-                                userRedis.opsForHash().put(KeyUtils.accessToken(token), "room_id", user_id.toString())
-                                userRedis.opsForHash().put(KeyUtils.accessToken(token), "priv", UserType.主播.ordinal().toString())
+//                                if(userRedis.hasKey(KeyUtils.accessToken(token))){
+                                def userInfo = userRedis.opsForHash().entries(KeyUtils.accessToken(token)) as Map<String,String>
+                                if(userInfo != null && !userInfo.isEmpty()){
+                                    userInfo.put('room_id',user_id.toString())
+                                    userInfo.put("priv", UserType.主播.ordinal().toString())
+                                    userRedis.opsForHash().putAll(KeyUtils.accessToken(token),userInfo)
+                                }
+                                logger.warn('after apply,synchronize token {} is error ...',token)
                             }
 
                             //设置直播间排行榜新人加成分数
