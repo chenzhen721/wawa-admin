@@ -216,6 +216,8 @@ class RoomController extends BaseController {
         liveRedis.delete(liveRedis.keys(KeyUtils.LIVE.all(roomId)))
         logMongo.getCollection("room_edit").update($$(type: "live_on", data: live_id, room: roomId), $$('$set': [etime: time]))
         logRoomEdit('live_off', roomId, live_type, live_id)
+        // 记录操作日志
+        Crud.opLog(OpType.room_close, [user_id: userId])
 
         def body = ['live': false, room_id: roomId]
         MessageSend.publishLiveEvent(body)
@@ -242,8 +244,6 @@ class RoomController extends BaseController {
             }
         }
 
-        // 记录日志
-        Crud.opLog(OpType.room_close, [user_id: userId])
         return [code: 1]
     }
 
