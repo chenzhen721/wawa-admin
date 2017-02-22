@@ -4,6 +4,7 @@ import com.mongodb.BasicDBObject
 import com.mongodb.DBCollection
 import com.mongodb.DBObject
 import com.mongodb.QueryBuilder
+import com.ttpod.rest.anno.Rest
 import com.ttpod.rest.anno.RestWithSession
 import com.ttpod.rest.common.doc.IMessageCode
 import com.ttpod.rest.web.Crud
@@ -29,7 +30,7 @@ import static com.ttpod.rest.common.util.WebUtils.$$
  * 直播间管理
  */
 //@Rest
-@RestWithSession
+@Rest
 class RoomController extends BaseController {
 
     @Resource
@@ -191,14 +192,16 @@ class RoomController extends BaseController {
     def off(HttpServletRequest req) {
         logger.debug('Received off params is {}', req.getParameterMap())
         Integer roomId = ServletRequestUtils.getIntParameter(req, 'room_id', 0)
-        def userId = Web.getCurrentUserId()
+        def userId = ServletRequestUtils.getIntParameter(req,'user_id',0)
+
+        if (roomId == 0 || userId == null) {
+            return Web.missParam()
+        }
+
         def user = users().findOne($$('_id',userId));
         logger.debug('user is {},userId is {}',user,userId)
         def priv = user['priv'] as Integer
 
-        if (roomId == 0) {
-            return Web.missParam()
-        }
         if (!isRoomManagement(priv)) {
             return Web.notAllowed()
         }
