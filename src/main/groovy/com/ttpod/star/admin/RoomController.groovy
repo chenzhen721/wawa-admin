@@ -194,6 +194,8 @@ class RoomController extends BaseController {
         def userId = Web.getCurrentUserId()
         def user = Web.currentUser();
         logger.debug('user is {}',user)
+        def priv = user['priv'] as Integer
+
         if (roomId == 0) {
             return Web.missParam()
         }
