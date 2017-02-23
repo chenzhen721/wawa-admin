@@ -4,13 +4,11 @@ import com.mongodb.BasicDBObject
 import com.mongodb.DBCollection
 import com.mongodb.DBObject
 import com.mongodb.QueryBuilder
-import com.ttpod.rest.anno.Rest
 import com.ttpod.rest.anno.RestWithSession
 import com.ttpod.rest.common.doc.IMessageCode
 import com.ttpod.rest.web.Crud
 import com.ttpod.star.common.util.KeyUtils
 import com.ttpod.star.model.OpType
-import com.ttpod.star.model.UserType
 import com.ttpod.star.web.api.notify.GameService
 import com.ttpod.star.web.api.notify.MessageSend
 import org.apache.commons.lang.StringUtils
@@ -30,7 +28,7 @@ import static com.ttpod.rest.common.util.WebUtils.$$
  * 直播间管理
  */
 //@Rest
-@Rest
+@RestWithSession
 class RoomController extends BaseController {
 
     @Resource
@@ -220,14 +218,14 @@ class RoomController extends BaseController {
         def body = ['live': false, room_id: roomId]
         MessageSend.publishLiveEvent(body)
 
-//        def zhuboId = oldRoom.get("xy_star_id") as Integer
-//        liveRedis.opsForValue().set(KeyUtils.LIVE.blackStar(zhuboId), KeyUtils.MARK_VAL, 600L, TimeUnit.SECONDS)
-//
-//        def reason = req['reason']
-//        def room_close_body = ['reason': reason, user_id: zhuboId, priv: priv]
-//        MessageSend.publishCloseRoomByManagerEvent(room_close_body, roomId)
-//        def publish_star_close_body = ['ttl': 600, 'star_id': zhuboId, 'reason': reason]
-//        MessageSend.publishStarCloseEvent(publish_star_close_body, zhuboId)
+        def zhuboId = oldRoom.get("xy_star_id") as Integer
+        liveRedis.opsForValue().set(KeyUtils.LIVE.blackStar(zhuboId), KeyUtils.MARK_VAL, 600L, TimeUnit.SECONDS)
+
+        def reason = req['reason']
+        def room_close_body = ['reason': reason, user_id: zhuboId, priv: priv]
+        MessageSend.publishCloseRoomByManagerEvent(room_close_body, roomId)
+        def publish_star_close_body = ['ttl': 600, 'star_id': zhuboId, 'reason': reason]
+        MessageSend.publishStarCloseEvent(publish_star_close_body, zhuboId)
 //        //记录运营、代理 关闭日志
 //        adminMongo.getCollection("room_terminate_ops").insert($$(_id: "${roomId}_${userId}_${time}".toString(), room_id: roomId, star_id: zhuboId as Integer,
 //                t_priv: priv, t_uid: userId, reason: reason, timestamp: time));
