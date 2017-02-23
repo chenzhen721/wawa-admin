@@ -114,6 +114,8 @@
                 <api.domain>http://test-aiapi.memeyule.com/</api.domain>
                 <user.domain>http://test-aiuser.memeyule.com/</user.domain>
                 <im.domain>http://test.im.memeyule.com:6020</im.domain>
+                <ws.domain>http://test-aiws.memeyule.com:6010</ws.domain>
+                <aigd.domain>http://test-aigd.memeyule.com:6050</aigd.domain>
                 <dev>test</dev>
             </properties>
         </profile>
@@ -142,6 +144,8 @@
                 <mongo.cost.write>REPLICA_ACKNOWLEDGED</mongo.cost.write>
                 <mongo_history.uri>192.168.1.43:10000</mongo_history.uri>
                 <im.domain>http://im.memeyule.com:6020</im.domain>
+                <ws.domain>http://aiws.memeyule.com:6010</ws.domain>
+                <aigd.domain>http://aigd.memeyule.com:6050</aigd.domain>
             </properties>
         </profile>
     </profiles>

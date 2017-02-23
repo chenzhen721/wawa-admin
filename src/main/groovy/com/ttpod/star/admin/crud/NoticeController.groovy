@@ -68,6 +68,7 @@ class NoticeController extends BaseController{
         def order = ServletRequestUtils.getIntParameter(req,'order',0)
         def status = ServletRequestUtils.getIntParameter(req,'status',0)
         def title = ServletRequestUtils.getStringParameter(req,'title','')
+        def type = ServletRequestUtils.getIntParameter(req,'type',0)
         def content = ServletRequestUtils.getStringParameter(req,'content','')
         def click_url = ServletRequestUtils.getStringParameter(req,'click_url','')
         def timestamp = new Date().getTime()
@@ -84,6 +85,7 @@ class NoticeController extends BaseController{
         query.and('content').is(content)
         query.and('click_url').is(click_url)
         query.and('timestamp').is(timestamp)
+        query.and('type').is(type)
 
         notice.insert(query.get())
 

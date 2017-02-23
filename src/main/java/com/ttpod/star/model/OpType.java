@@ -16,6 +16,6 @@ public enum OpType {
     funding_add,funding_edit, funding_del,photo_ban, user_pic_ban, index_top_recommend_add_waiting,index_top_recommend_add,index_top_recommend_cancel,index_top_recommend_del,
     index_new_recommend_add,index_new_recommend_del, get_mobile_code,send_mobile,push_msg,clean_viewer, add_recomm_group, del_recomm_group, set_recomm_star_group, add_room_rank_points
     , apply_invite_code_generate, add_temp_to_candidates, kick_down_candidates, finance_donate_exp,sf_renew_apply_handle, activities_add_star, activities_del_star,add_weixin_template,
-    push_save, push_del, push_send;
+    push_save, push_del, push_send,room_close;
 
 }
