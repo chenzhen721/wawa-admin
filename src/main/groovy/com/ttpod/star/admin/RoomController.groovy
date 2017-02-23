@@ -222,7 +222,7 @@ class RoomController extends BaseController {
         liveRedis.opsForValue().set(KeyUtils.LIVE.blackStar(zhuboId), KeyUtils.MARK_VAL, 600L, TimeUnit.SECONDS)
 
         def reason = req['reason']
-        def room_close_body = ['reason': reason, user_id: zhuboId, priv: priv]
+        def room_close_body = ['reason': reason, user_id: zhuboId, priv: 'GM']
         MessageSend.publishCloseRoomByManagerEvent(room_close_body, roomId)
         def publish_star_close_body = ['ttl': 600, 'star_id': zhuboId, 'reason': reason]
         MessageSend.publishStarCloseEvent(publish_star_close_body, zhuboId)
