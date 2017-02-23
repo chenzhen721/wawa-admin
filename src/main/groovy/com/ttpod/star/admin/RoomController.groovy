@@ -219,12 +219,9 @@ class RoomController extends BaseController {
         MessageSend.publishLiveEvent(body)
 
         def zhuboId = oldRoom.get("xy_star_id") as Integer
-        liveRedis.opsForValue().set(KeyUtils.LIVE.blackStar(zhuboId), KeyUtils.MARK_VAL, 600L, TimeUnit.SECONDS)
 
         def reason = req['reason']
-        def room_close_body = ['reason': reason, user_id: zhuboId, priv: 'GM']
-        MessageSend.publishCloseRoomByManagerEvent(room_close_body, roomId)
-        def publish_star_close_body = ['ttl': 600, 'star_id': zhuboId, 'reason': reason]
+        def publish_star_close_body = ['star_id': zhuboId, 'reason': reason]
         MessageSend.publishStarCloseEvent(publish_star_close_body, zhuboId)
 //        //记录运营、代理 关闭日志
 //        adminMongo.getCollection("room_terminate_ops").insert($$(_id: "${roomId}_${userId}_${time}".toString(), room_id: roomId, star_id: zhuboId as Integer,
