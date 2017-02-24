@@ -15,6 +15,7 @@ import org.apache.commons.lang.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.web.bind.ServletRequestUtils
 
 import javax.annotation.Resource
 import javax.servlet.http.HttpServletRequest
@@ -91,17 +92,18 @@ class ApplyController extends BaseController{
                 def user_id = record.get('xy_user_id') as Integer
                 def invite_code = record.get('invite_code') as String
                 if (status == ApplyType.通过.ordinal()){
-                    def brokerId = req['broker']
-                    if(StringUtils.isBlank(brokerId)){
+                    def brokerId = ServletRequestUtils.getIntParameter(req,'broker_id',0)
+                    if(brokerId == 0){
                         return Web.missParam()
                     }
+
                     def sex = record.get('sex') as Integer
                     def live_type = record.get('live_type') as Integer
                     def temp = (record.get('temp') ?: Boolean.FALSE) as Boolean //手机直播临时主播
                     def tag = record.get('tag') as String
                     if (users().update(new BasicDBObject(_id,user_id),
                             new BasicDBObject($set:[priv:UserType.主播.ordinal(),star:
-                                    [room_id:user_id,timestamp:time,broker:brokerId as Integer,sex:sex]
+                                    [room_id:user_id,timestamp:time,broker:brokerId,sex:sex]
                             ]),false,false,writeConcern).getN() == 1){
                         def user = users().findOne(new BasicDBObject(_id,user_id),new BasicDBObject(nick_name:1,mm_no:1))
                         String nick_name = user?.get("nick_name")
