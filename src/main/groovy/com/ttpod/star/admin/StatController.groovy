@@ -1,11 +1,8 @@
 package com.ttpod.star.admin
 
 import com.mongodb.*
-import com.mongodb.util.Hash
-import com.ttpod.rest.anno.Rest
 import com.ttpod.rest.anno.RestWithSession
 import com.ttpod.rest.common.doc.MongoKey
-import com.ttpod.rest.common.doc.ParamKey
 import com.ttpod.rest.web.Crud
 import com.ttpod.star.common.util.ExportUtils
 import com.ttpod.star.model.PayType
@@ -13,20 +10,12 @@ import org.apache.commons.lang.StringUtils
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-import java.nio.file.attribute.UserPrincipalLookupService
 import java.text.SimpleDateFormat
-import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.atomic.AtomicLong
 import java.util.regex.Pattern
 
-import static com.ttpod.rest.common.doc.MongoKey.$addToSet
 import static com.ttpod.rest.common.doc.MongoKey.ALL_FIELD
-import static com.ttpod.rest.common.doc.MongoKey.EMPTY
 import static com.ttpod.rest.common.doc.MongoKey.SJ_DESC
-import static com.ttpod.rest.common.doc.MongoKey.timestamp
-import static com.ttpod.rest.common.util.WebUtils.$$
-import static com.ttpod.rest.common.util.WebUtils.getEtime
-import static com.ttpod.rest.common.util.WebUtils.getStime
+import static com.ttpod.rest.common.util.WebUtils.*
 
 /**
  * date: 13-3-28 下午2:31
@@ -748,5 +737,15 @@ class StatController extends BaseController {
             }
         }
     }
+
+    /**
+     * 游戏统计
+     * * @param req
+     * @return
+     */
+    def game_stat(HttpServletRequest req) {
+        super.list(req, Web.fillTimeBetween(req).and('type').is('game').get())
+    }
+
 
 }
