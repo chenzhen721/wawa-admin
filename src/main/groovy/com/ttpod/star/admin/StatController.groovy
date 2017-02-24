@@ -1,11 +1,8 @@
 package com.ttpod.star.admin
 
 import com.mongodb.*
-import com.mongodb.util.Hash
-import com.ttpod.rest.anno.Rest
 import com.ttpod.rest.anno.RestWithSession
 import com.ttpod.rest.common.doc.MongoKey
-import com.ttpod.rest.common.doc.ParamKey
 import com.ttpod.rest.web.Crud
 import com.ttpod.star.common.util.ExportUtils
 import com.ttpod.star.model.PayType
@@ -13,20 +10,12 @@ import org.apache.commons.lang.StringUtils
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-import java.nio.file.attribute.UserPrincipalLookupService
 import java.text.SimpleDateFormat
-import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.atomic.AtomicLong
 import java.util.regex.Pattern
 
-import static com.ttpod.rest.common.doc.MongoKey.$addToSet
 import static com.ttpod.rest.common.doc.MongoKey.ALL_FIELD
-import static com.ttpod.rest.common.doc.MongoKey.EMPTY
 import static com.ttpod.rest.common.doc.MongoKey.SJ_DESC
-import static com.ttpod.rest.common.doc.MongoKey.timestamp
-import static com.ttpod.rest.common.util.WebUtils.$$
-import static com.ttpod.rest.common.util.WebUtils.getEtime
-import static com.ttpod.rest.common.util.WebUtils.getStime
+import static com.ttpod.rest.common.util.WebUtils.*
 
 /**
  * date: 13-3-28 下午2:31
@@ -235,52 +224,15 @@ class StatController extends BaseController {
                                             [k:"hand_coin",v:'运营手动加币'],
                                             [k:"hand_cut_coin", v:'运营手动减币'],
                                             [k:"mission_coin", v:'任务奖励'],
-                                            [k:"login_coin",v:'签到'],
-                                            [k:"treasure_coin",v:'宝藏'],
-                                            [k:"luck_coin",v:'幸运礼物'],
-                                            //[k:"family_award_price",v:'家族奖励'],
-                                            [k:"game_total",v:'游戏(砸蛋/踢球/翻牌)'],
-                                            [k:"kunbo_game_coin",v:'水果乐园'],
-                                            [k:"activity_award_coin",v:'活动奖励'],
-                                            [k:"redPacket_coin",v:'红包'],
-                                            [k:"texasholdem_game_coin",v:'德州扑克'],
-                                            [k:"fishing_game_coin",v:'捕鱼'],
-                                            [k:"niuniu_game_coin",v:'百人牛牛'],
-                                            [k:"dianle_share_coin",v:'积分墙分享'],
-                                            [k:"coin_refund_song",v:'点歌退回'],
-                                            [k:"exchange_coin",v:'VC兑换柠檬'],
-                                            [k:"fortune_coin",v:'财神'],
+                                            [k:"login_coin",v:'签到奖励'],
+                                            [k:"game_total",v:'游戏(牛牛)'],
                                             [k:"total",v:'增加柠檬总数']
                                         ]
 
     private static final def DEC_HEADS = [
                                           [k:"send_gift", v:'送礼'],
+                                          [k:"game_total", v:'游戏(牛牛)'],
                                           [k:"open_egg", v:'砸蛋'],
-                                          [k:"open_card", v:'翻牌'],
-                                          [k:"song", v:'点歌'],
-                                          [k:"buy_prettynum", v:'靓号'],
-                                          [k:"football_shoot", v:'踢球'],
-                                          [k:"broadcast", v:'广播'],
-                                          [k:"grab_sofa", v:'沙发'],
-                                          [k:"label", v:'求爱签'],
-                                          [k:"unbind_mobile", v:'解绑手机'],
-                                          [k:"nest_send_packet", v:'小窝红包'],
-                                          [k:"apply_family", v:'申请家族'],
-                                          [k:"send_treasure", v:'宝藏'],
-                                          [k:"level_up", v:'接生'],
-                                          [k:"buy_fund", v:'一元购'],
-                                          [k:"send_bell", v:'铃铛'],
-                                          [k:"buy_vip", v:'vip购买'],
-                                          [k:"buy_car", v:'座驾购买'],
-                                          [k:"send_fortune", v:'财神'],
-                                          [k:"buy_guard", v:'守护'],
-                                          [k:"reward_post", v:'点秋香'],
-                                          [k:"nest_send_gift", v:'小窝送礼'],
-                                          [k:"car_race", v:'赛车'],
-                                          [k:"texasholdem_subtract_coin", v:'德州扑克'],
-                                          [k:"fishing_subtract_coin", v:'捕鱼'],
-                                          [k:"niuniu_subtract_coin", v:'百人牛牛'],
-                                          [k:"kunbo_subtract_coin", v:'水果乐园'],
                                           [k:"total", v:'消费柠檬总计']
                                         ]
 
@@ -785,5 +737,15 @@ class StatController extends BaseController {
             }
         }
     }
+
+    /**
+     * 游戏统计
+     * * @param req
+     * @return
+     */
+    def game_stat(HttpServletRequest req) {
+        super.list(req, Web.fillTimeBetween(req).and('type').is('game').get())
+    }
+
 
 }
