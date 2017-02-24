@@ -83,16 +83,19 @@ class ApplyController extends BaseController {
      * @return
      */
     def handle(HttpServletRequest req) {
+        logger.debug('Received handle params is {}', req.getParameterMap())
+
         def status = req.getInt('status')
         def brokerId = ServletRequestUtils.getIntParameter(req, 'broker_id', 0)
         if (status == ApplyType.通过.ordinal() || status == ApplyType.未通过.ordinal()) {
             def query = $$(_id: req[_id], status: ApplyType.未处理.ordinal())
             def update = $$(status: status, lastmodif: time, lastmodif_user: Web.currentUser(), remark: req['remark'])
-            if(brokerId != 0){
-                update.append('broker',brokerId)
+            if (brokerId != 0) {
+                update.append('broker', brokerId)
             }
             Long time = System.currentTimeMillis()
-            def record = table().findAndModify(query,$$('$set':update))
+            def record = table().findAndModify(query, $$('$set': update))
+            logger.debug('record is {},update is {}', record, update)
             if (record) {
                 def user_id = record.get('xy_user_id') as Integer
                 def invite_code = record.get('invite_code') as String
