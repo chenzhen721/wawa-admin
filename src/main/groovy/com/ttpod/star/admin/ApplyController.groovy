@@ -87,13 +87,14 @@ class ApplyController extends BaseController {
 
         def status = req.getInt('status')
         def brokerId = ServletRequestUtils.getIntParameter(req, 'broker_id', 0)
+        Long time = System.currentTimeMillis()
+
         if (status == ApplyType.通过.ordinal() || status == ApplyType.未通过.ordinal()) {
             def query = $$(_id: req[_id], status: ApplyType.未处理.ordinal())
             def update = $$(status: status, lastmodif: time, lastmodif_user: Web.currentUser(), remark: req['remark'])
             if (brokerId != 0) {
                 update.append('broker', brokerId)
             }
-            Long time = System.currentTimeMillis()
             def record = table().findAndModify(query, $$('$set': update))
             logger.debug('record is {},update is {}', record, update)
             if (record) {
