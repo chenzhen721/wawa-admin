@@ -536,6 +536,35 @@ class UserController extends BaseController {
     }
 
     /**
+     * 设置经纪人提现信息
+     * @param req
+     */
+    def set_cash_info(HttpServletRequest req) {
+        logger.debug('Received set_cash_info params is {}', req.getParameterMap())
+
+        def userId = req['user_id']
+
+        if (StringUtils.isBlank(userId)) {
+            return Web.missParam()
+        }
+        // 真实姓名
+        def realName = req['real_name']
+        // 卡号
+        def bankId = req['bank_id']
+        // 所在地
+        def bankLocation = req['bank_location']
+        // 支行名称
+        def bankName = req['bank_name']
+        // 所属银行
+        def bank = req['bank']
+
+        def map = [real_name: realName, bank_id: bankId, bank_location: bankLocation, bank_name: bankName, bank: bank]
+        def query = $$('_id': userId as Integer, 'priv': UserType.经纪人.ordinal())
+        def update = $$('$set': $$('broker.cash': map))
+        users().update(query, update)
+    }
+
+    /**
      * 设置经济人推荐主播个数
      * @return
      */
