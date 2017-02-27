@@ -223,9 +223,9 @@ class RoomController extends BaseController {
         def reason = req['reason']
         // 十分钟不能开播
         def ttl = 600L
-        def close_time = req['close_time']
-        if (StringUtils.isBlank(close_time)) {
-            ttl = close_time as Long
+        String close_time = req['close_time']
+        if (StringUtils.isNotBlank(close_time)) {
+            ttl = Long.valueOf(close_time)
         }
         liveRedis.opsForValue().set(KeyUtils.LIVE.blackStar(zhuboId), KeyUtils.MARK_VAL, ttl, TimeUnit.SECONDS)
         def publish_star_close_body = ['star_id': zhuboId, 'reason': reason, 'ttl': expire]
