@@ -135,7 +135,6 @@ class ApplyController extends BaseController {
                                     userInfo.put("priv", UserType.主播.ordinal().toString())
                                     userRedis.opsForHash().putAll(KeyUtils.accessToken(token), userInfo)
                                 }
-                                logger.warn('after apply,synchronize token {} is error ...', token)
                             }
 
                             //设置直播间排行榜新人加成分数
