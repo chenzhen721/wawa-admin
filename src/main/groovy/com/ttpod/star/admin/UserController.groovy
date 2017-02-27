@@ -49,12 +49,13 @@ class UserController extends BaseController {
     public StringRedisTemplate liveRedis;
     static final Logger logger = LoggerFactory.getLogger(UserController.class)
 
-    def rewards(){return activeMongo.getCollection('rewards')}
+    def rewards() { return activeMongo.getCollection('rewards') }
 
     DBCollection table() { users() }
+
     DBCollection basicSalary() { adminMongo.getCollection('basic_salary') }
 
-    public static final  BasicDBObject ROOM_LIST_USER_FILED = $$(nick_name: 1, 'finance.coin_spend_total' : 1, "finance.bean_count_total": 1,  pic: 1,broker:1,star_total:1)
+    public static final BasicDBObject ROOM_LIST_USER_FILED = $$(nick_name: 1, 'finance.coin_spend_total': 1, "finance.bean_count_total": 1, pic: 1, broker: 1, star_total: 1)
 
     def list(HttpServletRequest req) {
         def query = Web.fillTimeBetween(req)
@@ -125,9 +126,9 @@ class UserController extends BaseController {
                         obj.put("ban_status", 1)
                 }*/
                 String user_id = obj[_id].toString()
-                if(bannedUsers.contains(user_id))
+                if (bannedUsers.contains(user_id))
                     obj.put("ban_status", 1)
-                if(priv.equals(UserType.经纪人.ordinal())){
+                if (priv.equals(UserType.经纪人.ordinal())) {
                     def timeQuery = new BasicDBObject()
                     def queryfield = [:]
                     if (stime != null) queryfield.put($gte, stime.getTime())
@@ -144,11 +145,11 @@ class UserController extends BaseController {
                     //旗下主播数量
                     def broker = obj?.get('broker') as Map
                     def star_total = obj?.get('star_total') as Integer
-                    if(broker){
-                        def real_star_count = users().count($$('star.broker',user_id as Integer))
-                        if(star_total != real_star_count){//同步主播数量
+                    if (broker) {
+                        def real_star_count = users().count($$('star.broker', user_id as Integer))
+                        if (star_total != real_star_count) {//同步主播数量
                             broker['star_total'] = real_star_count
-                            users().update($$(_id: user_id as Integer), $$($set: ['broker.star_total' : real_star_count]))
+                            users().update($$(_id: user_id as Integer), $$($set: ['broker.star_total': real_star_count]))
                         }
 
                     }
@@ -164,7 +165,7 @@ class UserController extends BaseController {
      * @param req
      * @return
      */
-    def broker_list(HttpServletRequest req){
+    def broker_list(HttpServletRequest req) {
         def query = Web.fillTimeBetween(req).get()
         query.put('priv', UserType.经纪人.ordinal())
 
@@ -176,11 +177,11 @@ class UserController extends BaseController {
         def aetime = Web.getTime(req, 'aetime')
 
         //经纪人类型：对私，对公
-        if(req['partnership'] as Integer == 2){
+        if (req['partnership'] as Integer == 2) {
             query.put('broker.partnership', 2)
         }
         //经纪人是否特殊
-        if(req['special'] as Integer == 1){
+        if (req['special'] as Integer == 1) {
             query.put('broker.special', 1)
         }
 
@@ -201,13 +202,16 @@ class UserController extends BaseController {
                     obj.put("bean_period", beanStatIter.next().get("bean_total"))
                 }
                 //旗下主播数量
-                def broker = obj?.get('broker') as Map
-                def star_total = obj?.get('star_total') as Integer
-                if(broker){
-                    def real_star_count = users().count($$('star.broker',user_id ))
-                    if(star_total != real_star_count){//同步主播数量
-                        broker['star_total'] = real_star_count
-                        users().update($$(_id: user_id), $$($set: ['broker.star_total' : real_star_count]))
+                if (obj.containsField('broker')) {
+                    def star_total = 0
+                    def broker = obj['broker'] as Map
+                    if (broker.containsKey('star_total')) {
+                        star_total = broker['star_total'] as Integer
+                    }
+                    //同步主播数量
+                    def real_star_count = users().count($$('star.broker', user_id)) as Integer
+                    if (real_star_count != star_total) {
+                        users().update($$(_id: user_id), $$($set: ['broker.star_total': real_star_count]))
                     }
                     //一段时间内签约主播
                     List<Integer> stars = getUidsByApplyTime(astime, aetime, user_id);
@@ -216,8 +220,7 @@ class UserController extends BaseController {
                     //有效签约数量 (代理在某段签约时间内签约主播一段时间内收益达到10W维C的
                     broker.putAll(caculateStars(stars, timeQuery, null))
                 }
-
-           }
+            }
         }
     }
 
@@ -226,10 +229,10 @@ class UserController extends BaseController {
      * @param req
      * @return
      */
-    def broker_salary(HttpServletRequest req){
+    def broker_salary(HttpServletRequest req) {
         if (req['time'] == null) {
-             return [code: 0]
-         }
+            return [code: 0]
+        }
         String month = req['time']
         def stime = new SimpleDateFormat("yyyyMM").parse(month);
 
@@ -261,7 +264,6 @@ class UserController extends BaseController {
             query.put('broker.special', broker_special == 0 ? $$($ne, 1) : 1)
         }
 
-
         /*在上月21日-本月末这个时间段内
         新签约的主播中有3名及以上当月维C收益各达到20W
         及以上或新签约主播总收益当月达到100W维C及以上*/
@@ -284,7 +286,7 @@ class UserController extends BaseController {
 
                 //经纪人收益有调整
                 def basicSalary = basicSalary().findOne($$(_id, month + "_" + user_id))
-                if(basicSalary != null) {
+                if (basicSalary != null) {
                     obj.put("new_earned", basicSalary.get("new_earned"))
                     obj.put("remark", basicSalary.get("remark"))
                 }
@@ -292,11 +294,11 @@ class UserController extends BaseController {
                 //旗下主播数量
                 def broker = obj?.get('broker') as Map
                 def star_total = obj?.get('star_total') as Integer
-                if(broker){
-                    def real_star_count = users().count($$('star.broker',user_id ))
-                    if(star_total != real_star_count){//同步主播数量
+                if (broker) {
+                    def real_star_count = users().count($$('star.broker', user_id))
+                    if (star_total != real_star_count) {//同步主播数量
                         broker['star_total'] = real_star_count
-                        users().update($$(_id: user_id), $$($set: ['broker.star_total' : real_star_count]))
+                        users().update($$(_id: user_id), $$($set: ['broker.star_total': real_star_count]))
                     }
                     //一段时间内签约主播
                     List<Integer> stars = getUidsByApplyTime(stime21, etime, user_id);
@@ -315,8 +317,8 @@ class UserController extends BaseController {
                     if (timestamp >= stime.getTime() && timestamp < month2etime.getTime()) {
                         commission = 0.18;
                         //有3名及以上当月维C收益各达到20W，或总收益当月达到100W维C及以上
-                    } else if((caculate.get("apply_period_effective_stars") as Integer) > 2
-                                || (caculate.get("apply_period_bean_total") as Integer) > 1000000 ){
+                    } else if ((caculate.get("apply_period_effective_stars") as Integer) > 2
+                            || (caculate.get("apply_period_bean_total") as Integer) > 1000000) {
                         commission = 0.18;
                     }
 
@@ -350,15 +352,15 @@ class UserController extends BaseController {
     /**
      * 一段时间签约主播
      */
-    private List<Integer> getUidsByApplyTime(Date applyStime, Date applyEtime, Integer brokerId){
-        def timeQuery = $$(priv:UserType.主播.ordinal(), 'star.broker':brokerId)
+    private List<Integer> getUidsByApplyTime(Date applyStime, Date applyEtime, Integer brokerId) {
+        def timeQuery = $$(priv: UserType.主播.ordinal(), 'star.broker': brokerId)
         def queryfield = [:]
         if (applyStime != null) queryfield.put($gte, applyStime.getTime())
         if (applyEtime != null) queryfield.put($lt, applyEtime.getTime())
         if (queryfield.size() > 0) {
             timeQuery.put('star.timestamp', queryfield)
             //logger.debug("broker ApplyTime timeQuery: ${timeQuery}")
-            return users().find(timeQuery, $$(_id:1)).toArray()*._id
+            return users().find(timeQuery, $$(_id: 1)).toArray()*._id
         }
         return Collections.emptyList();
     }
@@ -368,19 +370,19 @@ class UserController extends BaseController {
      * 统计一段签约时间内收益 以及达到达到10W维C收益的主播数量
      * @return
      */
-    private Map caculateStars(List<Integer> stars, BasicDBObject timeQuery, String month){
+    private Map caculateStars(List<Integer> stars, BasicDBObject timeQuery, String month) {
         Map result = new HashMap()
         Integer count = 0;
         Long bean_total = 0;
         result.put('apply_period_effective_stars', count)
         result.put('apply_period_bean_total', bean_total)
-        if(stars == null || stars.size() == 0) return result;
+        if (stars == null || stars.size() == 0) return result;
 
-        timeQuery.put('user_id', $$($in : stars))
+        timeQuery.put('user_id', $$($in: stars))
         //logger.debug("broker caculateStars query: {}", timeQuery)
         Iterator records = adminMongo.getCollection("stat_lives").aggregate(
                 new BasicDBObject('$match', timeQuery),
-                new BasicDBObject('$project', [_id: '$user_id',  earned: '$earned']),
+                new BasicDBObject('$project', [_id: '$user_id', earned: '$earned']),
                 new BasicDBObject('$group', [_id: '$_id', earned: [$sum: '$earned']])
         ).results().iterator()
         while (records.hasNext()) {
@@ -388,15 +390,15 @@ class UserController extends BaseController {
             def uid = obj.get(_id) as Integer
             Long earned = obj.get('earned') as Long
 
-            if(StringUtils.isNotEmpty(month)) {
+            if (StringUtils.isNotEmpty(month)) {
                 def basicSalary = basicSalary().findOne($$(_id, month + "_" + uid))
-                if(basicSalary != null) {
+                if (basicSalary != null) {
                     earned = basicSalary.get("new_earned") as Integer;
                 }
             }
 
             logger.debug("broker star : {}, earned: {}", uid, earned)
-            if(earned >= EFFECTIVE_LIMIT){
+            if (earned >= EFFECTIVE_LIMIT) {
                 count++;
             }
             bean_total += earned
@@ -412,15 +414,15 @@ class UserController extends BaseController {
         def reason = req['reason']
         Integer days = ServletRequestUtils.getIntParameter(req, 'days', -1) //封禁日期
         def set = $$(status: status);
-        def updateInfo = $$('$set',set)
-        if(days > 0 && !status){
-            set.append("unfreeze_time", (new Date()+days).getTime()) //定时任务每天自动解封
-        }else if(status){
-            updateInfo.append('$unset', $$("unfreeze_time",1))
+        def updateInfo = $$('$set', set)
+        if (days > 0 && !status) {
+            set.append("unfreeze_time", (new Date() + days).getTime()) //定时任务每天自动解封
+        } else if (status) {
+            updateInfo.append('$unset', $$("unfreeze_time", 1))
         }
         if (table().update(new BasicDBObject(_id, id), updateInfo, false, false, writeConcern
         ).getN() == 1) {
-            Crud.opLog(OpType.user_freeze, [user_id: id, status: status, reason:reason])
+            Crud.opLog(OpType.user_freeze, [user_id: id, status: status, reason: reason])
             if (!status) {
                 String token = userRedis.opsForValue().get(KeyUtils.USER.token(id))
                 if (token) {
@@ -428,10 +430,10 @@ class UserController extends BaseController {
                     userRedis.delete(KeyUtils.accessToken(token))
                 }
                 //是否为主播
-                def room = rooms().findOne($$(_id:id))
-                if(room){//推送主播房间
-                    publish(KeyUtils.CHANNEL.room(id), [action: "room.freeze", data_d: ['reason':reason, user_id:id]])
-                }else{
+                def room = rooms().findOne($$(_id: id))
+                if (room) {//推送主播房间
+                    publish(KeyUtils.CHANNEL.room(id), [action: "room.freeze", data_d: ['reason': reason, user_id: id]])
+                } else {
                     publish(KeyUtils.CHANNEL.user(id), '{"action":"sys.freeze"}')
                 }
 
@@ -534,10 +536,39 @@ class UserController extends BaseController {
     }
 
     /**
+     * 设置经纪人提现信息
+     * @param req
+     */
+    def set_cash_info(HttpServletRequest req) {
+        logger.debug('Received set_cash_info params is {}', req.getParameterMap())
+
+        def userId = req['user_id']
+
+        if (StringUtils.isBlank(userId)) {
+            return Web.missParam()
+        }
+        // 真实姓名
+        def realName = req['real_name']
+        // 卡号
+        def bankId = req['bank_id']
+        // 所在地
+        def bankLocation = req['bank_location']
+        // 支行名称
+        def bankName = req['bank_name']
+        // 所属银行
+        def bank = req['bank']
+
+        def map = [real_name: realName, bank_id: bankId, bank_location: bankLocation, bank_name: bankName, bank: bank]
+        def query = $$('_id': userId as Integer, 'priv': UserType.经纪人.ordinal())
+        def update = $$('$set': $$('broker.cash': map))
+        users().update(query, update)
+    }
+
+    /**
      * 设置经济人推荐主播个数
      * @return
      */
-    def set_broker_recomm(HttpServletRequest req){
+    def set_broker_recomm(HttpServletRequest req) {
         def id = req.getInt(_id)
         def count = req.getInt('count')
         Integer type = ServletRequestUtils.getIntParameter(req, "type", RecommendType.新人.ordinal())
@@ -552,19 +583,19 @@ class UserController extends BaseController {
         }*/
         def updateInfo = null
         def updateRecommCount = null
-        if(RecommendType.新人.ordinal().equals(type)){
-            updateInfo = $$('broker.recomm_limit':count)
-            updateRecommCount = $$('broker.recomm_count':0)
-        }else if(RecommendType.普通.ordinal().equals(type)){
-            updateInfo = $$('broker.meme_recomm_limit':count)
-            updateRecommCount = $$('broker.meme_recomm_count':0)
+        if (RecommendType.新人.ordinal().equals(type)) {
+            updateInfo = $$('broker.recomm_limit': count)
+            updateRecommCount = $$('broker.recomm_count': 0)
+        } else if (RecommendType.普通.ordinal().equals(type)) {
+            updateInfo = $$('broker.meme_recomm_limit': count)
+            updateRecommCount = $$('broker.meme_recomm_count': 0)
         }
 
-        if (users().update(new BasicDBObject(_id, id).append("priv",UserType.经纪人.ordinal()),
-                $$($set:updateInfo), false, false, writeConcern
+        if (users().update(new BasicDBObject(_id, id).append("priv", UserType.经纪人.ordinal()),
+                $$($set: updateInfo), false, false, writeConcern
         ).getN() == 1) {
-            users().update($$(_id:id), $$($set:updateRecommCount), false, false, writeConcern)
-            Crud.opLog(OpType.broker_recomm_set, [type:type,user_id: id, count: count])
+            users().update($$(_id: id), $$($set: updateRecommCount), false, false, writeConcern)
+            Crud.opLog(OpType.broker_recomm_set, [type: type, user_id: id, count: count])
         }
         return OK()
     }
@@ -580,12 +611,12 @@ class UserController extends BaseController {
             String[] tmp = value.split("_")
             String user_id = tmp[0]
             String comment = tmp.length == 2 ? tmp[1] : ""
-            if(StringUtils.isNotEmpty(uid)){
-                if(user_id.equals(uid)){
+            if (StringUtils.isNotEmpty(uid)) {
+                if (user_id.equals(uid)) {
                     list.add([client: key.substring(pre), _id: user_id, ttl: liveRedis.getExpire(key), comment: comment])
                     break;
                 }
-            }else{
+            } else {
                 list.add([client: key.substring(pre), _id: user_id, ttl: liveRedis.getExpire(key), comment: comment])
             }
         }
@@ -791,12 +822,12 @@ class UserController extends BaseController {
         if (req[_id]) {
             q.and('user_id').is(req[_id] as Integer)
         }
-        Crud.list(req, rewards(), q.get(), ALL_FIELD, SJ_DESC){ List<BasicDBObject> data ->
+        Crud.list(req, rewards(), q.get(), ALL_FIELD, SJ_DESC) { List<BasicDBObject> data ->
             def users = users()
             for (BasicDBObject obj : data) {
                 obj.put('user_nick_name', users.findOne(obj['user_id'] as Integer, new BasicDBObject(nick_name: 1))?.get('nick_name'))
-                if(obj['star_id']){
-                    obj.put('star_nick_name',users.findOne(obj['star_id'] as Integer, new BasicDBObject(nick_name: 1))?.get('nick_name'))
+                if (obj['star_id']) {
+                    obj.put('star_nick_name', users.findOne(obj['star_id'] as Integer, new BasicDBObject(nick_name: 1))?.get('nick_name'))
                 }
 
             }
@@ -936,34 +967,34 @@ class UserController extends BaseController {
      * @param request
      * @return
      */
-    def upload_sfz(HttpServletRequest request,HttpServletResponse response){
+    def upload_sfz(HttpServletRequest request, HttpServletResponse response) {
         def parse = new CommonsMultipartResolver()
         def req = parse.resolveMultipart(request)
 
-        try{
+        try {
             Integer id = req['_id'] as Integer  //用户ID
             Integer type = req.getParameter(Param.first) as Integer //1:正面 0:反面 2 手持
             logger.debug("type {} id {}", type, id)
-            if(type != 1 && type != 0 && type != 2){
+            if (type != 1 && type != 0 && type != 2) {
                 return Web.missParam()
             }
             String filePath = "sfz/${id}_${type}.jpg"
-            for(Map.Entry<String, MultipartFile> entry  : req.getFileMap().entrySet()){
+            for (Map.Entry<String, MultipartFile> entry : req.getFileMap().entrySet()) {
                 MultipartFile file = entry.getValue()
-                def target = new File(pic_folder ,filePath)
+                def target = new File(pic_folder, filePath)
                 target.getParentFile().mkdirs()
                 file.transferTo(target)
                 break
             }
             String iframeCallBack = req["icallback"]
-            if (StringUtils.isNotBlank(iframeCallBack)){
+            if (StringUtils.isNotBlank(iframeCallBack)) {
                 def out = response.getWriter()
                 out.println("<script>top.${iframeCallBack}({\"code\":1,\"data\":{\"pic_url\":\"${pic_domain}${filePath}\"}});</script>")
                 out.close()
                 return
             }
-            return [code: 1, url:"${pic_domain}${filePath}".toString(),error:0]
-        }catch (Exception e){
+            return [code: 1, url: "${pic_domain}${filePath}".toString(), error: 0]
+        } catch (Exception e) {
             logger.error("upload_sfz Exception:{}", e)
             return [code: 0]
         }
@@ -984,7 +1015,7 @@ class UserController extends BaseController {
             nick_name = HtmlUtils.htmlEscape(nick_name)
             update.put("nick_name", nick_name)
             String token = userRedis.opsForValue().get(KeyUtils.USER.token(userId))
-            Web.putUserInfoToSession(KeyUtils.accessToken(token),"nick_name", nick_name)
+            Web.putUserInfoToSession(KeyUtils.accessToken(token), "nick_name", nick_name)
             //userRedis.opsForHash().put(KeyUtils.accessToken(token),"nick_name", nick_name)
         }
         String enter_info = req.getParameter("enter_info") ?: ""
@@ -994,10 +1025,10 @@ class UserController extends BaseController {
 
         update.put("enter_info", enter_info)
         if (update.size() > 0) {
-            if (1 == users().update(new BasicDBObject(_id, userId), new BasicDBObject($set, update), false, false, writeConcern).getN()){
-                Integer priv = users().findOne($$(_id,userId),$$(priv:1)).get("priv") as Integer
-                if( UserType.主播.ordinal() == priv && StringUtils.isNotBlank(update.get('nick_name') as String))
-                    rooms().update(new BasicDBObject(_id,userId),new BasicDBObject($set,$$(nick_name:nick_name)),false,false,writeConcern)
+            if (1 == users().update(new BasicDBObject(_id, userId), new BasicDBObject($set, update), false, false, writeConcern).getN()) {
+                Integer priv = users().findOne($$(_id, userId), $$(priv: 1)).get("priv") as Integer
+                if (UserType.主播.ordinal() == priv && StringUtils.isNotBlank(update.get('nick_name') as String))
+                    rooms().update(new BasicDBObject(_id, userId), new BasicDBObject($set, $$(nick_name: nick_name)), false, false, writeConcern)
                 return [code: 1]
             }
         }
@@ -1037,7 +1068,7 @@ class UserController extends BaseController {
         OK()
     }
 
-    private refresh_token(Integer user_id){
+    private refresh_token(Integer user_id) {
         def user = table().findOne(user_id, $$(tuid: 1))
         //获得tuid
         String tuid = user['tuid'] as String
@@ -1057,10 +1088,10 @@ class UserController extends BaseController {
         String old_token_key = KeyUtils.accessToken(oldToken)
         logger.debug("new token is ${newToken},old token is ${oldToken}")
 
-        if (userRedis.hasKey(old_token_key)){
+        if (userRedis.hasKey(old_token_key)) {
             userRedis.delete(old_token_key)
         }
-        if (userRedis.hasKey(new_token_key)){
+        if (userRedis.hasKey(new_token_key)) {
             userRedis.delete(new_token_key)
         }
 
@@ -1114,7 +1145,7 @@ class UserController extends BaseController {
         //获得tuid
         def user = table().findOne(req.getInt(_id), $$(tuid: 1))
 
-        if(user == null || StringUtils.isEmpty(user_name) || StringUtils.isEmpty(pwd)){
+        if (user == null || StringUtils.isEmpty(user_name) || StringUtils.isEmpty(pwd)) {
             return Web.missParam()
         }
         String tuid = user['tuid'] as String
@@ -1179,7 +1210,7 @@ class UserController extends BaseController {
         if (((Number) userResult.get("code")).intValue() != 1) {
             return [code: userResult.get("code")]
         }
-        Crud.opLog(OpType.send_mobile, [mobile : mobile])
+        Crud.opLog(OpType.send_mobile, [mobile: mobile])
         OK()
     }
 
@@ -1188,7 +1219,7 @@ class UserController extends BaseController {
      * @param req
      * @return
      */
-    def get_mobile_code(HttpServletRequest req){
+    def get_mobile_code(HttpServletRequest req) {
         def mobile = req['mobile']
         def sign = MD5.digest2HEX("${PRIV_KEY}&mobile=${mobile}".toString())
         Integer type = ServletRequestUtils.getIntParameter(req, "type", 1)
@@ -1201,8 +1232,8 @@ class UserController extends BaseController {
         }
         final Map data = (Map) userResult.get("data");
         String auth_code = (String) data.get("auth_code");
-        Crud.opLog(OpType.get_mobile_code, [mobile : mobile])
-        return [code : 1, data:[auth_code:auth_code]]
+        Crud.opLog(OpType.get_mobile_code, [mobile: mobile])
+        return [code: 1, data: [auth_code: auth_code]]
     }
 
     /**
@@ -1226,7 +1257,7 @@ class UserController extends BaseController {
 
         Crud.opLog(OpType.reset_pwd, [user_id: req.getInt(_id)])
 
-        return [code: 1, data:[pwd:pwd]]
+        return [code: 1, data: [pwd: pwd]]
     }
 
     /**
@@ -1250,7 +1281,7 @@ class UserController extends BaseController {
 
         Crud.opLog(OpType.reset_pwd_url, [user_id: req.getInt(_id)])
 
-        return [code: 1, data:[url:url]]
+        return [code: 1, data: [url: url]]
     }
 
     /**
@@ -1258,8 +1289,8 @@ class UserController extends BaseController {
      * @param req
      * @return
      */
-    def del_bg(HttpServletRequest req){
-        table().update($$(_id:req.getInt(_id)), $$($unset:[bg_url:1]))
+    def del_bg(HttpServletRequest req) {
+        table().update($$(_id: req.getInt(_id)), $$($unset: [bg_url: 1]))
         Crud.opLog(OpType.del_bg, [user_id: req.getInt(_id)])
         return [code: 1]
     }
