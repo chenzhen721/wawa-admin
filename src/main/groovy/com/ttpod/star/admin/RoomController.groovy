@@ -192,7 +192,7 @@ class RoomController extends BaseController {
         Integer roomId = ServletRequestUtils.getIntParameter(req, 'room_id', 0)
         def userId = Web.getCurrentUserId()
 
-        if (roomId == 0 ) {
+        if (roomId == 0) {
             return Web.missParam()
         }
 
@@ -221,7 +221,14 @@ class RoomController extends BaseController {
         def zhuboId = oldRoom.get("xy_star_id") as Integer
 
         def reason = req['reason']
-        def publish_star_close_body = ['star_id': zhuboId, 'reason': reason]
+        // 十分钟不能开播
+        def ttl = 600L
+        String close_time = req['close_time']
+        if (StringUtils.isNotBlank(close_time)) {
+            ttl = Long.valueOf(close_time)
+        }
+        liveRedis.opsForValue().set(KeyUtils.LIVE.blackStar(zhuboId), KeyUtils.MARK_VAL, ttl, TimeUnit.SECONDS)
+        def publish_star_close_body = ['star_id': zhuboId, 'reason': reason, 'ttl': expire]
         MessageSend.publishStarCloseEvent(publish_star_close_body, zhuboId)
 //        //记录运营、代理 关闭日志
 //        adminMongo.getCollection("room_terminate_ops").insert($$(_id: "${roomId}_${userId}_${time}".toString(), room_id: roomId, star_id: zhuboId as Integer,
@@ -232,7 +239,7 @@ class RoomController extends BaseController {
         if (game_id != 0) {
             if (!GameService.closeGame(roomId, game_id, live_id)) {
                 logger.error("请求关闭游戏失败")
-                return [code: 30416,msg: '请求关闭游戏失败']
+                return [code: 30416, msg: '请求关闭游戏失败']
             }
         }
 
