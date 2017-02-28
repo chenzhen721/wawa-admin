@@ -226,7 +226,7 @@ class RoomController extends BaseController {
             ttl = Long.valueOf(close_time)
         }
         liveRedis.opsForValue().set(KeyUtils.LIVE.blackStar(zhuboId), KeyUtils.MARK_VAL, ttl, TimeUnit.SECONDS)
-        def publish_star_close_body = ['star_id': zhuboId, 'reason': reason, 'ttl': expire]
+        def publish_star_close_body = ['star_id': zhuboId, 'reason': reason, 'ttl': ttl]
         MessageSend.publishStarCloseEvent(publish_star_close_body, zhuboId)
 
         // 记录操作日志
