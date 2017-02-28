@@ -212,8 +212,6 @@ class RoomController extends BaseController {
         liveRedis.delete(liveRedis.keys(KeyUtils.LIVE.all(roomId)))
         logMongo.getCollection("room_edit").update($$(type: "live_on", data: live_id, room: roomId), $$('$set': [etime: time]))
         logRoomEdit('live_off', roomId, live_type, live_id)
-        // 记录操作日志
-        Crud.opLog(OpType.room_close, [user_id: userId])
 
         def body = ['live': false, room_id: roomId]
         MessageSend.publishLiveEvent(body)
@@ -230,6 +228,9 @@ class RoomController extends BaseController {
         liveRedis.opsForValue().set(KeyUtils.LIVE.blackStar(zhuboId), KeyUtils.MARK_VAL, ttl, TimeUnit.SECONDS)
         def publish_star_close_body = ['star_id': zhuboId, 'reason': reason, 'ttl': expire]
         MessageSend.publishStarCloseEvent(publish_star_close_body, zhuboId)
+
+        // 记录操作日志
+        Crud.opLog(OpType.room_close, [user_id: userId])
 //        //记录运营、代理 关闭日志
 //        adminMongo.getCollection("room_terminate_ops").insert($$(_id: "${roomId}_${userId}_${time}".toString(), room_id: roomId, star_id: zhuboId as Integer,
 //                t_priv: priv, t_uid: userId, reason: reason, timestamp: time));
