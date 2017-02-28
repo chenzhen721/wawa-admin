@@ -18,7 +18,7 @@ import javax.servlet.http.HttpServletRequest
 import static com.ttpod.rest.common.util.WebUtils.$$
 import static com.ttpod.rest.groovy.CrudClosures.*
 
-@RestWithSession
+@Rest
 class GameController extends BaseController {
 
     static final Logger logger = LoggerFactory.getLogger(GameController.class)
@@ -32,7 +32,7 @@ class GameController extends BaseController {
     static final BasicDBObject TIMESTAMP_SORT_DESC = $$('timestamp': -1)
 
     @Delegate
-    Crud crud = new Crud(adminMongo.getCollection('games'),
+    Crud crud = new Crud(adminMongo.getCollection('games'),true,
             [_id: Int, name: Str, pic_url: Str, status: Bool, timestamp: Timestamp, order: Int, icon_pic_url: Str],
             new Crud.QueryCondition() {
                 public DBObject sortby(HttpServletRequest req) {
