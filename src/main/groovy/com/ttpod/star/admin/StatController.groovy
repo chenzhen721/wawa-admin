@@ -816,9 +816,17 @@ class StatController extends BaseController {
      * 签到记录
      * @param req
      */
+    static final Integer CHECK_IN_COIN = 30
     def check_in_logs(HttpServletRequest req){
-        super.list(req, Web.fillTimeBetween(req).and('type').is('login').get())
-
+        def query = Web.fillTimeBetween(req).and('type').is('login').get()
+        def list = table().find(query).toArray()
+        list.each {
+            BasicDBObject obj ->
+                def total = obj['total'] as Integer
+                total = total * CHECK_IN_COIN
+                obj.put('coin',total)
+        }
+        return list
     }
 
     /**
