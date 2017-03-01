@@ -81,8 +81,7 @@ class StatController extends BaseController {
                 key : keys,
                 name: names
         ]
-        de
-        f alltitle = new HashMap(cost_type)
+        def alltitle = new HashMap(cost_type)
         def map = Crud.list(req, table(), query.get(), ALL_FIELD, SJ_DESC, cost_log_closure(alltitle)) as Map
         map.put('title', alltitle)
         return map
