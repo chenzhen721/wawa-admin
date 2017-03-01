@@ -22,7 +22,7 @@ import static com.ttpod.rest.common.util.WebUtils.*
  * date: 13-3-28 下午2:31
  * @author: yangyang.cong@ttpod.com
  */
-@RestWithSession
+@Rest
 class StatController extends BaseController {
     DBCollection table() { adminMongo.getCollection('stat_daily') }
 
@@ -81,7 +81,8 @@ class StatController extends BaseController {
                 key : keys,
                 name: names
         ]
-        def alltitle = new HashMap(cost_type)
+        de
+        f alltitle = new HashMap(cost_type)
         def map = Crud.list(req, table(), query.get(), ALL_FIELD, SJ_DESC, cost_log_closure(alltitle)) as Map
         map.put('title', alltitle)
         return map
@@ -97,7 +98,8 @@ class StatController extends BaseController {
         def query = Web.fillTimeBetween(req)
         def daily_report = adminMongo.getCollection('finance_dailyReport').find(query.get()).toArray()
         def result = new ArrayList()
-        def column = ['时间', '任务', '签到', '游戏', '后台加币', '合计']
+        def title = ['时间', '任务', '签到', '游戏', '后台加币', '合计']
+        def column = ['timestamp','mission_coin','login_coin','game_coin','hand_coin','total']
         for (DBObject obj : daily_report) {
             def tmp = new HashMap()
             def mission_coin = 0L
@@ -132,11 +134,11 @@ class StatController extends BaseController {
         }
 
         def map = new HashMap(
-                keys: column,
-                data: result
+                keys: title,
+                props: column
         )
 
-        return [code: 1, date: map]
+        return ['title': map, 'data': result]
     }
 
     def gift_log(HttpServletRequest req) {
