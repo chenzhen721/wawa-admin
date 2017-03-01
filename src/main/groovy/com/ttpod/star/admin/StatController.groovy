@@ -826,15 +826,15 @@ class StatController extends BaseController {
      * @param req
      */
     def mission_logs(HttpServletRequest req){
-        super.list(req, Web.fillTimeBetween(req).and('type').is('mission').get())
-    }
+        def query =  Web.fillTimeBetween(req).and('type').is('mission').get()
+        def map = new HashMap()
+        adminMongo.getCollection('missions').find().each {
+            BasicDBObject obj ->
+                map.put(obj['_id'].toString(),obj['title'].toString())
+        }
 
-    /**
-     * 充值统计
-     * @param req
-     */
-    def finance_logs(HttpServletRequest req){
-        super.list(req, Web.fillTimeBetween(req).and('type').is('finance').get())
+        def list = table().find(query).toArray()
+        return [keys:map,data: list]
     }
 
 }
