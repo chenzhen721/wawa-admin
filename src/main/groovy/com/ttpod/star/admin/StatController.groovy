@@ -98,7 +98,7 @@ class StatController extends BaseController {
         def daily_report = adminMongo.getCollection('finance_dailyReport').find(query.get()).toArray()
         def result = new ArrayList()
         def title = ['时间', '任务', '签到', '游戏', '后台加币', '合计']
-        def column = ['timestamp','mission_coin','login_coin','game_coin','hand_coin','total']
+        def column = ['timestamp', 'mission_coin', 'login_coin', 'game_coin', 'hand_coin', 'total']
         for (DBObject obj : daily_report) {
             def tmp = new HashMap()
             def mission_coin = 0L
@@ -308,6 +308,13 @@ class StatController extends BaseController {
         data.put('list', list)
         data.put('heads', [inc: INC_HEADS, dec: DEC_HEADS])
         result.put('data', data)
+        // 游戏列表
+//        def map = new HashMap()
+//        adminMongo.getCollection('games').find().each {
+//            BasicDBObject obj ->
+//                map.put(obj['_id'].toString(), obj['name'].toString())
+//        }
+//        result.put('gameList',map)
         return result;
     }
 
@@ -816,14 +823,15 @@ class StatController extends BaseController {
      * @param req
      */
     static final Integer CHECK_IN_COIN = 30
-    def check_in_logs(HttpServletRequest req){
+
+    def check_in_logs(HttpServletRequest req) {
         def query = Web.fillTimeBetween(req).and('type').is('login').get()
         def list = table().find(query).toArray()
         list.each {
             BasicDBObject obj ->
                 def total = obj['total'] as Integer
                 total = total * CHECK_IN_COIN
-                obj.put('coin',total)
+                obj.put('coin', total)
         }
         return [data: list]
     }
@@ -832,23 +840,23 @@ class StatController extends BaseController {
      * 任务统计
      * @param req
      */
-    def mission_logs(HttpServletRequest req){
-        def query =  Web.fillTimeBetween(req).and('type').is('mission').get()
+    def mission_logs(HttpServletRequest req) {
+        def query = Web.fillTimeBetween(req).and('type').is('mission').get()
         def map = new HashMap()
         adminMongo.getCollection('missions').find().each {
             BasicDBObject obj ->
-                map.put(obj['_id'].toString(),obj['title'].toString())
+                map.put(obj['_id'].toString(), obj['title'].toString())
         }
 
         def list = table().find(query).toArray()
-        return [keys:map,data: list]
+        return [keys: map, data: list]
     }
 
     /**
      * 日报
      * @param req
      */
-    def daily_report(HttpServletRequest req){
+    def daily_report(HttpServletRequest req) {
 
     }
 }
