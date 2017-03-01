@@ -1,6 +1,7 @@
 package com.ttpod.star.admin
 
 import com.mongodb.*
+import com.ttpod.rest.anno.Rest
 import com.ttpod.rest.anno.RestWithSession
 import com.ttpod.rest.common.doc.MongoKey
 import com.ttpod.rest.web.Crud
@@ -21,8 +22,8 @@ import static com.ttpod.rest.common.util.WebUtils.*
  * date: 13-3-28 下午2:31
  * @author: yangyang.cong@ttpod.com
  */
-//@Rest
-@RestWithSession
+@Rest
+//@RestWithSession
 class StatController extends BaseController {
     DBCollection table() { adminMongo.getCollection('stat_daily') }
 
@@ -60,11 +61,8 @@ class StatController extends BaseController {
     }
 
     private static final Map COST_TYPES = [
-            key : ['send_gift', 'open_egg', 'buy_guard', 'football_shoot', 'open_card', 'grab_sofa', 'buy_prettynum',
-                   'buy_vip', 'send_fortune', 'buy_car', 'level_up', 'send_treasure', 'buy_fund', 'broadcast', 'song',
-                   'apply_family', 'send_bell', 'nest_send_gift', 'nest_send_packet'],
-            name: ['礼物', '砸蛋', '守护', '点球', '翻牌', '沙发', '靓号', 'VIP', '财神',
-                   '座驾', '接生', '宝藏', '一元购', '广播', '点歌', '家族', '铃铛', '小窝送礼', '小窝红包']
+            key : ['send_gift'],
+            name: ['礼物']
     ]
 
     def cost_log(HttpServletRequest req) {
@@ -216,24 +214,24 @@ class StatController extends BaseController {
 
     private static final def INC_HEADS = [
                                             [k:"charge_cny",v:'充值金额'],
-                                            [k:"charge_coin",v:'充值柠檬'],
+                                            [k:"charge_coin",v:'充值阳光'],
                                             [k:"direct_total_cny",v:'直充金额'],
-                                            [k:"direct_total_coin",v:'直充柠檬'],
+                                            [k:"direct_total_coin",v:'直充阳光'],
                                             [k:"proxy_total_cny",v:'代充金额'],
-                                            [k:"proxy_total_coin",v:'代充柠檬'],
+                                            [k:"proxy_total_coin",v:'代充阳光'],
                                             [k:"hand_coin",v:'运营手动加币'],
                                             [k:"hand_cut_coin", v:'运营手动减币'],
                                             [k:"mission_coin", v:'任务奖励'],
                                             [k:"login_coin",v:'签到奖励'],
                                             [k:"game_total",v:'游戏(牛牛)'],
-                                            [k:"total",v:'增加柠檬总数']
+                                            [k:"total",v:'增加阳光总数']
                                         ]
 
     private static final def DEC_HEADS = [
                                           [k:"send_gift", v:'送礼'],
                                           [k:"game_total", v:'游戏(牛牛)'],
                                           [k:"open_egg", v:'砸蛋'],
-                                          [k:"total", v:'消费柠檬总计']
+                                          [k:"total", v:'消费阳光总计']
                                         ]
 
     def finance_log_month(HttpServletRequest req) {
