@@ -287,17 +287,16 @@ class StatController extends BaseController {
             [k: "proxy_total_cny", v: '代充金额'],
             [k: "proxy_total_coin", v: '代充阳光'],
             [k: "hand_coin", v: '运营手动加币'],
-            [k: "hand_cut_coin", v: '运营手动减币'],
             [k: "mission_coin", v: '任务奖励'],
             [k: "login_coin", v: '签到奖励'],
-            [k: "game_total", v: '游戏(牛牛)'],
+            [k: "game_coin", v: '游戏赢币'],
             [k: "total", v: '增加阳光总数']
     ]
 
     private static final def DEC_HEADS = [
             [k: "send_gift", v: '送礼'],
-            [k: "game_total", v: '游戏(牛牛)'],
-            [k: "open_egg", v: '砸蛋'],
+            [k: "hand_cut_coin", v: '运营手动减币'],
+            [k: "game_spend_coin", v: '游戏输币'],
             [k: "total", v: '消费阳光总计']
     ]
 
@@ -845,4 +844,11 @@ class StatController extends BaseController {
         return [keys:map,data: list]
     }
 
+    /**
+     * 日报
+     * @param req
+     */
+    def daily_report(HttpServletRequest req){
+
+    }
 }
