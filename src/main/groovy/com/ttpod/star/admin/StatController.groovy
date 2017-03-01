@@ -22,8 +22,7 @@ import static com.ttpod.rest.common.util.WebUtils.*
  * date: 13-3-28 下午2:31
  * @author: yangyang.cong@ttpod.com
  */
-@Rest
-//@RestWithSession
+@RestWithSession
 class StatController extends BaseController {
     DBCollection table() { adminMongo.getCollection('stat_daily') }
 
@@ -96,25 +95,40 @@ class StatController extends BaseController {
      */
     def coin_income(HttpServletRequest req) {
         def query = Web.fillTimeBetween(req)
-        def daily_report = adminMongo.getCollection('finance_dailyReport').find(query.get())
+        def daily_report = adminMongo.getCollection('finance_dailyReport').find(query.get()).toArray()
         def result = new ArrayList()
         def column = ['时间', '任务', '签到', '游戏', '后台加币', '合计']
-        daily_report.each {
-            BasicDBObject obj ->
-                def tmp = new HashMap()
-                def mission_coin = obj['mission_coin'] as Long
-                def login_coin = obj['login_coin'] as Long
-                def game_coin = obj['game_coin'] as Long
-                def hand_coin = obj['hand_coin'] as Long
-                def timestamp = obj['timestamp'] as Long
-                tmp.put('timestamp', timestamp)
-                tmp.put('mission_coin', mission_coin)
-                tmp.put('login_coin', login_coin)
-                tmp.put('game_coin', game_coin)
-                tmp.put('hand_coin', hand_coin)
-                def total = mission_coin + login_coin + game_coin + hand_coin
-                tmp.put('total', total)
-                result.add(tmp)
+        for (DBObject obj : daily_report) {
+            def tmp = new HashMap()
+            def mission_coin = 0L
+            def game_coin = 0L
+            def login_coin = 0L
+            def hand_coin = 0L
+            if (obj.containsField('mission_coin')) {
+                mission_coin = obj['mission_coin'] as Long
+            }
+
+            if (obj.containsField('game_coin')) {
+                game_coin = obj['game_coin'] as Long
+            }
+
+            if (obj.containsField('hand_coin')) {
+                hand_coin = obj['hand_coin'] as Long
+            }
+
+            if (obj.containsField('login_coin')) {
+                login_coin = obj['login_coin'] as Long
+            }
+
+            def timestamp = obj['timestamp'] as Long
+            tmp.put('timestamp', timestamp)
+            tmp.put('mission_coin', mission_coin)
+            tmp.put('login_coin', login_coin)
+            tmp.put('game_coin', game_coin)
+            tmp.put('hand_coin', hand_coin)
+            def total = mission_coin + login_coin + game_coin + hand_coin
+            tmp.put('total', total)
+            result.add(tmp)
         }
 
         def map = new HashMap(
