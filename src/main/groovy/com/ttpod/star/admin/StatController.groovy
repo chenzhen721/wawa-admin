@@ -812,5 +812,29 @@ class StatController extends BaseController {
         super.list(req, Web.fillTimeBetween(req).and('type').is('game').get())
     }
 
+    /**
+     * 签到记录
+     * @param req
+     */
+    def check_in_logs(HttpServletRequest req){
+        super.list(req, Web.fillTimeBetween(req).and('type').is('login').get())
+
+    }
+
+    /**
+     * 任务统计
+     * @param req
+     */
+    def mission_logs(HttpServletRequest req){
+        super.list(req, Web.fillTimeBetween(req).and('type').is('mission').get())
+    }
+
+    /**
+     * 充值统计
+     * @param req
+     */
+    def finance_logs(HttpServletRequest req){
+        super.list(req, Web.fillTimeBetween(req).and('type').is('finance').get())
+    }
 
 }
