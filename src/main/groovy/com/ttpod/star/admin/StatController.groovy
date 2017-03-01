@@ -826,7 +826,7 @@ class StatController extends BaseController {
                 total = total * CHECK_IN_COIN
                 obj.put('coin',total)
         }
-        return list
+        return [data: list]
     }
 
     /**
