@@ -822,17 +822,9 @@ class StatController extends BaseController {
      * 签到记录
      * @param req
      */
-    static final Integer CHECK_IN_COIN = 30
-
     def check_in_logs(HttpServletRequest req) {
-        def query = Web.fillTimeBetween(req).and('type').is('login').get()
-        def list = table().find(query).toArray()
-        list.each {
-            BasicDBObject obj ->
-                def total = obj['total'] as Integer
-                total = total * CHECK_IN_COIN
-                obj.put('coin', total)
-        }
+        def query = Web.fillTimeBetween(req).get()
+        def list = adminMongo.getCollection('stat_sign').find(query).toArray()
         return [data: list]
     }
 
@@ -852,11 +844,4 @@ class StatController extends BaseController {
         return [keys: map, data: list]
     }
 
-    /**
-     * 日报
-     * @param req
-     */
-    def daily_report(HttpServletRequest req) {
-
-    }
 }
