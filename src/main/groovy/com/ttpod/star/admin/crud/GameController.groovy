@@ -50,7 +50,7 @@ class GameController extends BaseController {
         logger.debug('Received rounds_logs params is {}', req.getParameterMap())
         def query = Web.fillTimeBetween(req)
         def roomId = ServletRequestUtils.getIntParameter(req, 'room_id', 0)
-        def roundId = ServletRequestUtils.getIntParameter(req, 'round_id', 0)
+        def roundId = ServletRequestUtils.getIntParameter(req, '_id', 0)
         def gameId = ServletRequestUtils.getIntParameter(req, 'game_id', 0)
         def liveId = ServletRequestUtils.getStringParameter(req, 'live_id', '')
 
@@ -61,7 +61,7 @@ class GameController extends BaseController {
             query.and('room_id').is(roomId)
         }
         if (roundId != 0) {
-            query.and('round_id').is(roundId)
+            query.and('_id').is(roundId)
         }
 
         if (gameId != 0) {
@@ -81,7 +81,7 @@ class GameController extends BaseController {
         def query = Web.fillTimeBetween(req)
         def userId =ServletRequestUtils.getIntParameter(req, 'user_id', 0)
         def roomId = ServletRequestUtils.getIntParameter(req, 'room_id', 0)
-        def roundId = ServletRequestUtils.getIntParameter(req, 'round_id', 0)
+        def roundId = ServletRequestUtils.getIntParameter(req, '_id', 0)
         def gameId = ServletRequestUtils.getIntParameter(req, 'game_id', 0)
         def liveId = ServletRequestUtils.getStringParameter(req, 'live_id', '')
         if(StringUtils.isNotBlank(liveId)){
@@ -91,7 +91,7 @@ class GameController extends BaseController {
             query.and('room_id').is(roomId)
         }
         if (roundId != 0) {
-            query.and('round_id').is(roundId)
+            query.and('_id').is(roundId)
         }
 
         if (gameId != 0) {
@@ -114,7 +114,7 @@ class GameController extends BaseController {
         def query = Web.fillTimeBetween(req)
         def userId =ServletRequestUtils.getIntParameter(req, 'user_id', 0)
         def roomId = ServletRequestUtils.getIntParameter(req, 'room_id', 0)
-        def roundId = ServletRequestUtils.getIntParameter(req, 'round_id', 0)
+        def roundId = ServletRequestUtils.getIntParameter(req, '_id', 0)
         def gameId = ServletRequestUtils.getIntParameter(req, 'game_id', 0)
         def liveId = ServletRequestUtils.getStringParameter(req, 'live_id', '')
 
@@ -125,7 +125,7 @@ class GameController extends BaseController {
             query.and('room_id').is(roomId)
         }
         if (roundId != 0) {
-            query.and('round_id').is(roundId)
+            query.and('_id').is(roundId)
         }
 
         if (gameId != 0) {

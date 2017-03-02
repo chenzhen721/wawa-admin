@@ -1,6 +1,7 @@
 package com.ttpod.star.admin
 
 import com.mongodb.*
+import com.ttpod.rest.anno.Rest
 import com.ttpod.rest.anno.RestWithSession
 import com.ttpod.rest.common.doc.MongoKey
 import com.ttpod.rest.web.Crud
@@ -21,8 +22,7 @@ import static com.ttpod.rest.common.util.WebUtils.*
  * date: 13-3-28 下午2:31
  * @author: yangyang.cong@ttpod.com
  */
-//@Rest
-@RestWithSession
+@Rest
 class StatController extends BaseController {
     DBCollection table() { adminMongo.getCollection('stat_daily') }
 
@@ -33,6 +33,7 @@ class StatController extends BaseController {
     DBCollection channel() { adminMongo.getCollection('channels') }
 
     DBCollection finance_monthReport() { adminMongo.getCollection('finance_monthReport') }
+
     DBCollection finance_daily_log() { adminMongo.getCollection('finance_daily_log') }
 
     def pool_log(HttpServletRequest req) {
@@ -59,20 +60,84 @@ class StatController extends BaseController {
         }
     }
 
-    private static final Map COST_TYPES = [
-            key : ['send_gift', 'open_egg', 'buy_guard', 'football_shoot', 'open_card', 'grab_sofa', 'buy_prettynum',
-                   'buy_vip', 'send_fortune', 'buy_car', 'level_up', 'send_treasure', 'buy_fund', 'broadcast', 'song',
-                   'apply_family', 'send_bell', 'nest_send_gift', 'nest_send_packet'],
-            name: ['礼物', '砸蛋', '守护', '点球', '翻牌', '沙发', '靓号', 'VIP', '财神',
-                   '座驾', '接生', '宝藏', '一元购', '广播', '点歌', '家族', '铃铛', '小窝送礼', '小窝红包']
-    ]
+//    private static final Map COST_TYPES = [
+//            key : ['send_gift'],
+//            name: ['礼物']
+//    ]
 
     def cost_log(HttpServletRequest req) {
         def query = Web.fillTimeBetween(req).and('type').is('allcost')
-        def alltitle = new HashMap(COST_TYPES)
+        def gameList = adminMongo.getCollection('games').find().toArray()
+        List<String> keys = ['send_gift']
+        List<String> names = ['礼物']
+        gameList.each {
+            BasicDBObject obj ->
+                String id = obj['_id']
+                String name = obj['name']
+                keys.add(id)
+                names.add(name)
+        }
+        def cost_type = [
+                key : keys,
+                name: names
+        ]
+        def alltitle = new HashMap(cost_type)
         def map = Crud.list(req, table(), query.get(), ALL_FIELD, SJ_DESC, cost_log_closure(alltitle)) as Map
         map.put('title', alltitle)
         return map
+    }
+
+    /**
+     * 阳光的入账统计
+     * 任务 + 签到 + 游戏下注 + 手工加币
+     * @param req
+     * @return
+     */
+    def coin_income(HttpServletRequest req) {
+        def query = Web.fillTimeBetween(req)
+        def daily_report = adminMongo.getCollection('finance_dailyReport').find(query.get()).toArray()
+        def result = new ArrayList()
+        def title = ['时间', '任务', '签到', '游戏', '后台加币', '合计']
+        def column = ['timestamp', 'mission_coin', 'login_coin', 'game_coin', 'hand_coin', 'total']
+        for (DBObject obj : daily_report) {
+            def tmp = new HashMap()
+            def mission_coin = 0L
+            def game_coin = 0L
+            def login_coin = 0L
+            def hand_coin = 0L
+            if (obj.containsField('mission_coin')) {
+                mission_coin = obj['mission_coin'] as Long
+            }
+
+            if (obj.containsField('game_coin')) {
+                game_coin = obj['game_coin'] as Long
+            }
+
+            if (obj.containsField('hand_coin')) {
+                hand_coin = obj['hand_coin'] as Long
+            }
+
+            if (obj.containsField('login_coin')) {
+                login_coin = obj['login_coin'] as Long
+            }
+
+            def timestamp = obj['timestamp'] as Long
+            tmp.put('timestamp', timestamp)
+            tmp.put('mission_coin', mission_coin)
+            tmp.put('login_coin', login_coin)
+            tmp.put('game_coin', game_coin)
+            tmp.put('hand_coin', hand_coin)
+            def total = mission_coin + login_coin + game_coin + hand_coin
+            tmp.put('total', total)
+            result.add(tmp)
+        }
+
+        def map = new HashMap(
+                keys: title,
+                props: column
+        )
+
+        return ['title': map, 'data': result]
     }
 
     def gift_log(HttpServletRequest req) {
@@ -135,7 +200,7 @@ class StatController extends BaseController {
 
     def daily_log(HttpServletRequest req) {
         def type = req['type']
-        if(StringUtils.isBlank(type)) return [code:0,msg:'type为空']
+        if (StringUtils.isBlank(type)) return [code: 0, msg: 'type为空']
         super.list(req, Web.fillTimeBetween(req).and('type').is(type).get())
     }
 
@@ -209,32 +274,31 @@ class StatController extends BaseController {
 
     def finance_log_user(HttpServletRequest req) {
         QueryBuilder queryBuilder = Web.fillTimeBetween(req).and('type').is('allpay')
-        Crud.list(req, table(), queryBuilder.get(), $$(user_pc: 1, user_mobile: 1, user_ios: 1, user_h5:1, user_ria:1, timestamp: 1), SJ_DESC)
+        Crud.list(req, table(), queryBuilder.get(), $$(user_pc: 1, user_mobile: 1, user_ios: 1, user_h5: 1, user_ria: 1, timestamp: 1), SJ_DESC)
     }
 
     //财务月报
 
     private static final def INC_HEADS = [
-                                            [k:"charge_cny",v:'充值金额'],
-                                            [k:"charge_coin",v:'充值柠檬'],
-                                            [k:"direct_total_cny",v:'直充金额'],
-                                            [k:"direct_total_coin",v:'直充柠檬'],
-                                            [k:"proxy_total_cny",v:'代充金额'],
-                                            [k:"proxy_total_coin",v:'代充柠檬'],
-                                            [k:"hand_coin",v:'运营手动加币'],
-                                            [k:"hand_cut_coin", v:'运营手动减币'],
-                                            [k:"mission_coin", v:'任务奖励'],
-                                            [k:"login_coin",v:'签到奖励'],
-                                            [k:"game_total",v:'游戏(牛牛)'],
-                                            [k:"total",v:'增加柠檬总数']
-                                        ]
+            [k: "charge_cny", v: '充值金额'],
+            [k: "charge_coin", v: '充值阳光'],
+            [k: "direct_total_cny", v: '直充金额'],
+            [k: "direct_total_coin", v: '直充阳光'],
+            [k: "proxy_total_cny", v: '代充金额'],
+            [k: "proxy_total_coin", v: '代充阳光'],
+            [k: "hand_coin", v: '运营手动加币'],
+            [k: "hand_cut_coin", v: '运营手动减币'],
+            [k: "mission_coin", v: '任务奖励'],
+            [k: "login_coin", v: '签到奖励'],
+            [k: "game_coin", v: '游戏赢币'],
+            [k: "total", v: '增加阳光总数']
+    ]
 
     private static final def DEC_HEADS = [
-                                          [k:"send_gift", v:'送礼'],
-                                          [k:"game_total", v:'游戏(牛牛)'],
-                                          [k:"open_egg", v:'砸蛋'],
-                                          [k:"total", v:'消费柠檬总计']
-                                        ]
+            [k: "send_gift", v: '送礼'],
+            [k: "game_spend_coin", v: '游戏输币'],
+            [k: "total", v: '消费阳光总计']
+    ]
 
     def finance_log_month(HttpServletRequest req) {
         QueryBuilder queryBuilder = Web.fillTimeBetween(req)
@@ -242,8 +306,15 @@ class StatController extends BaseController {
         def list = result.get('data')
         Map data = new HashMap();
         data.put('list', list)
-        data.put('heads',[inc:INC_HEADS, dec:DEC_HEADS])
+        data.put('heads', [inc: INC_HEADS, dec: DEC_HEADS])
         result.put('data', data)
+        // 游戏列表
+//        def map = new HashMap()
+//        adminMongo.getCollection('games').find().each {
+//            BasicDBObject obj ->
+//                map.put(obj['_id'].toString(), obj['name'].toString())
+//        }
+//        result.put('gameList',map)
         return result;
     }
 
@@ -257,21 +328,21 @@ class StatController extends BaseController {
     //主播月vc统计
     def finance_log_month_star_vc(HttpServletRequest req) {
         QueryBuilder queryBuilder = Web.fillTimeBetween(req)
-        def field = $$(star:1, date:1, timestamp:1)
+        def field = $$(star: 1, date: 1, timestamp: 1)
         Crud.list(req, finance_monthReport(), queryBuilder.get(), field, SJ_DESC);
     }
 
     //礼物消费比例
     def finance_log_month_gift(HttpServletRequest req) {
         QueryBuilder queryBuilder = Web.fillTimeBetween(req)
-        def field = $$(gifts:1, date:1, timestamp:1)
+        def field = $$(gifts: 1, date: 1, timestamp: 1)
         Crud.list(req, finance_monthReport(), queryBuilder.get(), field, SJ_DESC);
     }
 
     //充值柠檬币比例表
     def charge_coin_log(HttpServletRequest req) {
         QueryBuilder queryBuilder = Web.fillTimeBetween(req)
-        def field = $$(charge_cny:1, cut_charge_cny:1, begin_surplus:1, charge_coin:1, inc_coin:1, inc_total:1, dec_total:1, end_surplus:1, date:1, hand_cut_coin:1)
+        def field = $$(charge_cny: 1, cut_charge_cny: 1, begin_surplus: 1, charge_coin: 1, inc_coin: 1, inc_total: 1, dec_total: 1, end_surplus: 1, date: 1, hand_cut_coin: 1)
         //Crud.list(req, finance_daily_log(), queryBuilder.get(), field, SJ_DESC);
         [code: 1, data: finance_daily_log().find(queryBuilder.get(), field).sort(SJ_DESC).limit(800).toArray()]
     }
@@ -685,16 +756,16 @@ class StatController extends BaseController {
      */
     def game_log(HttpServletRequest req) {
         def query = Web.fillTimeBetween(req)
-        Crud.list(req, adminMongo.getCollection('finance_dailyReport'), query.get(), $$('kunbo_game_coin':1,texasholdem_game_coin:1,fishing_game_coin:1,niuniu_game_coin:1,
-                kunbo_subtract_coin:1,texasholdem_subtract_coin:1,fishing_subtract_coin:1,niuniu_subtract_coin:1,timestamp:1), SJ_DESC)
+        Crud.list(req, adminMongo.getCollection('finance_dailyReport'), query.get(), $$('kunbo_game_coin': 1, texasholdem_game_coin: 1, fishing_game_coin: 1, niuniu_game_coin: 1,
+                kunbo_subtract_coin: 1, texasholdem_subtract_coin: 1, fishing_subtract_coin: 1, niuniu_subtract_coin: 1, timestamp: 1), SJ_DESC)
     }
 
     //更改统计内容
     private cost_log_closure(Map map) {
         { List<BasicDBObject> list ->
             if (list != null && list.size() > 0) {
-                def props = (map.get('key')?: new ArrayList<String>())  as List ;
-                def names = (map.get('name') ?: new ArrayList<String>())  as List;
+                def props = (map.get('key') ?: new ArrayList<String>()) as List;
+                def names = (map.get('name') ?: new ArrayList<String>()) as List;
                 list.each { BasicDBObject obj ->
                     def keys = obj.keySet() as Set
                     for (String key : keys) {
@@ -747,5 +818,45 @@ class StatController extends BaseController {
         super.list(req, Web.fillTimeBetween(req).and('type').is('game').get())
     }
 
+    /**
+     * 签到记录
+     * @param req
+     */
+    static final Integer CHECK_IN_COIN = 30
 
+    def check_in_logs(HttpServletRequest req) {
+        def query = Web.fillTimeBetween(req).and('type').is('login').get()
+        def list = table().find(query).toArray()
+        list.each {
+            BasicDBObject obj ->
+                def total = obj['total'] as Integer
+                total = total * CHECK_IN_COIN
+                obj.put('coin', total)
+        }
+        return [data: list]
+    }
+
+    /**
+     * 任务统计
+     * @param req
+     */
+    def mission_logs(HttpServletRequest req) {
+        def query = Web.fillTimeBetween(req).and('type').is('mission').get()
+        def map = new HashMap()
+        adminMongo.getCollection('missions').find().each {
+            BasicDBObject obj ->
+                map.put(obj['_id'].toString(), obj['title'].toString())
+        }
+
+        def list = table().find(query).toArray()
+        return [keys: map, data: list]
+    }
+
+    /**
+     * 日报
+     * @param req
+     */
+    def daily_report(HttpServletRequest req) {
+
+    }
 }
