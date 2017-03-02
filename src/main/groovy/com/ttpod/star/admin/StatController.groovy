@@ -823,9 +823,7 @@ class StatController extends BaseController {
      * @param req
      */
     def check_in_logs(HttpServletRequest req) {
-        def query = Web.fillTimeBetween(req).get()
-        def list = adminMongo.getCollection('stat_sign').find(query).toArray()
-        return [data: list]
+        super.list(req, Web.fillTimeBetween(req).and('type').is('check_in').get())
     }
 
     /**
