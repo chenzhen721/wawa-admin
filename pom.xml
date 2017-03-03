@@ -101,7 +101,7 @@
                 <redis.user.host>${redis.host}</redis.user.host>
                 <redis.user.port>6380</redis.user.port>
                 <!-- replset-->
-                <mongo.uri>192.168.31.231:10000,192.168.31.236:10000,192.168.31.231:10001</mongo.uri>
+                <mongo.uri>192.168.31.231:20000,192.168.31.236:20000,192.168.31.231:20001</mongo.uri>
                 <mongo.cost.write>REPLICA_ACKNOWLEDGED</mongo.cost.write>
                 <mongo_history.uri>${mongo.uri}</mongo_history.uri>
                 <pic.folder>/empty/upload/</pic.folder>
