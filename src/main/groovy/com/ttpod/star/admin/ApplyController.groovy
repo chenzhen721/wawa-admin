@@ -3,6 +3,7 @@ package com.ttpod.star.admin
 import com.mongodb.BasicDBObject
 import com.mongodb.DBCollection
 import com.mongodb.DBObject
+import com.ttpod.rest.anno.Rest
 import com.ttpod.rest.anno.RestWithSession
 import com.ttpod.rest.common.doc.MongoKey
 import com.ttpod.rest.web.Crud
@@ -26,7 +27,7 @@ import static com.ttpod.rest.common.util.WebUtils.$$
  * date: 13-3-28 下午2:31
  * @author: yangyang.cong@ttpod.com
  */
-@RestWithSession
+@Rest
 class ApplyController extends BaseController {
 
     static final Logger logger = LoggerFactory.getLogger(ApplyController.class)
@@ -116,7 +117,7 @@ class ApplyController extends BaseController {
                         if (rooms().update($$(_id, user_id), $$($set: [xy_star_id  : user_id, live: Boolean.FALSE, bean: 0, visiter_count: 0, found_time: time, broker_id: brokerId,
                                                                        room_ids    : mm_no.toString(), nick_name: nick_name, real_sex: sex, "address.province": province, type: RoomType.主播.ordinal()
                                                                        , mic_switch: "true", live_type: live_type, apply_type: live_type, temp: temp]), true, false, writeConcern).getN() == 1) {
-                            if (null != brokerId) {
+                            if (brokerId != 0) {
                                 users().update(new BasicDBObject(_id, brokerId),
                                         new BasicDBObject($addToSet: ['broker.stars': user_id], $inc: ['broker.star_total': 1]))
                             }
@@ -126,6 +127,7 @@ class ApplyController extends BaseController {
 
                             String token = userRedis.opsForValue().get(KeyUtils.USER.token(user_id))
                             if (token) {
+                                // 避免出现有token的情况下，另外个key正好ttl到期没有
                                 /*userRedis.delete(KeyUtils.USER.token(user_id))
                                 userRedis.delete(KeyUtils.accessToken(token))*/
 //                                if(userRedis.hasKey(KeyUtils.accessToken(token))){
