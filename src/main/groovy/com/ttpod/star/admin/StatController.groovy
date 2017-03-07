@@ -861,7 +861,7 @@ class StatController extends BaseController {
         logger.debug('Received mission_logs_detail params is {}',req.getParameterMap())
         def query = Web.fillTimeBetween(req)
         def userId = ServletRequestUtils.getIntParameter(req,'_id',0)
-        if(userId !=null && userId > 0){
+        if(userId > 0){
             query.and('user_id').is(userId)
         }
          Crud.list(req, logMongo.getCollection('mission_logs'), query.get(), ALL_FIELD, MongoKey.SJ_DESC);
@@ -875,7 +875,7 @@ class StatController extends BaseController {
         logger.debug('Received check_in_logs_detail params is {}',req.getParameterMap())
         def query = Web.fillTimeBetween(req)
         def userId = ServletRequestUtils.getIntParameter(req,'_id',0)
-        if(userId !=null && userId > 0){
+        if(userId > 0){
             query.and('user_id').is(userId)
         }
         Crud.list(req, logMongo.getCollection('sign_logs'), query.get(), ALL_FIELD, MongoKey.SJ_DESC);
