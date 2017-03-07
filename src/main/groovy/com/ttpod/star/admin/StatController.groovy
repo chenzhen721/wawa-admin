@@ -860,7 +860,7 @@ class StatController extends BaseController {
     def mission_logs_detail(HttpServletRequest req){
         logger.debug('Received mission_logs_detail params is {}',req.getParameterMap())
         def query = Web.fillTimeBetween(req)
-        def userId = ServletRequestUtils.getIntParameter(req,'user_id',0)
+        def userId = ServletRequestUtils.getIntParameter(req,'_id',0)
         if(userId !=null && userId > 0){
             query.and('user_id').is(userId)
         }
@@ -874,7 +874,7 @@ class StatController extends BaseController {
     def check_in_logs_detail(HttpServletRequest req){
         logger.debug('Received check_in_logs_detail params is {}',req.getParameterMap())
         def query = Web.fillTimeBetween(req)
-        def userId = ServletRequestUtils.getIntParameter(req,'user_id',0)
+        def userId = ServletRequestUtils.getIntParameter(req,'_id',0)
         if(userId !=null && userId > 0){
             query.and('user_id').is(userId)
         }
