@@ -175,7 +175,7 @@ class UnionPicController extends BaseController{
                 def star_id = record.get('xy_star_id') as Integer
                 if (status == ApplyType.通过.ordinal()){
                     def pic_modify = ((record?.get('pic_modify')?:0) as Integer)^1;
-                    rooms().update($$(_id, room_id), $$($set, $$('pic_url': record['audit_pic_url'],'pic_modify': pic_modify)))
+                    rooms().update($$(_id, room_id), $$($set, $$('app_pic_url': record['audit_pic_url'],'pic_modify': pic_modify)))
                     //生成渠道推广图片
 //                    generateUnionPic(room_id, record['audit_pic_url'] as String)
                 }
