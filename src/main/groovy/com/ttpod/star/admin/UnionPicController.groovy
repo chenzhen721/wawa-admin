@@ -177,14 +177,14 @@ class UnionPicController extends BaseController{
                     def pic_modify = ((record?.get('pic_modify')?:0) as Integer)^1;
                     rooms().update($$(_id, room_id), $$($set, $$('pic_url': record['audit_pic_url'],'pic_modify': pic_modify)))
                     //生成渠道推广图片
-                    generateUnionPic(room_id, record['audit_pic_url'] as String)
+//                    generateUnionPic(room_id, record['audit_pic_url'] as String)
                 }
                 //发送消息
-                def msg = "审核未通过";
-                if(status == ApplyType.通过.ordinal()){
-                    msg = "审核通过";
-                }
-                messageController.sendSingleMsg(room_id, '封面图片审核', "你所上传的封面图${msg}。如有任何疑问欢迎联系客服QQ".toString(), MsgType.系统消息);
+//                def msg = "审核未通过";
+//                if(status == ApplyType.通过.ordinal()){
+//                    msg = "审核通过";
+//                }
+//                messageController.sendSingleMsg(room_id, '封面图片审核', "你所上传的封面图${msg}。如有任何疑问欢迎联系客服QQ".toString(), MsgType.系统消息);
                 Crud.opLog(OpType.pic_audit,[room_id:room_id,status:status])
             }
         }
