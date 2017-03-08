@@ -8,6 +8,9 @@ import com.ttpod.rest.web.Crud
 import com.ttpod.star.common.util.ExportUtils
 import com.ttpod.star.model.PayType
 import org.apache.commons.lang.StringUtils
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import org.springframework.web.bind.ServletRequestUtils
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -24,6 +27,9 @@ import static com.ttpod.rest.common.util.WebUtils.*
  */
 @Rest
 class StatController extends BaseController {
+
+    static final Logger logger = LoggerFactory.getLogger(StatController.class)
+
     DBCollection table() { adminMongo.getCollection('stat_daily') }
 
     DBCollection stat_lives() { adminMongo.getCollection('stat_lives') }
@@ -844,6 +850,35 @@ class StatController extends BaseController {
         map.put(MISSION_ID,'免费6次阳光')
         def list = table().find(query).toArray()
         return [keys: map, data: list]
+    }
+
+    /**
+     * 任务明细
+     * @param req
+     * @return
+     */
+    def mission_logs_detail(HttpServletRequest req){
+        logger.debug('Received mission_logs_detail params is {}',req.getParameterMap())
+        def query = Web.fillTimeBetween(req)
+        def userId = ServletRequestUtils.getIntParameter(req,'_id',0)
+        if(userId > 0){
+            query.and('user_id').is(userId)
+        }
+         Crud.list(req, logMongo.getCollection('mission_logs'), query.get(), ALL_FIELD, MongoKey.SJ_DESC);
+    }
+
+    /**
+     * 签到统计
+     * @param req
+     */
+    def check_in_logs_detail(HttpServletRequest req){
+        logger.debug('Received check_in_logs_detail params is {}',req.getParameterMap())
+        def query = Web.fillTimeBetween(req)
+        def userId = ServletRequestUtils.getIntParameter(req,'_id',0)
+        if(userId > 0){
+            query.and('user_id').is(userId)
+        }
+        Crud.list(req, logMongo.getCollection('sign_logs'), query.get(), ALL_FIELD, MongoKey.SJ_DESC);
     }
 
 }
