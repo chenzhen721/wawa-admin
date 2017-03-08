@@ -830,6 +830,9 @@ class StatController extends BaseController {
      * 任务统计
      * @param req
      */
+    // 任务名
+    private final static String MISSION_ID = 'six_free_sun'
+
     def mission_logs(HttpServletRequest req) {
         def query = Web.fillTimeBetween(req).and('type').is('mission').get()
         def map = new HashMap()
@@ -837,7 +840,8 @@ class StatController extends BaseController {
             BasicDBObject obj ->
                 map.put(obj['_id'].toString(), obj['title'].toString())
         }
-
+        // 每日6次免费阳光领取单独加
+        map.put(MISSION_ID,'免费6次阳光')
         def list = table().find(query).toArray()
         return [keys: map, data: list]
     }
