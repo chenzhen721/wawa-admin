@@ -848,7 +848,7 @@ class StatController extends BaseController {
         }
         // 每日6次免费阳光领取单独加
         map.put(MISSION_ID,'免费6次阳光')
-        def list = table().find(query).toArray()
+        def list = table().find(query).sort($$('timestamp':-1)).toArray()
         return [keys: map, data: list]
     }
 
