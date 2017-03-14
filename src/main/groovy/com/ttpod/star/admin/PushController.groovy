@@ -102,7 +102,7 @@ class PushController extends BaseController {
                                 "expire_time": System.currentTimeMillis() + MESSAGE_EXPIRE
                         ]
                 ],
-                "userIds" : [userId],
+                "user_ids" : [userId],
                 "isNotify": 1,
                 "isSave"  : 1,
                 extra     : [
