@@ -40,7 +40,7 @@
         <pic.domain>https://aiimg.sumeme.com/</pic.domain>
         <api.domain>http://aiapi.memeyule.com/</api.domain>
         <user.domain>http://aiuser.memeyule.com/</user.domain>
-        <im.domain>http://im.memeyule.com:90</im.domain>
+        <im.domain>http://aiim.memeyule.com:6060</im.domain>
         <redis.port>6379</redis.port>
         <mongo.port>10000</mongo.port>
 
@@ -72,7 +72,7 @@
                 <!--<api.domain>http://test.api.ttxiu.com/</api.domain>-->
                 <api.domain>http://localhost:8080/</api.domain>
                 <user.domain>http://localhost:8082/</user.domain>
-                <im.domain>http://test.im.memeyule.com:6020</im.domain>
+                <im.domain>http://test-aiim.memeyule.com:6060</im.domain>
             </properties>
 
             <activation>
@@ -113,7 +113,7 @@
                 <pic.domain>http://test-aiimg.sumeme.com/</pic.domain>
                 <api.domain>http://test-aiapi.memeyule.com/</api.domain>
                 <user.domain>http://test-aiuser.memeyule.com/</user.domain>
-                <im.domain>http://test.im.memeyule.com:6020</im.domain>
+                <im.domain>http://test-aiim.memeyule.com:6060</im.domain>
                 <ws.domain>http://test-aiws.memeyule.com:6010</ws.domain>
                 <aigd.domain>http://test-aigd.memeyule.com:6050</aigd.domain>
                 <dev>test</dev>
@@ -143,7 +143,7 @@
                 <mongo.uri>192.168.2.17:10000,192.168.2.18:10000,192.168.2.19:10000</mongo.uri>
                 <mongo.cost.write>REPLICA_ACKNOWLEDGED</mongo.cost.write>
                 <mongo_history.uri>192.168.1.43:10000</mongo_history.uri>
-                <im.domain>http://im.memeyule.com:6020</im.domain>
+                <im.domain>http://aiim.memeyule.com:6060</im.domain>
                 <ws.domain>http://aiws.memeyule.com:6010</ws.domain>
                 <aigd.domain>http://aigd.memeyule.com:6050</aigd.domain>
             </properties>
