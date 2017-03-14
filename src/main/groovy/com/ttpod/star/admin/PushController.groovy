@@ -106,7 +106,7 @@ class PushController extends BaseController {
                 "isNotify": 1,
                 "isSave"  : 1,
                 extra     : [
-                        event: "msg.system"
+                        event: "msg_system"
                 ]
         ]);
 
