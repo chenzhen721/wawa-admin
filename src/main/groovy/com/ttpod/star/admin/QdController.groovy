@@ -83,7 +83,6 @@ class QdController extends BaseController {
             def reg = obj.get("reg") as Integer
 
             // 统计发言率 新增发言率，新增消费率
-
             def speechs = obj.get("speechs")  as Integer
             def first_speechs = obj.get("first_speechs") as Integer
             def first_cost = obj.get('first_cost') as Integer
@@ -108,7 +107,6 @@ class QdController extends BaseController {
             obj.put("first_speech_rate", first_speech_rate)
 
             // 新增消费率
-
             if (reg != null && reg != 0 && first_cost != null && first_cost != 0) {
                 first_cost_rate = first_cost / reg
             }
