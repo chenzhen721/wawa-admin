@@ -17,11 +17,11 @@ import static com.ttpod.rest.groovy.CrudClosures.*
 class ProductController extends BaseController{
 
     @Delegate Crud crud = new Crud(shopMongo.getCollection('products'),Boolean.TRUE,
-            [_id:Int,name:Str,in_stock:Str, desc:Str, price:Int,status:Bool,
+            [_id:Int,name:Str,in_stock:Str, desc:Str, price:Int,status:Bool,order:Int,
              real_amount:Int,timestamp:Timestamp,last_modify:Timestamp,img_url:Str],
             new Crud.QueryCondition(){
                 public DBObject sortby(HttpServletRequest req) {
-                    return new BasicDBObject('_id',1);
+                    return new BasicDBObject('order',-1);
                 }
             }
     )
