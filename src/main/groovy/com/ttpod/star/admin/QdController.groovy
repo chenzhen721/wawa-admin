@@ -84,27 +84,34 @@ class QdController extends BaseController {
 
             // 统计发言率 新增发言率，新增消费率
 
-            def speechs = obj.get("speechs") ?:0 as Integer
-            def first_speechs = obj.get("first_speechs") ?:0  as Integer
+            def speechs = obj.get("speechs")  as Integer
+            def first_speechs = obj.get("first_speechs") as Integer
+            def first_cost = obj.get('first_cost') as Integer
+            def login_count = obj.get("login_count") as Integer
 
-            def reg_rate = 0
+            def reg_rate = 0,first_speech_rate = 0, speech_rate = 0, first_cost_rate = 0
             if (active != null && active != 0 && reg != null && reg != 0) {
                 reg_rate = reg / active
             }
-
-
             obj.put("reg_rate", reg_rate)
+
             // 发言率
-            def login_count = obj['login_count'] as Integer
-            def speech_rate = login_count == 0 ? 0 : speechs / login_count
+            if (login_count != null && login_count != 0 && speechs != null && speechs != 0) {
+                speech_rate = speechs / login_count
+            }
             obj.put("speech_rate", speech_rate)
+
             // 新增发言率
-            def first_speech_rate = reg == 0 ? 0 : first_speechs / reg
+            if (reg != null && reg != 0 && first_speechs != null && first_speechs != 0) {
+                first_speech_rate = first_speechs / reg
+            }
             obj.put("first_speech_rate", first_speech_rate)
 
             // 新增消费率
-            def first_cost = obj['first_cost'] as Integer
-            def first_cost_rate = reg == 0 ? 0 : first_cost / reg
+
+            if (reg != null && reg != 0 && first_cost != null && first_cost != 0) {
+                first_cost_rate = first_cost / reg
+            }
             obj.put("first_cost_rate", first_cost_rate)
         }
     }
