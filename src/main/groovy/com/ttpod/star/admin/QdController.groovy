@@ -84,8 +84,8 @@ class QdController extends BaseController {
 
             // 统计发言率 新增发言率，新增消费率
 
-            def speechs = obj.get("speechs") as Integer
-            def first_speechs = obj.get("first_speechs") as Integer
+            def speechs = obj.get("speechs") ?:0 as Integer
+            def first_speechs = obj.get("first_speechs") ?:0  as Integer
 
             def reg_rate = 0
             if (active != null && active != 0 && reg != null && reg != 0) {
