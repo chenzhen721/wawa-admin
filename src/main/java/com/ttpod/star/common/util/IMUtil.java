@@ -16,7 +16,7 @@ public class IMUtil {
     static final Logger logger = LoggerFactory.getLogger(IMUtil.class);
 
 
-    private static final String IM_DOMAIN = AppProperties.get("im.domain", "http://test.im.memeyule.com:6020");
+    private static final String IM_DOMAIN = AppProperties.get("im.domain", "http://test-aiim.memeyule.com:6060");
 
     public static void sendToUser(Object body) {
         send("user", body);
@@ -30,6 +30,7 @@ public class IMUtil {
             @Override
             public void run() {
                 try {
+                    logger.info("asdasdasd" + JSONUtil.beanToJson(body));
                     String result = HttpClientUtils.postJson(IM_DOMAIN + "/api/publish/" + path, JSONUtil.beanToJson(body));
                     if (result != null && JSONUtil.jsonToMap(result).get("code") != 1) {
                         logger.error("push error" + result);

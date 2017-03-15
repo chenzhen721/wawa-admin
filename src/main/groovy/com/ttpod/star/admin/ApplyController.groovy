@@ -11,6 +11,7 @@ import com.ttpod.star.admin.crud.MessageController
 import com.ttpod.star.common.util.AuthCode
 import com.ttpod.star.common.util.KeyUtils
 import com.ttpod.star.model.*
+import com.ttpod.star.web.api.notify.MessageSend
 import org.apache.commons.io.FileUtils
 import org.apache.commons.lang.StringUtils
 import org.slf4j.Logger
@@ -77,6 +78,11 @@ class ApplyController extends BaseController {
 
     @Resource
     MessageController messageController
+
+    static final String APPLY_AGREE_TITLE = '主播申请通过'
+    static final String APPLY_AGREE_CONTENT = '您的主播申请已经通过，可以愉快的开播啦，但是请遵守开播协议哦'
+    static final String APPLY_REFUSE_TITLE = '主播申请拒绝'
+    static final String APPLY_REFUSE_CONTENT = '对不起您的主播申请，没有通过，若有疑问请联系官方客服人员'
 
     /**
      * 主播申请审核接口
@@ -150,17 +156,17 @@ class ApplyController extends BaseController {
                     }
                 }
 
-                if (status == ApplyType.通过.ordinal()) {
-                    updateInviteCodeStatus(invite_code, ApplyInviteCodeStatus.使用已通过)
 
-                    messageController.sendSingleMsg(user_id, '主播申请已通过', "您的主播申请已经通过啦，现在开始随时随地尽情的直播吧~", MsgType.系统消息);
+                def title = "", content = ""
+                if (status == ApplyType.通过.ordinal()) {
+                    title = APPLY_AGREE_TITLE
+                    content = APPLY_AGREE_CONTENT
 
                 } else if (status == ApplyType.未通过.ordinal()) {
-                    updateInviteCodeStatus(invite_code, ApplyInviteCodeStatus.使用未通过)
-
-                    String msg = "尊敬的么么用户，您好！由于" + req['remark'] + "，您的主播申请未通过，谢谢您的理解和支持！"
-                    messageController.sendSingleMsg(user_id, '主播申请已拒绝', msg, MsgType.系统消息);
+                    title = APPLY_REFUSE_TITLE
+                    content = APPLY_REFUSE_CONTENT
                 }
+                messageController.sendSingleMsg(user_id, title, content, MsgType.系统消息);
                 Crud.opLog(OpType.apply_handle, [user_id: user_id, status: status])
             }
 

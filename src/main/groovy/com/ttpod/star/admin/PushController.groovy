@@ -10,13 +10,10 @@ import com.gexin.rp.sdk.template.NotificationTemplate
 import com.mongodb.BasicDBObject
 import com.mongodb.DBCollection
 import com.ttpod.rest.anno.Rest
-import com.ttpod.rest.anno.RestWithSession
 import com.ttpod.rest.common.util.JSONUtil
 import com.ttpod.rest.web.Crud
-import com.ttpod.rest.web.StaticSpring
 import com.ttpod.star.common.util.ExportUtils
 import com.ttpod.star.common.util.IMUtil
-import com.ttpod.star.common.util.MsgPushUmengUtils
 import org.apache.commons.lang.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -25,12 +22,7 @@ import javax.servlet.http.HttpServletRequest
 import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
 
-import static com.ttpod.rest.common.doc.MongoKey.$in
-import static com.ttpod.rest.common.doc.MongoKey.$lt
-import static com.ttpod.rest.common.doc.MongoKey.ALL_FIELD
-import static com.ttpod.rest.common.doc.MongoKey.EMPTY
-import static com.ttpod.rest.common.doc.MongoKey.NATURAL_DESC
-import static com.ttpod.rest.common.doc.MongoKey.SJ_DESC
+import static com.ttpod.rest.common.doc.MongoKey.*
 import static com.ttpod.rest.common.util.WebUtils.$$
 
 /**
@@ -47,6 +39,7 @@ class PushController extends BaseController {
     private static final String APPSECRET = "3ls2xUi7ke6CFOEww5ABD3"
     private static final String MASTERSECRET = "RzVnVeRJE68yK1uEtAIZm"
     private static String HOST = "http://sdk.open.api.igexin.com/apiex.htm";
+    private static Long MESSAGE_EXPIRE = 60 * 60 * 1000L
 
     private static final Long DAYMILLI = 24 * 60 * 60 * 1000L
     //单次推送的最大用户数
@@ -64,9 +57,8 @@ class PushController extends BaseController {
         Crud.list(req, push_log, query.get(), ALL_FIELD, SJ_DESC)
     }
 
-
     //TODO ---------------------友盟消息推送
-    def push_sign_user(Integer userId,  String title,  String text) {
+    def push_sign_user(Integer userId, String title, String text) {
         /*def register_info = table().findOne(userId)
         if(register_info == null) return [code : 0];
         Integer type = register_info.get('type') as Integer
@@ -99,29 +91,27 @@ class PushController extends BaseController {
         }*/
 
         IMUtil.sendToUsers([
-                "message":[
-                        "action": "system.message",
-                        "data": [
-                                "title": title,
+                "message" : [
+                        "action": "msg.system",
+                        "data"  : [
+                                "title"      : title,
 //                                "image": one['image'],
 //                                "link": one['link'],
-                                "text": text,
-                                "ts": System.currentTimeMillis(),
-                                "expireTime": System.currentTimeMillis() + 60 * 60 * 1000
+                                "text"       : text,
+                                "ts"         : System.currentTimeMillis(),
+                                "expire_time": System.currentTimeMillis() + MESSAGE_EXPIRE
                         ]
                 ],
-                "userIds": [userId],
+                "user_ids" : [userId],
                 "isNotify": 1,
-                "isSave": 1,
-                extra: [
-                        event: "system_message"
+                "isSave"  : 1,
+                extra     : [
+                        event: "msg_system"
                 ]
         ]);
+
         return [code: 1, msg: '成功']
     }
-
-
-
 
     // TODO ---------------------------个推消息  BEGIN
 
@@ -455,8 +445,7 @@ class PushController extends BaseController {
         logger.debug('push the number of pushed person is cids=' + cids.size() + " userlist=" + payTypeList.size())
         return [code: 1, data: cids, userlist: payTypeList]
     }
-  // TODO ---------------------------个推消息  END
-
+    // TODO ---------------------------个推消息  END
 
 
 }

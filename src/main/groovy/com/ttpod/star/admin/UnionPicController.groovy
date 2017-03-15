@@ -37,15 +37,15 @@ import static com.ttpod.rest.common.util.WebUtils.$$
 
 //@Rest
 @RestWithSession
-class UnionPicController extends BaseController{
+class UnionPicController extends BaseController {
 
     @Resource
     public StringRedisTemplate liveRedis;
-    static final  Logger logger = LoggerFactory.getLogger(UnionPicController.class)
+    static final Logger logger = LoggerFactory.getLogger(UnionPicController.class)
 
-    DBCollection table(){users()}
+    DBCollection table() { users() }
 
-    def uphoto_list(HttpServletRequest req){
+    def uphoto_list(HttpServletRequest req) {
         QueryBuilder query = QueryBuilder.start();
 
         String uid = req[_id]
@@ -61,45 +61,45 @@ class UnionPicController extends BaseController{
 
     static final Long SIX_HUNDRED_SECONDS = 600L
 
-    static final String notify_url = (AppProperties.get('api.domain') + 'upai/notify').replace("/","\\/")
+    static final String notify_url = (AppProperties.get('api.domain') + 'upai/notify').replace("/", "\\/")
 
     static final Pattern URL_PATT = Pattern.compile("/\\d+/\\d{4}/\\w{32}.[a-z]{3,4}")
 
     static final String HTTP_FORM_KEY = "bl37fSAQyZ0ZMcF/cZMGjwWNuQU="
 
-    def token(HttpServletRequest req){
+    def token(HttpServletRequest req) {
         def uid = req.getInt(_id);
         def json = "{\"bucket\":\"showphoto\"," +
                 "\"expiration\":${System.unixTime() + SIX_HUNDRED_SECONDS}," +
                 "\"save-key\":\"/${uid}/{mon}{day}/{filemd5}{.suffix}\"," +
                 "\"allow-file-type\":\"jpg,jpeg,gif,png\"," +
-                "\"image-width-range\":\"120,2048\","+
-                "\"image-height-range\":\"120,8192\","+
+                "\"image-width-range\":\"120,2048\"," +
+                "\"image-height-range\":\"120,8192\"," +
                 "\"content-length-range\":\"0,3145728\"," + // 0 ~ 3MB
 //                    "\"x-gmkerl-type\":\"\","+
                 "\"return-url\":\"\"," +
                 "\"notify-url\":\"${notify_url}\"}"
         def policy = Base64.encodeBase64String(json.asBytes())
-        return [code:1,data:[
-                action:'http://v0.api.upyun.com/showphoto/',policy:policy,
-                signature:MsgDigestUtil.MD5.digest2HEX("${policy}&${HTTP_FORM_KEY}")
+        return [code: 1, data: [
+                action   : 'http://v0.api.upyun.com/showphoto/', policy: policy,
+                signature: MsgDigestUtil.MD5.digest2HEX("${policy}&${HTTP_FORM_KEY}")
         ]]
     }
 
     @Value("#{application['pic.domain']}")
     String pic_domain = "https://aiimg.sumeme.com/"
 
-    def add_union(HttpServletRequest req){
+    def add_union(HttpServletRequest req) {
         def path = req['path']
         def pic_url = req['pic_url']
         def uid = req.getInt(_id);
         //if(URL_PATT.matcher(path.clean()).matches() && path.startsWith("/"+uid+"/")){
-        if(adminMongo.getCollection("union_photos").count($$('user_id', uid)) <= 5){
-            if(adminMongo.getCollection("union_photos").save(new BasicDBObject(
-                    _id:path,
-                    user_id:uid as Integer,
-                    pic_url : pic_url,
-                    timestamp:System.currentTimeMillis(),
+        if (adminMongo.getCollection("union_photos").count($$('user_id', uid)) <= 5) {
+            if (adminMongo.getCollection("union_photos").save(new BasicDBObject(
+                    _id: path,
+                    user_id: uid as Integer,
+                    pic_url: pic_url,
+                    timestamp: System.currentTimeMillis(),
                     status: PhotoStatusType.未处理.ordinal()
             )).getN() > 0)
                 return IMessageCode.OK
@@ -112,10 +112,10 @@ class UnionPicController extends BaseController{
      * @param req
      * @return
      */
-    def edit_union(HttpServletRequest req){
+    def edit_union(HttpServletRequest req) {
         def path = req['path']
         def status = req['status'];
-        adminMongo.getCollection("union_photos").update($$(_id,path), $$($set, $$('status', Integer.valueOf(status)) ))
+        adminMongo.getCollection("union_photos").update($$(_id, path), $$($set, $$('status', Integer.valueOf(status))))
         return IMessageCode.OK
     }
 
@@ -123,78 +123,86 @@ class UnionPicController extends BaseController{
     File pic_folder
 
     @Value("#{application['pic.folder']}")
-    void setPicFolder(String folder){
+    void setPicFolder(String folder) {
         pic_folder = new File(folder)
         pic_folder.mkdirs()
         println "初始化图片上传目录 : ${folder}"
     }
 
-    def del_union_photo(HttpServletRequest req){
+    def del_union_photo(HttpServletRequest req) {
         def path = req['path'] as String
         Integer uid = req.getInt(_id)
 //            users().update($$([_id : Web.currentUserId() as Integer]),
 //                    $$($pull, $$('union_pic.stars', $$(["path": path,"status": 0])))
 //                ,false,false,writeConcern)
-        def obj = adminMongo.getCollection("union_photos").findAndRemove($$(_id,path).append("user_id",uid))
-        if(obj != null){
+        def obj = adminMongo.getCollection("union_photos").findAndRemove($$(_id, path).append("user_id", uid))
+        if (obj != null) {
 //            obj.put("del_time",System.currentTimeMillis())
 //            obj.put("s",0)
 //            mainMongo.getCollection("ban_photos").save(obj)
 //            return IMessageCode.OK
-            File file = new File(pic_folder,path)
+            File file = new File(pic_folder, path)
             file.delete();
-            return  [code: 1]
+            return [code: 1]
         }
         return [code: 0]
     }
 
-
     //封面图审核
-    static final BasicDBObject COVER_DESC = new BasicDBObject('audit_pic_status',-1);
-    def cover_list(HttpServletRequest req){
+    static final BasicDBObject COVER_DESC = new BasicDBObject('audit_pic_status', -1);
+
+    def cover_list(HttpServletRequest req) {
         QueryBuilder query = QueryBuilder.start();
         String star_id = req[_id]
         if (StringUtils.isNotBlank(star_id))
             query.and("xy_star_id").is(Integer.parseInt(star_id))
-        Crud.list(req,rooms(),query.get(),ALL_FIELD,COVER_DESC)
+        Crud.list(req, rooms(), query.get(), ALL_FIELD, COVER_DESC)
     }
 
 
     @Resource
     MessageController messageController
 
+    static final String PIC_AUDIT_AGREE_TITLE = "主播提交封面审核通过"
+    static final String PIC_AUDIT_AGREE_CONTENT = "您的封面已经通过审核，开播后会展示你新的封面哟"
+    static final String PIC_AUDIT_REFUSE_TITLE = "主播提交封面审核不通过"
+    static final String PIC_AUDIT_REFUSE_CONTENT = "您的封面没有通过审核，请检查封面清晰度，和封面相关规则，若有疑问请联系官方客服人员"
     //封面图审核
-    def pic_audit(HttpServletRequest req){
+    def pic_audit(HttpServletRequest req) {
         def status = req.getInt('status')
         def room_id = req[_id] as Integer
-        if (status == ApplyType.通过.ordinal() || status == ApplyType.未通过.ordinal()){
+        if (status == ApplyType.通过.ordinal() || status == ApplyType.未通过.ordinal()) {
             Long time = System.currentTimeMillis()
-            def record =  rooms().findAndModify(new BasicDBObject(_id:room_id),
-                    new BasicDBObject('$set':[audit_pic_status:status,lastmodif:time]))
-            if (record){
+            def record = rooms().findAndModify(new BasicDBObject(_id: room_id),
+                    new BasicDBObject('$set': [audit_pic_status: status, lastmodif: time]))
+            if (record) {
                 def star_id = record.get('xy_star_id') as Integer
-                if (status == ApplyType.通过.ordinal()){
-                    def pic_modify = ((record?.get('pic_modify')?:0) as Integer)^1;
-                    rooms().update($$(_id, room_id), $$($set, $$('app_pic_url': record['audit_pic_url'],'pic_modify': pic_modify)))
+                if (status == ApplyType.通过.ordinal()) {
+                    def pic_modify = ((record?.get('pic_modify') ?: 0) as Integer) ^ 1;
+                    rooms().update($$(_id, room_id), $$($set, $$('app_pic_url': record['audit_pic_url'], 'pic_modify': pic_modify)))
                     //生成渠道推广图片
 //                    generateUnionPic(room_id, record['audit_pic_url'] as String)
                 }
-                //发送消息
-//                def msg = "审核未通过";
-//                if(status == ApplyType.通过.ordinal()){
-//                    msg = "审核通过";
-//                }
-//                messageController.sendSingleMsg(room_id, '封面图片审核', "你所上传的封面图${msg}。如有任何疑问欢迎联系客服QQ".toString(), MsgType.系统消息);
-                Crud.opLog(OpType.pic_audit,[room_id:room_id,status:status])
+
+                def title, content
+                if (status == ApplyType.通过.ordinal()) {
+                    title = PIC_AUDIT_AGREE_TITLE
+                    content = PIC_AUDIT_AGREE_CONTENT
+                } else {
+                    title = PIC_AUDIT_REFUSE_TITLE
+                    content = PIC_AUDIT_REFUSE_CONTENT
+                }
+                messageController.sendSingleMsg(room_id, title, content, MsgType.系统消息);
+                Crud.opLog(OpType.pic_audit, [room_id: room_id, status: status])
             }
         }
 
         OK()
     }
 
-    def generateUnionPic(Integer userId, String url){
+    def generateUnionPic(Integer userId, String url) {
         def map = new HashMap()
-        if(StringUtils.isNotEmpty(url)){
+        if (StringUtils.isNotEmpty(url)) {
             //W:231 ,H:142
             map.put("union_pic.bd_231X142", cutImage(url, 231, 142))
             //W:172, H:107
@@ -204,20 +212,20 @@ class UnionPicController extends BaseController{
             map.put("union_pic.kb_304x200", cutImage(url, 304, 200))
             map.put("union_pic.kb_616x252", cutImage(url, 616, 252))
 
-            users().update(new BasicDBObject('_id',userId),new BasicDBObject($set,map),false,false,writeConcern)
+            users().update(new BasicDBObject('_id', userId), new BasicDBObject($set, map), false, false, writeConcern)
         }
     }
 
-    private String cutImage(String allow_url, int rw, int rh){
+    private String cutImage(String allow_url, int rw, int rh) {
         String fpath = "";
-        try{
+        try {
             def url = new URL(allow_url)
             BufferedImage img = ImageIO.read(url)
-            fpath = url.getPath().replace('.jpg','').substring(1)+"_${rw}${rh}.jpg"
-            File file = new File(pic_folder,fpath)
+            fpath = url.getPath().replace('.jpg', '').substring(1) + "_${rw}${rh}.jpg"
+            File file = new File(pic_folder, fpath)
             file.getParentFile().mkdirs()
-            Thumbnails.of(img).size(rw,rh).keepAspectRatio(false).outputQuality(0.95f).toFile(file);
-        }catch(Exception e){
+            Thumbnails.of(img).size(rw, rh).keepAspectRatio(false).outputQuality(0.95f).toFile(file);
+        } catch (Exception e) {
             return fpath
         }
         return fpath

@@ -4,13 +4,13 @@ import com.mongodb.BasicDBObject
 import com.mongodb.DBCollection
 import com.mongodb.DBObject
 import com.mongodb.QueryBuilder
-import com.ttpod.rest.anno.Rest
 import com.ttpod.rest.anno.RestWithSession
-import com.ttpod.rest.common.doc.ParamKey
 import com.ttpod.rest.web.Crud
 import com.ttpod.star.common.util.ExportUtils
 import com.ttpod.star.model.ExportType
 import org.apache.commons.lang.StringUtils
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -30,6 +30,8 @@ import static com.ttpod.rest.common.util.WebUtils.$$
 class QdController extends BaseController {
     DBCollection table() { adminMongo.getCollection('stat_channels') }
 
+    static final Logger logger = LoggerFactory.getLogger(QdController.class);
+
     /**
      * cpa1:激活扣量
      * cpa2:注册扣量
@@ -38,16 +40,16 @@ class QdController extends BaseController {
      */
     def set_cpa(HttpServletRequest req) {
         def updateInfo = new BasicDBObject();
-        if(req['cpa1']){
+        if (req['cpa1']) {
             updateInfo.append('cpa1', new Integer(req['cpa1']))
         }
-        if(req['cpa2']){
+        if (req['cpa2']) {
             updateInfo.append('cpa2', new Integer(req['cpa2']))
         }
-        if(req['cpa3']){
+        if (req['cpa3']) {
             updateInfo.append('cpa3', new Integer(req['cpa3']))
         }
-        [code: table().update($$(_id, req[_id]),$$($set,updateInfo)).getN()]
+        [code: table().update($$(_id, req[_id]), $$($set, updateInfo)).getN()]
     }
 
     Map reg_pay_list_service(DBObject query, HttpServletRequest req) {
@@ -79,22 +81,37 @@ class QdController extends BaseController {
             obj.put("30_day", (stay30 != null ? stay30 : 0))
             def active = obj.get("active") as Integer
             def reg = obj.get("reg") as Integer
+
+            // 统计发言率 新增发言率，新增消费率
+
             def speechs = obj.get("speechs") as Integer
-            def reg_rate = 0, speech_rate = 0
+            def first_speechs = obj.get("first_speechs") as Integer
+
+            def reg_rate = 0
             if (active != null && active != 0 && reg != null && reg != 0) {
                 reg_rate = reg / active
             }
-            if (reg != null && reg != 0 && speechs != null && speechs != 0) {
-                speech_rate = speechs / reg
-            }
+
+
             obj.put("reg_rate", reg_rate)
+            // 发言率
+            def login_count = obj['login_count'] as Integer
+            def speech_rate = login_count == 0 ? 0 : speechs / login_count
             obj.put("speech_rate", speech_rate)
+            // 新增发言率
+            def first_speech_rate = reg == 0 ? 0 : first_speechs / reg
+            obj.put("first_speech_rate", first_speech_rate)
+
+            // 新增消费率
+            def first_cost = obj['first_cost'] as Integer
+            def first_cost_rate = reg == 0 ? 0 : first_cost / reg
+            obj.put("first_cost_rate", first_cost_rate)
         }
     }
 
     //注册收益
     def reg_pay_list(HttpServletRequest req) {
-
+        logger.debug('Received reg_pay_list params is {}', req.getParameterMap())
         def channel = adminMongo.getCollection('channels')
 
         def qid = req[_id]
@@ -141,25 +158,27 @@ class QdController extends BaseController {
         query.put('qd', [$in: adminMongo.getCollection('channels').find(qdQuery).toArray()
                 .collect { it.getAt(_id) }])
 
-        List<BasicDBObject> qd_list = table().find(query, $$(pays: 0, regs: 0)).sort($$(reg: -1)).toArray().collect {it as BasicDBObject}
+        List<BasicDBObject> qd_list = table().find(query, $$(pays: 0, regs: 0)).sort($$(reg: -1)).toArray().collect {
+            it as BasicDBObject
+        }
         fillQdList(qd_list);
         for (BasicDBObject obj : qd_list) {
-            obj.put("pay", obj.get("pay")?:0);
+            obj.put("pay", obj.get("pay") ?: 0);
 
-            Integer avg_cny = obj.getInt("pay") == 0 ? 0 : obj.getInt("cny")/obj.getInt("pay") as Integer;
+            Integer avg_cny = obj.getInt("pay") == 0 ? 0 : obj.getInt("cny") / obj.getInt("pay") as Integer;
             obj.put("avg_cny", avg_cny);
             Integer avg_cny_month_cny = obj.getInt("month_pay") == 0 ? 0 : obj.getInt("month_cny") / obj.getInt("month_pay") as Integer;
             obj.put("avg_cny_month_cny", avg_cny_month_cny);
             Integer _1_day_rate = obj.getInt("reg") == 0 ? 0 : obj.getInt("1_day") / obj.getInt("reg") as Integer;
-            obj.put("1_day_rate", Math.round(_1_day_rate*10000)/100);
+            obj.put("1_day_rate", Math.round(_1_day_rate * 10000) / 100);
             Integer _3_day_rate = obj.getInt("reg") == 0 ? 0 : obj.getInt("3_day") / obj.getInt("reg") as Integer;
-            obj.put("3_day_rate", Math.round(_3_day_rate*10000)/100);
+            obj.put("3_day_rate", Math.round(_3_day_rate * 10000) / 100);
             Integer _7_day_rate = obj.getInt("reg") == 0 ? 0 : obj.getInt("7_day") / obj.getInt("reg") as Integer;
-            obj.put("7_day_rate", Math.round(_7_day_rate*10000)/100);
+            obj.put("7_day_rate", Math.round(_7_day_rate * 10000) / 100);
             Integer _30_day_rate = obj.getInt("reg") == 0 ? 0 : obj.getInt("30_day") / obj.getInt("reg") as Integer;
-            obj.put("30_day_rate", Math.round(_30_day_rate*10000)/100);
+            obj.put("30_day_rate", Math.round(_30_day_rate * 10000) / 100);
 
-            obj.put("reg_rate", obj.getInt("reg_rate")*100);
+            obj.put("reg_rate", obj.getInt("reg_rate") * 100);
         }
 
 
@@ -306,8 +325,10 @@ class QdController extends BaseController {
         login_total_service((String) req[_id], req)
     }
 
-    private static final Map<String, String> CHANNEL_TYPS = ['1':'PC渠道','2':'Android渠道','3':'Android pad','4':'IOS渠道','5':'H5渠道','6':'RIA渠道']
-    private static final Map<String, String> CHANNEL_LOGIN_KEYS = ['1':'pc_login','2':'mobile_login','3':'mobile_login','4':'ios_login','5':'h5_login','6':'ria_login']
+    private static
+    final Map<String, String> CHANNEL_TYPS = ['1': 'PC渠道', '2': 'Android渠道', '3': 'Android pad', '4': 'IOS渠道', '5': 'H5渠道', '6': 'RIA渠道']
+    private static
+    final Map<String, String> CHANNEL_LOGIN_KEYS = ['1': 'pc_login', '2': 'mobile_login', '3': 'mobile_login', '4': 'ios_login', '5': 'h5_login', '6': 'ria_login']
     //已优化
     Map login_total_service(String qdId, HttpServletRequest req) {
         Map<Integer, Integer> map
@@ -332,7 +353,7 @@ class QdController extends BaseController {
             def stat_daily = adminMongo.getCollection('stat_daily')
             def client = req['client'] as String
             query.put("type").is("alllogin")
-            Crud.list(req, stat_daily, query.get(), ALL_FIELD,$$(timestamp, -1)) { List<BasicDBObject> data ->
+            Crud.list(req, stat_daily, query.get(), ALL_FIELD, $$(timestamp, -1)) { List<BasicDBObject> data ->
                 for (BasicDBObject obj : data) {
                     def item = obj.remove(CHANNEL_LOGIN_KEYS[client])
                     def name = CHANNEL_TYPS[client]
@@ -358,11 +379,11 @@ class QdController extends BaseController {
             query.and('qd').in(ids)
         }
         def client = req.getParameter('client') as String
-        if(StringUtils.isNotBlank(client)) {
+        if (StringUtils.isNotBlank(client)) {
             query.and('client').is(client)
         }
         def parent_qd = req.getParameter('parent_qd') as String
-        if(StringUtils.isNotBlank(parent_qd)){
+        if (StringUtils.isNotBlank(parent_qd)) {
             query.and('parent_qd').is(parent_qd)
         }
         def type = req['type'] ?: 0//0:全部；1：父渠道；2：子渠道
