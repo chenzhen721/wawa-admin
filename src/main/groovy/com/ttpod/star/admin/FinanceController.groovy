@@ -121,7 +121,7 @@ class FinanceController extends BaseController {
                 via: via,
                 shop: shop,//商品类型
                 ext: broker, // 如果经纪人id 填写在这里
-                rid: transaction_id,
+                transactionId: transaction_id,
                 c: 10000,// 充值成功 消耗时间
                 repair_time: System.currentTimeMillis()
         )
