@@ -773,7 +773,7 @@ class FinanceController extends BaseController {
         def user = users().findAndModify(query,null,null,false,update,true,false)
         if (user != null) {
             def finance = user['finance'] as Map
-            def coin_spend_total = finance.containsKey('coin_spend_total') ?  finance.containsKey('coin_spend_total') as Long : 0L
+            def coin_spend_total = finance.containsKey('coin_spend_total') ?  finance['coin_spend_total']as Long : 0L
             Web.setSpend(userId,'spend',coin_spend_total)
 //            messageController.sendSingleMsg(userId, '经验奖励', "尊敬的么么用户，您好！恭喜你获得了${num}经验奖励！", MsgType.系统消息);
             Crud.opLog(OpType.finance_donate_exp, [user_id: userId, num: num])
