@@ -285,4 +285,13 @@ public abstract class Web extends WebUtils{
         }
     }
 
+    public static void setSpend(Integer userId,String field,Long coin_spend_total){
+        putUserInfoToSession(userId,field,String.valueOf(coin_spend_total));
+    }
+
+    private static void putUserInfoToSession(Integer userId, String field, String value){
+        String id2token = KeyUtils.USER.token(userId);
+        String access_token = userRedis.opsForValue().get(id2token);
+        putUserInfoToSession(KeyUtils.accessToken(access_token), field, value);
+    }
 }
