@@ -47,8 +47,6 @@ public abstract class BaseController extends FreemarkerSupport7 {
     public MongoTemplate rankMongo;
     @Resource
     public MongoTemplate gameLogMongo;
-    @Resource
-    public MongoTemplate shopMongo;
 
 //    @Resource
 //    public  MongoTemplate unionMongo;
@@ -63,6 +61,7 @@ public abstract class BaseController extends FreemarkerSupport7 {
     public static final MongoTemplate activeMongo = (MongoTemplate) StaticSpring.get("activeMongo");
 
     public static final MongoTemplate familyMongo = (MongoTemplate) StaticSpring.get("familyMongo");
+    public static final MongoTemplate shopMongo = (MongoTemplate) StaticSpring.get("shopMongo");
 
     //是否为测试服
     public static final boolean isTest  = AppProperties.get("api.domain").contains("test-");
