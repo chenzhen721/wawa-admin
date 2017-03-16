@@ -108,7 +108,6 @@ class QdController extends BaseController {
             obj.put("first_speech_rate", first_speech_rate)
 
             // 新增消费率
-
             if (reg != null && reg != 0 && first_cost != null && first_cost != 0) {
                 first_cost_rate = first_cost / reg
             }
