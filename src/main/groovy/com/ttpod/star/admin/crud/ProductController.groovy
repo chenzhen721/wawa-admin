@@ -26,7 +26,7 @@ class ProductController extends BaseController{
 
 
     @Delegate Crud crud = new Crud(shopMongo.getCollection('products'),Boolean.TRUE,
-            [_id:{productKGS.nextId()},name:Str,in_stock:Str, desc:Str, price:Int,status:Bool,order:Int,delivery_type:Int,
+            [_id:{productKGS.nextId()},name:Str,in_stock:Int, desc:Str, price:Int,status:Bool,order:Int,delivery_type:Int,
             timestamp:Timestamp,last_modify:Timestamp,img_url:Str,money:Int],
             new Crud.QueryCondition(){
                 public DBObject sortby(HttpServletRequest req) {
