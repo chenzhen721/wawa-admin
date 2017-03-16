@@ -16,7 +16,7 @@ public class IMUtil {
     static final Logger logger = LoggerFactory.getLogger(IMUtil.class);
 
 
-    private static final String IM_DOMAIN = AppProperties.get("im.domain", "http://test-aiim.memeyule.com:6060");
+    private static final String IM_DOMAIN = AppProperties.get("im.domain", "http://test-aiim.memeyule.com:6070");
 
     public static void sendToUser(Object body) {
         send("user", body);
