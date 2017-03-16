@@ -2,6 +2,7 @@ package com.ttpod.star.admin.crud
 
 import com.mongodb.BasicDBObject
 import com.mongodb.DBObject
+import com.ttpod.rest.anno.Rest
 import com.ttpod.rest.anno.RestWithSession
 import com.ttpod.rest.persistent.KGS
 import com.ttpod.rest.web.Crud
@@ -17,8 +18,8 @@ import static com.ttpod.rest.groovy.CrudClosures.*
  * 2016/10/12
  * 用户特权列表
  */
-//@Rest
-@RestWithSession
+@Rest
+//@RestWithSession
 class ProductController extends BaseController{
     @Resource
     KGS productKGS
