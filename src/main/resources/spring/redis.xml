@@ -47,6 +47,8 @@
           p:nameSpace="msg" p:kgsRedis-ref="kgsUniqueRedis" p:offset="100"/>
     <bean id="sysPushKGS" class="com.ttpod.rest.persistent.SimpleKGS"
           p:nameSpace="syspush" p:kgsRedis-ref="kgsUniqueRedis" p:offset="100"/>
+    <bean id="productKGS" class="com.ttpod.rest.persistent.SimpleKGS"
+          p:nameSpace="product" p:kgsRedis-ref="kgsUniqueRedis" p:offset="100"/>
 
     <bean id="seqKGS" class="com.ttpod.rest.persistent.SimpleKGS" p:nameSpace="seq"
           p:offset="12780"
