@@ -147,9 +147,9 @@ public abstract class Web extends WebUtils{
         return ip;
     }
 
-    static final String API_DOMAIN = AppProperties.get("api.domain", "http://api.memeyule.com/");
-    static final String USER_DOMAIN = AppProperties.get("user.domain", "http://user.memeyule.com/");
-    public static final String IM_DOMAIN = AppProperties.get("im.domain", "http://test.im.memeyule.com:6020");
+    static final String API_DOMAIN = AppProperties.get("api.domain", "http://test-aiapi.memeyule.com/");
+    static final String USER_DOMAIN = AppProperties.get("user.domain", "http://test-aiuser.memeyule.com/");
+    public static final String IM_DOMAIN = AppProperties.get("im.domain", "http://test-aiim.memeyule.com:6070");
     static final Charset UTF8= Charset.forName("utf8");
     public static Object api(String url) throws IOException{
         Object obj = null ;
@@ -285,4 +285,13 @@ public abstract class Web extends WebUtils{
         }
     }
 
+    public static void setSpend(Integer userId,String field,Long coin_spend_total){
+        putUserInfoToSession(userId,field,String.valueOf(coin_spend_total));
+    }
+
+    private static void putUserInfoToSession(Integer userId, String field, String value){
+        String id2token = KeyUtils.USER.token(userId);
+        String access_token = userRedis.opsForValue().get(id2token);
+        putUserInfoToSession(KeyUtils.accessToken(access_token), field, value);
+    }
 }
