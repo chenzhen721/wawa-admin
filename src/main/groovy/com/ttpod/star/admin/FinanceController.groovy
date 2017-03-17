@@ -1,29 +1,18 @@
 package com.ttpod.star.admin
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.mongodb.BasicDBObject
 import com.mongodb.DBCollection
 import com.mongodb.DBObject
 import com.mongodb.QueryBuilder
-import com.ttpod.rest.anno.Rest
 import com.ttpod.rest.anno.RestWithSession
 import com.ttpod.rest.common.doc.IMessageCode
-import com.ttpod.rest.common.doc.ParamKey
 import com.ttpod.rest.common.util.WebUtils
-import com.ttpod.rest.persistent.KGS
 import com.ttpod.rest.web.Crud
+import com.ttpod.star.admin.crud.MessageController
 import com.ttpod.star.common.util.ExportUtils
 import com.ttpod.star.common.util.KeyUtils
-import com.ttpod.star.model.ApplyType
-import com.ttpod.star.model.ExportType
-import com.ttpod.star.model.LiveType
-import com.ttpod.star.model.MsgType
-import com.ttpod.star.model.OpType
-import com.ttpod.star.model.PayType
-import com.ttpod.star.model.User
-import com.ttpod.star.model.UserType
+import com.ttpod.star.model.*
 import org.apache.commons.lang.StringUtils
-import com.ttpod.star.admin.crud.MessageController
 import org.apache.commons.lang.math.NumberUtils
 
 import javax.annotation.Resource
@@ -778,12 +767,18 @@ class FinanceController extends BaseController {
     def donate_exp(HttpServletRequest req) {
         def num = req.getInt('num')
         def userId = req.getInt(_id)
-        def row = users().update($$(_id, userId), $$($inc, $$('finance.coin_spend_total', num)), false, false, writeConcern).getN()
-        if (1 == row) {
-            messageController.sendSingleMsg(userId, '经验奖励', "尊敬的么么用户，您好！恭喜你获得了${row}经验奖励！", MsgType.系统消息);
+//        def row = users().update($$(_id, userId), $$($inc, $$('finance.coin_spend_total', num)), false, false, writeConcern).getN()
+        def query = $$(_id,userId)
+        def update = $$($inc, $$('finance.coin_spend_total', num))
+        def user = users().findAndModify(query,null,null,false,update,true,false)
+        if (user != null) {
+            def finance = user['finance'] as Map
+            def coin_spend_total = finance.containsKey('coin_spend_total') ?  finance['coin_spend_total']as Long : 0L
+            Web.setSpend(userId,'spend',coin_spend_total)
+//            messageController.sendSingleMsg(userId, '经验奖励', "尊敬的么么用户，您好！恭喜你获得了${num}经验奖励！", MsgType.系统消息);
             Crud.opLog(OpType.finance_donate_exp, [user_id: userId, num: num])
         }
-        [code: row]
+        [code: 1]
     }
 
     def pay_all_delta_export(HttpServletRequest req, HttpServletResponse res) {
