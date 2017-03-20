@@ -4,6 +4,7 @@ import com.mongodb.BasicDBObject
 import com.mongodb.DBCollection
 import com.mongodb.DBObject
 import com.mongodb.QueryBuilder
+import com.ttpod.rest.anno.Rest
 import com.ttpod.rest.anno.RestWithSession
 import com.ttpod.rest.common.doc.IMessageCode
 import com.ttpod.rest.common.util.WebUtils
@@ -963,5 +964,15 @@ class FinanceController extends BaseController {
         def query = Web.fillTimeBetween(req)
         def dailyReport = adminMongo.getCollection("finance_dailyReport")
         return Crud.list(req, dailyReport, query.get(), $$(total_coin:0), SJ_DESC)
+    }
+
+    /**
+     * 钻石流水
+     * @param req
+     */
+    def diamond_logs(HttpServletRequest req){
+        def query = Web.fillTimeBetween(req)
+        def diamond_logs = shopMongo.getCollection("diamond_logs")
+        return Crud.list(req, diamond_logs, query.get(), null, SJ_DESC)
     }
 }
