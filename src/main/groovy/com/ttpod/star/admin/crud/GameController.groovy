@@ -155,7 +155,7 @@ class GameController extends BaseController {
             query.and('_id').is(id)
         }
         if(StringUtils.isNotBlank(roomId)){
-            query.and('room_id').is(roomId)
+            query.and('room_id').is(roomId as Integer)
         }
         Crud.list(req, star_award_logs(), query.get(), null, TIMESTAMP_SORT_DESC)
     }
