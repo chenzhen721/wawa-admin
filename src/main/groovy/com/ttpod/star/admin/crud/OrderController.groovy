@@ -10,6 +10,7 @@ import com.ttpod.star.model.OrderType
 import org.apache.commons.lang.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.web.bind.ServletRequestUtils
 
 import javax.servlet.http.HttpServletRequest
 
@@ -28,12 +29,13 @@ class OrderController extends BaseController {
      */
     def list(HttpServletRequest req) {
         logger.debug('Received order list params is {}', req.getParameterMap())
-        def userId = req['user_id']
         def orderId = req['_id']
-        def status = req['status']
+        def userId = ServletRequestUtils.getIntParameter(req, 'user_id', 0)
+        def status = ServletRequestUtils.getStringParameter(req, 'status', '')
+
 
         def query = Web.fillTimeBetween(req)
-        if (StringUtils.isNotBlank(userId)) {
+        if (userId != 0) {
             query.and('user_id').is(userId)
         }
         if (StringUtils.isNotBlank(orderId)) {
@@ -41,7 +43,7 @@ class OrderController extends BaseController {
         }
 
         if (StringUtils.isNotBlank(status)) {
-            query.and('status').is(status)
+            query.and('status').is(status as Integer)
         }
 
         Crud.list(req, orders(), query.get(), null, $$('timestamp': -1))
@@ -59,7 +61,7 @@ class OrderController extends BaseController {
             return Web.missParam()
         }
         def query = $$('_id': orderId, 'status': OrderType.已发货.ordinal())
-        def update = $$('status': OrderType.完成.ordinal(), 'last_modify': new Date().getTime())
+        def update = $$('status': OrderType.完成.ordinal(), 'last_modify': System.currentTimeMillis())
         if (orders().update(query, update).getN() != 1) {
             return [code: 0]
         }
