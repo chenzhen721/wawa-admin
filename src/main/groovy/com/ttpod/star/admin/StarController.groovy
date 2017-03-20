@@ -825,18 +825,4 @@ class StarController extends BaseController {
         }
     }
 
-    /**
-     * 主播分成
-     * @param req
-     */
-    def star_award_logs(HttpServletRequest req){
-        def query = Web.fillTimeBetween(req)
-        def roomId = ServletRequestUtils.getIntParameter(req,'room_id',0)
-        if(roomId != 0 ){
-            query.and('room_id').is(roomId)
-        }
-
-        def star_award_logs = gameLogMongo.getCollection("star_award_logs")
-        return Crud.list(req, star_award_logs, query.get(), null, SJ_DESC)
-    }
 }
