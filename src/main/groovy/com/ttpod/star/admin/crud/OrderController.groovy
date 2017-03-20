@@ -45,7 +45,6 @@ class OrderController extends BaseController {
         if (StringUtils.isNotBlank(status)) {
             query.and('status').is(status as Integer)
         }
-        logger.debug('query is {}',query.get())
         Crud.list(req, orders(), query.get(), null, $$('timestamp': -1))
     }
 
