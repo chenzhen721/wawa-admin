@@ -32,7 +32,7 @@ class GiftController extends BaseController {
             [_id        : Int, name: Str, pic_url: Str, app_swf_url: Str, swf_url: Str, pic_pre_url: Str, sale: Ne0, isNew: Ne0, isHot: Ne0,
              ratio      : { String str -> (str == null || str.isEmpty()) ? null : str as Double }, desc: Str,star_award: Int,
              category_id: Int, order: Int, coin_price: Int, star_limit: Int, star: Eq1, status: Ne0, isHide: Ne0, star_count: Int,
-             is_mark    : Ne0, mark_pic_url: Str, is_all: Ne0 , mark_pc: Str, mark_app: Str,is_diamond_gift:Bool,diamond_count:Int],
+             is_mark    : Ne0, mark_pic_url: Str, is_all: Ne0 , mark_pc: Str, mark_app: Str,is_diamond_gift:Bool,diamond_count:Int,app_ae_url:Str,ae_pre_url:Str],
             new Crud.QueryCondition() {
                 public DBObject query(HttpServletRequest req) {
                     QueryBuilder query = QueryBuilder.start()
