@@ -1,7 +1,6 @@
 package com.ttpod.star.admin
 
 import com.mongodb.DBCollection
-import com.ttpod.rest.anno.Rest
 import com.ttpod.rest.anno.RestWithSession
 import com.ttpod.rest.web.Crud
 import org.apache.commons.lang.StringUtils
@@ -12,7 +11,7 @@ import javax.servlet.http.HttpServletRequest
 
 import static com.ttpod.rest.common.util.WebUtils.$$
 
-@Rest
+@RestWithSession
 class OrderController extends BaseController {
 
     static final Logger logger = LoggerFactory.getLogger(OrderController.class)
