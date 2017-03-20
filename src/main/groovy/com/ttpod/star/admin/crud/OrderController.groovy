@@ -1,8 +1,12 @@
-package com.ttpod.star.admin
+package com.ttpod.star.admin.crud
 
 import com.mongodb.DBCollection
+import com.ttpod.rest.anno.Rest
 import com.ttpod.rest.anno.RestWithSession
 import com.ttpod.rest.web.Crud
+import com.ttpod.star.admin.BaseController
+import com.ttpod.star.admin.Web
+import com.ttpod.star.model.OrderType
 import org.apache.commons.lang.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -11,12 +15,12 @@ import javax.servlet.http.HttpServletRequest
 
 import static com.ttpod.rest.common.util.WebUtils.$$
 
-@RestWithSession
+@Rest
 class OrderController extends BaseController {
 
     static final Logger logger = LoggerFactory.getLogger(OrderController.class)
 
-    DBCollection orders() { shopMongo.getCollection('orders') }
+    def orders() { shopMongo.getCollection('orders') }
 
     /**
      * 订单查询
@@ -41,6 +45,25 @@ class OrderController extends BaseController {
         }
 
         Crud.list(req, orders(), query.get(), null, $$('timestamp': -1))
+    }
+
+    /**
+     * 订单完成
+     * @param req
+     * @return
+     */
+    def finish(HttpServletRequest req) {
+        logger.debug('Received order edit params is {}', req.getParameterMap())
+        def orderId = req['_id']
+         if (StringUtils.isBlank(orderId)) {
+            return Web.missParam()
+        }
+        def query = $$('_id': orderId, 'status': OrderType.已发货.ordinal())
+        def update = $$('status': OrderType.完成.ordinal(), 'last_modify': new Date().getTime())
+        if (orders().update(query, update).getN() != 1) {
+            return [code: 0]
+        }
+        return [code: 1]
     }
 
 }
