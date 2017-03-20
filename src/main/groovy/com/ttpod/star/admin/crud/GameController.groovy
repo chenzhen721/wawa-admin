@@ -29,6 +29,8 @@ class GameController extends BaseController {
 
     def lotterys() { return gameLogMongo.getCollection('user_lottery') }
 
+    def star_award_logs() { return gameLogMongo.getCollection('star_award_logs') }
+
     static final BasicDBObject TIMESTAMP_SORT_DESC = $$('timestamp': -1)
 
     @Delegate
@@ -136,6 +138,26 @@ class GameController extends BaseController {
         }
 
         Crud.list(req, lotterys(), query.get(), null, TIMESTAMP_SORT_DESC)
+    }
+
+
+    /**
+     * 主播分成日志
+     * @param req
+     * @return
+     */
+    def star_award_logs(HttpServletRequest req){
+        logger.debug('Received star_award_logs params is {}',req.getParameterMap())
+        def query = Web.fillTimeBetween(req)
+        def id = req['_id']
+        def roomId = req['room_id']
+        if(StringUtils.isNotBlank(id)){
+            query.and('_id').is(id)
+        }
+        if(StringUtils.isNotBlank(roomId)){
+            query.and('room_id').is(roomId)
+        }
+        Crud.list(req, star_award_logs(), query.get(), null, TIMESTAMP_SORT_DESC)
     }
 
 
