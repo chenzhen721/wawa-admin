@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletRequest
 
 import static com.ttpod.rest.common.util.WebUtils.$$
 
-@Rest
+@RestWithSession
 class OrderController extends BaseController {
 
     static final Logger logger = LoggerFactory.getLogger(OrderController.class)
