@@ -20,6 +20,7 @@ import org.apache.commons.lang.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.web.bind.ServletRequestUtils
 
 import javax.annotation.Resource
 import javax.servlet.http.HttpServletRequest
@@ -822,5 +823,20 @@ class StarController extends BaseController {
                 obj.put("t_nick_name", users.findOne(obj['t_uid'], new BasicDBObject("nick_name", 1))?.get("nick_name"))
             }
         }
+    }
+
+    /**
+     * 主播分成
+     * @param req
+     */
+    def star_award_logs(HttpServletRequest req){
+        def query = Web.fillTimeBetween(req)
+        def roomId = ServletRequestUtils.getIntParameter(req,'room_id',0)
+        if(roomId != 0 ){
+            query.and('room_id').is(roomId)
+        }
+
+        def star_award_logs = gameLogMongo.getCollection("star_award_logs")
+        return Crud.list(req, star_award_logs, query.get(), null, SJ_DESC)
     }
 }
