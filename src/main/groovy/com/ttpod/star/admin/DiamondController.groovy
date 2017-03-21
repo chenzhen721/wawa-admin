@@ -53,7 +53,7 @@ class DiamondController extends BaseController {
      */
     def daily_stat(HttpServletRequest req){
         def query = Web.fillTimeBetween(req)
-        def diamond_reports = adminMongo.getCollection('diamond_daily_stat')
+        def diamond_reports = adminMongo.getCollection('diamond_dailyReport_stat')
         return Crud.list(req, diamond_reports, query.get(), null, SJ_DESC)
     }
 
