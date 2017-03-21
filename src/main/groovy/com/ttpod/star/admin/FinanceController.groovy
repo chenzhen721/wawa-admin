@@ -972,7 +972,11 @@ class FinanceController extends BaseController {
      * @param req
      */
     def diamond_logs(HttpServletRequest req){
+        def userId = ServletRequestUtils.getIntParameter(req,'_id',0)
         def query = Web.fillTimeBetween(req)
+        if(userId != 0){
+            query.and('user_id').is(userId)
+        }
         def diamond_logs = adminMongo.getCollection("diamond_logs")
         return Crud.list(req, diamond_logs, query.get(), null, SJ_DESC)
     }
