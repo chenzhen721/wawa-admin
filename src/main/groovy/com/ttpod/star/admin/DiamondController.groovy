@@ -23,7 +23,7 @@ class DiamondController extends BaseController {
      * 钻石加币
      * @param req
      */
-    def add_diamond_logs(HttpServletRequest req){
+    def add_logs(HttpServletRequest req){
         def userId = ServletRequestUtils.getIntParameter(req,'_id',0)
         def query = Web.fillTimeBetween(req)
         if(userId != 0){
@@ -37,7 +37,7 @@ class DiamondController extends BaseController {
      * 钻石加币
      * @param req
      */
-    def cost_diamond_logs(HttpServletRequest req){
+    def cost_logs(HttpServletRequest req){
         def userId = ServletRequestUtils.getIntParameter(req,'_id',0)
         def query = Web.fillTimeBetween(req)
         if(userId != 0){
