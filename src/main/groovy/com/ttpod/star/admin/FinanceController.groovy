@@ -968,32 +968,6 @@ class FinanceController extends BaseController {
     }
 
     /**
-     * 钻石流水明细
-     * @param req
-     */
-    def diamond_logs(HttpServletRequest req){
-        def userId = ServletRequestUtils.getIntParameter(req,'_id',0)
-        def query = Web.fillTimeBetween(req)
-        if(userId != 0){
-            query.and('user_id').is(userId)
-        }
-        def diamond_logs = adminMongo.getCollection("diamond_logs")
-        return Crud.list(req, diamond_logs, query.get(), null, SJ_DESC)
-    }
-
-    /**
-     * 钻石聚合
-     * @param req
-     */
-    def diamond_stat_report(HttpServletRequest req){
-        def query = Web.fillTimeBetween(req)
-        def diamond_reports = adminMongo.getCollection('diamond_stat')
-        return Crud.list(req, diamond_reports, query.get(), null, SJ_DESC)
-    }
-
-
-
-    /**
      * 商品日报表
      * @param req
      */
