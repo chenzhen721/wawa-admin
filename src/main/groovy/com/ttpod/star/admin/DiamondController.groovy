@@ -84,8 +84,37 @@ class DiamondController extends BaseController {
      */
     def daily_stat(HttpServletRequest req){
         def query = Web.fillTimeBetween(req)
-        def diamond_reports = adminMongo.getCollection('diamond_daily_stat')
-        return Crud.list(req, diamond_reports, query.get(), null, SJ_DESC)
+        def diamond_reports = adminMongo.getCollection('diamond_dailyReport_stat')
+        def map = Crud.list(req, diamond_reports, query.get(), null, SJ_DESC)
+        DiamondActionType[] das = DiamondActionType.values()
+        def types = [:]
+        das.each {
+            DiamondActionType d ->
+                types.put(d.actionName,d.name())
+        }
+        def diamondList = map['data'] as List<DBObject>
+        diamondList.each {
+            DBObject obj ->
+                def inc_detail = obj.containsField('inc_detail') ? obj['inc_detail'] as Map : [:]
+                def desc_detail = obj.containsField('desc_detail') ? obj['desc_detail'] as Map : [:]
+                def format_inc_detail = [:]
+                def format_desc_detail = [:]
+                inc_detail.each {
+                    k,v ->
+                        format_inc_detail.put(types[k.toString()],v)
+                }
+                if(!inc_detail.isEmpty()){
+                    obj.put('inc_detail',format_inc_detail)
+                }
+                desc_detail.each {
+                    k,v ->
+                        format_desc_detail.put(types[k.toString()],v)
+                }
+                if(!desc_detail.isEmpty()){
+                    obj.put('desc_detail',format_desc_detail)
+                }
+        }
+        return map
     }
 
 
