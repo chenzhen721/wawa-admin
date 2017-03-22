@@ -104,6 +104,7 @@ class DiamondController extends BaseController {
                 keys: title,
                 inc: inc,
                 desc: desc,
+                column:column
         )
 
         return ['title': map, 'data': data['data']]
