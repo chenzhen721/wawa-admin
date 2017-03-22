@@ -1,7 +1,10 @@
 package com.ttpod.star.admin
 
+import com.mongodb.BasicDBObject
 import com.ttpod.rest.anno.RestWithSession
 import com.ttpod.rest.web.Crud
+import com.ttpod.star.model.DiamondActionType
+import com.ttpod.star.model.OrderType
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.ServletRequestUtils
@@ -30,7 +33,11 @@ class DiamondController extends BaseController {
             query.and('user_id').is(userId)
         }
         def diamond_logs = adminMongo.getCollection("diamond_logs")
-        return Crud.list(req, diamond_logs, query.get(), null, SJ_DESC)
+        return Crud.list(req, diamond_logs, query.get(), null, SJ_DESC).each {
+            BasicDBObject obj ->
+                def type = obj.containsField('type') ? DiamondActionType.valueOf(obj['type'] as String).name() : ''
+                obj.put('type',type)
+        }
     }
 
     /**
@@ -44,7 +51,11 @@ class DiamondController extends BaseController {
             query.and('user_id').is(userId)
         }
         def diamond_cost_logs = adminMongo.getCollection("diamond_cost_logs")
-        return Crud.list(req, diamond_cost_logs, query.get(), null, SJ_DESC)
+        return Crud.list(req, diamond_cost_logs, query.get(), null, SJ_DESC).each {
+            BasicDBObject obj ->
+                def type = obj.containsField('type') ? DiamondActionType.valueOf(obj['type'] as String).name() : ''
+                obj.put('type',type)
+        }
     }
 
     /**
