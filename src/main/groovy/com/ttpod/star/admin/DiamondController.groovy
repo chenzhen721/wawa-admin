@@ -1,6 +1,8 @@
 package com.ttpod.star.admin
 
 import com.mongodb.BasicDBObject
+import com.mongodb.DBObject
+import com.ttpod.rest.anno.Rest
 import com.ttpod.rest.anno.RestWithSession
 import com.ttpod.rest.web.Crud
 import com.ttpod.star.model.DiamondActionType
@@ -16,8 +18,8 @@ import static com.ttpod.rest.common.doc.MongoKey.SJ_DESC
 /**
  * 钻石的统计
  */
-//@Rest
-@RestWithSession
+@Rest
+//@RestWithSession
 class DiamondController extends BaseController {
 
     static final Logger logger = LoggerFactory.getLogger(DiamondController.class)
@@ -33,15 +35,24 @@ class DiamondController extends BaseController {
             query.and('user_id').is(userId)
         }
         def diamond_logs = adminMongo.getCollection("diamond_logs")
-        return Crud.list(req, diamond_logs, query.get(), null, SJ_DESC).each {
-            BasicDBObject obj ->
-                def type = obj.containsField('type') ? DiamondActionType.valueOf(obj['type'] as String).name() : ''
+        def map =  Crud.list(req, diamond_logs, query.get(), null, SJ_DESC)
+        DiamondActionType[] das = DiamondActionType.values()
+        def types = [:]
+        das.each {
+            DiamondActionType d ->
+            types.put(d.actionName,d.name())
+        }
+        def diamondList = map['data'] as List<DBObject>
+        diamondList.each {
+            DBObject obj ->
+                def type = obj.containsField('type') ? types[obj['type']] : ''
                 obj.put('type',type)
         }
+        return map
     }
 
     /**
-     * 钻石加币
+     * 钻石消费
      * @param req
      */
     def cost_logs(HttpServletRequest req){
@@ -51,11 +62,20 @@ class DiamondController extends BaseController {
             query.and('user_id').is(userId)
         }
         def diamond_cost_logs = adminMongo.getCollection("diamond_cost_logs")
-        return Crud.list(req, diamond_cost_logs, query.get(), null, SJ_DESC).each {
-            BasicDBObject obj ->
-                def type = obj.containsField('type') ? DiamondActionType.valueOf(obj['type'] as String).name() : ''
+        def map =  Crud.list(req, diamond_cost_logs, query.get(), null, SJ_DESC)
+        DiamondActionType[] das = DiamondActionType.values()
+        def types = [:]
+        das.each {
+            DiamondActionType d ->
+                types.put(d.actionName,d.name())
+        }
+        def diamondList = map['data'] as List<DBObject>
+        diamondList.each {
+            DBObject obj ->
+                def type = obj.containsField('type') ? types[obj['type']] : ''
                 obj.put('type',type)
         }
+        return map
     }
 
     /**

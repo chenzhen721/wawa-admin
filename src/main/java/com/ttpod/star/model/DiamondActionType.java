@@ -3,8 +3,8 @@ package com.ttpod.star.model;
 
 public enum DiamondActionType {
     送礼("send_gift"),
-    商城退款("shop_refunds"),
-    商城消费("shop_cost");
+    订单退款("order_refunds"),
+    订单消费("order_cost");
 
     public String actionName;
 
