@@ -85,26 +85,20 @@ class DiamondController extends BaseController {
         def diamond_reports = adminMongo.getCollection('diamond_dailyReport_stat')
         def data = Crud.list(req, diamond_reports, query.get(), null, SJ_DESC)
         DiamondActionType[] das = DiamondActionType.values()
-        def title = []
-        def inc = []
-        def desc = []
-        def column = []
+        def inc = [:]
+        def desc = [:]
         das.each {
             DiamondActionType diamondActionType ->
-                title.add(diamondActionType.name())
                 if (diamondActionType.getIsIncAction() == 0) {
-                    inc.add(diamondActionType.actionName)
+                    inc.put(diamondActionType.actionName,diamondActionType.name())
                 } else {
-                    desc.add(diamondActionType.actionName)
+                    desc.put(diamondActionType.actionName,diamondActionType.name())
                 }
-                column.add(diamondActionType.actionName)
         }
 
         def map = new HashMap(
-                keys: title,
                 inc: inc,
-                desc: desc,
-                column:column
+                desc: desc
         )
 
         return ['title': map, 'data': data['data']]
