@@ -86,16 +86,22 @@ class DiamondController extends BaseController {
         def data = Crud.list(req, diamond_reports, query.get(), null, SJ_DESC)
         DiamondActionType[] das = DiamondActionType.values()
         def title = []
-        def column = []
+        def inc = []
+        def desc = []
         das.each {
             DiamondActionType diamondActionType ->
                 title.add(diamondActionType.name())
-                column.add(diamondActionType.actionName)
+                if (diamondActionType.getIsIncAction() == 0) {
+                    inc.add(diamondActionType.actionName)
+                } else {
+                    desc.add(diamondActionType.actionName)
+                }
         }
 
         def map = new HashMap(
                 keys: title,
-                props: column
+                inc: inc,
+                desc: desc,
         )
 
         return ['title': map, 'data': data['data']]
