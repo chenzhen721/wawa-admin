@@ -88,6 +88,7 @@ class DiamondController extends BaseController {
         def title = []
         def inc = []
         def desc = []
+        def column = []
         das.each {
             DiamondActionType diamondActionType ->
                 title.add(diamondActionType.name())
@@ -96,6 +97,7 @@ class DiamondController extends BaseController {
                 } else {
                     desc.add(diamondActionType.actionName)
                 }
+                column.add(diamondActionType.actionName)
         }
 
         def map = new HashMap(
