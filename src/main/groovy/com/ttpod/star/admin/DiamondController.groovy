@@ -1,6 +1,7 @@
 package com.ttpod.star.admin
 
 import com.mongodb.DBObject
+import com.ttpod.rest.anno.Rest
 import com.ttpod.rest.anno.RestWithSession
 import com.ttpod.rest.web.Crud
 import com.ttpod.star.model.DiamondActionType
@@ -16,7 +17,7 @@ import static com.ttpod.rest.common.doc.MongoKey.SJ_DESC
  * 钻石的统计
  */
 
-@RestWithSession
+@Rest
 class DiamondController extends BaseController {
 
     static final Logger logger = LoggerFactory.getLogger(DiamondController.class)
@@ -87,8 +88,9 @@ class DiamondController extends BaseController {
         def title = []
         def column = []
         das.each {
-            title.add(it.name())
-            column.add(it.actionName)
+            DiamondActionType diamondActionType ->
+                title.add(diamondActionType.name())
+                column.add(diamondActionType.actionName)
         }
 
         def map = new HashMap(
