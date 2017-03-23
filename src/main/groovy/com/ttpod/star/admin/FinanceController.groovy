@@ -381,7 +381,7 @@ class FinanceController extends BaseController {
                         '$pc_second', pc_earned   : '$pc_earned', app_second: '$app_second', app_earned: '$app_earned', meme: '$meme', award_count: '$award_count']),
                 new BasicDBObject('$group', [_id       : '$_id', second: [$sum: '$second'], earned: [$sum: '$earned'],
                                              pc_second : [$sum: '$pc_second'], pc_earned: [$sum: '$pc_earned'], app_second: [$sum: '$app_second'],
-                                             app_earned: [$sum: '$app_earned'], days: [$sum: '$day'], meme: [$sum: '$meme'], award_count: [$sum: '$award_count']]),
+                                             app_earned: [$sum: '$app_earned'], days: [$sum: '$day'], meme: [$sum: '$meme'], award_count: [$first: '$award_count']]),
                 new BasicDBObject('$sort', [second: -1]),
                 new BasicDBObject('$skip', (page - 1) * size),
                 new BasicDBObject('$limit', size)
