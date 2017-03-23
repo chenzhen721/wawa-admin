@@ -380,7 +380,7 @@ class FinanceController extends BaseController {
                 new BasicDBObject('$project', [_id: '$user_id', second: '$second', day: '$value', earned: '$earned', pc_second:
                         '$pc_second', pc_earned   : '$pc_earned', app_second: '$app_second', app_earned: '$app_earned', meme: '$meme', award_count: '$award_count']),
                 new BasicDBObject('$group', [_id       : '$_id', second: [$sum: '$second'], earned: [$sum: '$earned'],
-                                             pc_second : [$sum: '$pc_second'], pc_earned: [$sum: '$pc_earned'], app_second: [$sum: '$app_second'],
+                                             pc_second : [$sum: '$pc_second'], pc_earned: [$sum: '$pc_earned'], app_second: [$sum: '$app_second'],award_count:['$first':'$award_count'],
                                              app_earned: [$sum: '$app_earned'], days: [$sum: '$day'], meme: [$sum: '$meme']]),
                 new BasicDBObject('$sort', [second: -1]),
                 new BasicDBObject('$skip', (page - 1) * size),
@@ -404,18 +404,6 @@ class FinanceController extends BaseController {
             if (user != null)
                 obj.putAll(user)
             //obj.put("days",obj.get('days').collect(new HashSet(30)) {new Date(((Number)it).longValue()).format("yyyy-MM-dd")})
-
-            // 每个用户获取的能量
-            def result = adminMongo.getCollection('star_award_logs').aggregate(
-                    $$('$match': ['timestamp': timeQuery, 'room_id': uid]),
-                    $$('$project': ['_id': '$room_id', 'award_count': '$award_count']),
-                    $$('$group': ['_id': '$_id', 'award_count': ['$sum': '$award_count']])
-            ).results().iterator()
-            if (result.hasNext()) {
-                def tmp = result.next()
-                def award_count = tmp.containsField('award_count') ? tmp['award_count'] == null ? 0 : tmp['award_count'] : 0
-                obj.put('award_count',award_count)
-            }
             dataList.add(obj)
         }
         WebUtils.normalOutModel(total, all_page, dataList)
