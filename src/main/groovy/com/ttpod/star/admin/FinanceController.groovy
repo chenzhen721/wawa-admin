@@ -279,7 +279,11 @@ class FinanceController extends BaseController {
                 obj.put('cny', earned / 100)
                 obj.put('app_cny', app_earned / 100)
                 obj.put('avgCny', df.format(earned / 100 / userCount))
-                obj.put('award_count', obj.containsField('award_count') ? obj['award_count'] : 0)
+                def star_award_count = 0
+                if(obj.containsField('award_count')){
+                    star_award_count = obj['award_count'] ==null ? 0 : obj['award_count']
+                }
+                obj.put('award_count',star_award_count)
                 dataList.add(obj)
             }
         }
