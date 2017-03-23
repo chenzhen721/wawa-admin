@@ -279,11 +279,7 @@ class FinanceController extends BaseController {
                 obj.put('cny', earned / 100)
                 obj.put('app_cny', app_earned / 100)
                 obj.put('avgCny', df.format(earned / 100 / userCount))
-                def star_award_count = 0
-                if (obj.containsField('award_count')) {
-                    star_award_count = obj['award_count'] == null ? 0 : obj['award_count']
-                }
-                obj.put('award_count', star_award_count)
+
                 dataList.add(obj)
             }
         }
@@ -380,7 +376,7 @@ class FinanceController extends BaseController {
                 new BasicDBObject('$project', [_id: '$user_id', second: '$second', day: '$value', earned: '$earned', pc_second:
                         '$pc_second', pc_earned   : '$pc_earned', app_second: '$app_second', app_earned: '$app_earned', meme: '$meme', award_count: '$award_count']),
                 new BasicDBObject('$group', [_id       : '$_id', second: [$sum: '$second'], earned: [$sum: '$earned'],
-                                             pc_second : [$sum: '$pc_second'], pc_earned: [$sum: '$pc_earned'], app_second: [$sum: '$app_second'],award_count:['$first':'$award_count'],
+                                             pc_second : [$sum: '$pc_second'], pc_earned: [$sum: '$pc_earned'], app_second: [$sum: '$app_second'],award_count:['$sum':'$award_count'],
                                              app_earned: [$sum: '$app_earned'], days: [$sum: '$day'], meme: [$sum: '$meme']]),
                 new BasicDBObject('$sort', [second: -1]),
                 new BasicDBObject('$skip', (page - 1) * size),
@@ -403,6 +399,10 @@ class FinanceController extends BaseController {
             def user = users.findOne(new BasicDBObject(_id, uid), new BasicDBObject('star.timestamp': 1, 'star.broker': 1, nick_name: 1, 'finance.bean_count_total': 1))
             if (user != null)
                 obj.putAll(user)
+
+            if (!obj.containsField('award_count') || obj['award_count'] == null) {
+                obj.put('award_count',0)
+            }
             //obj.put("days",obj.get('days').collect(new HashSet(30)) {new Date(((Number)it).longValue()).format("yyyy-MM-dd")})
             dataList.add(obj)
         }
