@@ -254,7 +254,7 @@ class FinanceController extends BaseController {
         tableLivestat.aggregate(
                 $$($match, query.get()),
                 $$($project, [_id: '$_id', timestamp: '$timestamp', second: '$second', earned: '$earned', pc_second: '$pc_second', pc_earned: '$pc_earned', app_second: '$app_second', app_earned: '$app_earned', user_id: '$user_id','award_count':'$award_count']),
-                $$($group, [_id: '$timestamp', second: [$sum: '$second'], earned: [$sum: '$earned'], pc_second: [$sum: '$pc_second'], pc_earned: [$sum: '$pc_earned'], app_second: [$sum: '$app_second'], app_earned: [$sum: '$app_earned'], userSet: [$addToSet: '$user_id'],'award_count':[$sum: '$award_count']]),
+                $$($group, [_id: '$timestamp', second: [$sum: '$second'], earned: [$sum: '$earned'], pc_second: [$sum: '$pc_second'], pc_earned: [$sum: '$pc_earned'], app_second: [$sum: '$app_second'], app_earned: [$sum: '$app_earned'], userSet: [$addToSet: '$user_id'],'award_count':[$first: '$award_count']]),
                 $$($sort, [_id: -1])
         ).results().each { BasicDBObject obj ->
             def timestamp = obj.remove('_id') as Long
