@@ -4,6 +4,7 @@ import com.mongodb.BasicDBObject
 import com.mongodb.DBCollection
 import com.mongodb.DBObject
 import com.mongodb.QueryBuilder
+import com.ttpod.rest.anno.Rest
 import com.ttpod.rest.anno.RestWithSession
 import com.ttpod.rest.common.doc.IMessageCode
 import com.ttpod.rest.common.util.WebUtils
@@ -14,6 +15,7 @@ import com.ttpod.star.common.util.KeyUtils
 import com.ttpod.star.model.*
 import org.apache.commons.lang.StringUtils
 import org.apache.commons.lang.math.NumberUtils
+import org.springframework.web.bind.ServletRequestUtils
 
 import javax.annotation.Resource
 import javax.servlet.http.HttpServletRequest
@@ -31,8 +33,8 @@ import static com.ttpod.rest.common.util.WebUtils.$$
  * date: 13-3-28 下午2:31
  * @author: yangyang.cong@ttpod.com
  */
-//@Rest
-@RestWithSession
+@Rest
+//@RestWithSession
 class FinanceController extends BaseController {
     DBCollection table() { adminMongo.getCollection('finance_log') }
     DBCollection basicSalary() { adminMongo.getCollection('basic_salary') }
@@ -963,5 +965,20 @@ class FinanceController extends BaseController {
         def query = Web.fillTimeBetween(req)
         def dailyReport = adminMongo.getCollection("finance_dailyReport")
         return Crud.list(req, dailyReport, query.get(), $$(total_coin:0), SJ_DESC)
+    }
+
+    /**
+     * 商品日报表
+     * @param req
+     */
+    def product_stat_report(HttpServletRequest req) {
+        def productId = ServletRequestUtils.getIntParameter(req,'_id',0)
+
+        def product_stat = adminMongo.getCollection('product_stat')
+        def query = Web.fillTimeBetween(req)
+        if(productId != 0){
+            query.and('product_id').is(productId)
+        }
+        return Crud.list(req, product_stat, query.get(), null, SJ_DESC)
     }
 }
