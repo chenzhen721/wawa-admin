@@ -156,7 +156,7 @@ class GameController extends BaseController {
         if (roomId != 0) {
             query.and('room_id').is(roomId)
         }
-        Crud.list(req, star_award_logs(), query.get(), ALL_FIELD, SJ_DESC)
+        Crud.list(req, star_award_logs(), query.get(), null, $$('timestamp':-1))
     }
 
 
