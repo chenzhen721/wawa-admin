@@ -163,4 +163,19 @@ class GameController extends BaseController {
     }
 
 
+    def award_logs(HttpServletRequest req) {
+        logger.info('Received award_logs params is {}', req.getParameterMap())
+        def query = Web.fillTimeBetween(req)
+        def id = ServletRequestUtils.getIntParameter(req, '_id', 0)
+        def roomId = ServletRequestUtils.getIntParameter(req, 'room_id', 0)
+
+        if (id != 0) {
+            query.and('_id').is(id)
+        }
+
+        if (roomId != 0) {
+            query.and('room_id').is(roomId)
+        }
+        Crud.list(req, star_award_logs(), query.get(), ALL_FIELD, SJ_DESC)
+    }
 }
