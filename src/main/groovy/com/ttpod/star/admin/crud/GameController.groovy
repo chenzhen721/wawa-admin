@@ -1,6 +1,7 @@
 package com.ttpod.star.admin.crud
 
 import com.mongodb.BasicDBObject
+import com.mongodb.DBCollection
 import com.mongodb.DBObject
 import com.ttpod.rest.anno.Rest
 import com.ttpod.rest.anno.RestWithSession
@@ -24,13 +25,13 @@ class GameController extends BaseController {
 
     static final Logger logger = LoggerFactory.getLogger(GameController.class)
 
-    def rounds() { return gameLogMongo.getCollection('game_round') }
+    DBCollection rounds() { return gameLogMongo.getCollection('game_round') }
 
-    def bets() { return gameLogMongo.getCollection('user_bet') }
+    DBCollection bets() { return gameLogMongo.getCollection('user_bet') }
 
-    def lotterys() { return gameLogMongo.getCollection('user_lottery') }
+    DBCollection lotterys() { return gameLogMongo.getCollection('user_lottery') }
 
-    def star_award_logs() { return gameLogMongo.getCollection('star_award_logs') }
+    DBCollection star_award_logs() { return gameLogMongo.getCollection('star_award_logs') }
 
 
     @Delegate
