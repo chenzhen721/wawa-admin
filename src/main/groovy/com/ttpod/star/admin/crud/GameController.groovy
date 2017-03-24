@@ -36,7 +36,7 @@ class GameController extends BaseController {
             [_id: Int, name: Str, pic_url: Str, status: Bool, timestamp: Timestamp, order: Int, icon_pic_url: Str],
             new Crud.QueryCondition() {
                 public DBObject sortby(HttpServletRequest req) {
-                    return new BasicDBObject("timestamp", -1);
+                    return TIMESTAMP_SORT_DESC;
                 }
             }
     )
