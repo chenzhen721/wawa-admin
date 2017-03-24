@@ -1,7 +1,9 @@
 package com.ttpod.star.admin.crud
 
 import com.mongodb.BasicDBObject
+import com.mongodb.DBCollection
 import com.mongodb.DBObject
+import com.ttpod.rest.anno.Rest
 import com.ttpod.rest.anno.RestWithSession
 import com.ttpod.rest.web.Crud
 import com.ttpod.star.admin.BaseController
@@ -17,18 +19,19 @@ import static com.ttpod.rest.common.doc.MongoKey.*
 import static com.ttpod.rest.common.util.WebUtils.$$
 import static com.ttpod.rest.groovy.CrudClosures.*
 
+
 @RestWithSession
 class GameController extends BaseController {
 
     static final Logger logger = LoggerFactory.getLogger(GameController.class)
 
-    def rounds() { return gameLogMongo.getCollection('game_round') }
+    DBCollection rounds() { return gameLogMongo.getCollection('game_round') }
 
-    def bets() { return gameLogMongo.getCollection('user_bet') }
+    DBCollection bets() { return gameLogMongo.getCollection('user_bet') }
 
-    def lotterys() { return gameLogMongo.getCollection('user_lottery') }
+    DBCollection lotterys() { return gameLogMongo.getCollection('user_lottery') }
 
-    def star_award_logs() { return gameLogMongo.getCollection('star_award_logs') }
+    DBCollection star_award_logs() { return gameLogMongo.getCollection('star_award_logs') }
 
 
     @Delegate
@@ -144,7 +147,7 @@ class GameController extends BaseController {
      * @return
      */
     def star_award_logs(HttpServletRequest req) {
-        logger.debug('Received star_award_logs params is {}', req.getParameterMap())
+        logger.info('Received star_award_logs params is {}', req.getParameterMap())
         def query = Web.fillTimeBetween(req)
         def id = ServletRequestUtils.getIntParameter(req, '_id', 0)
         def roomId = ServletRequestUtils.getIntParameter(req, 'room_id', 0)
@@ -158,6 +161,5 @@ class GameController extends BaseController {
         }
         Crud.list(req, star_award_logs(), query.get(), ALL_FIELD, SJ_DESC)
     }
-
 
 }
