@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.web.bind.ServletRequestUtils
 
 import javax.servlet.http.HttpServletRequest
+import static com.ttpod.rest.common.doc.MongoKey.*
 
 import static com.ttpod.rest.common.util.WebUtils.$$
 import static com.ttpod.rest.groovy.CrudClosures.*
@@ -29,14 +30,13 @@ class GameController extends BaseController {
 
     def star_award_logs() { return gameLogMongo.getCollection('star_award_logs') }
 
-    static final BasicDBObject TIMESTAMP_SORT_DESC = $$('timestamp': -1)
 
     @Delegate
     Crud crud = new Crud(adminMongo.getCollection('games'), true,
             [_id: Int, name: Str, pic_url: Str, status: Bool, timestamp: Timestamp, order: Int, icon_pic_url: Str],
             new Crud.QueryCondition() {
                 public DBObject sortby(HttpServletRequest req) {
-                    return new BasicDBObject("timestamp", -1);
+                    return SJ_DESC;
                 }
             }
     )
@@ -68,7 +68,7 @@ class GameController extends BaseController {
             query.and('game_id').is(gameId)
         }
 
-        Crud.list(req, rounds(), query.get(), null, TIMESTAMP_SORT_DESC)
+        Crud.list(req, rounds(), query.get(), ALL_FIELD, SJ_DESC)
     }
 
     /**
@@ -101,7 +101,7 @@ class GameController extends BaseController {
             query.and('user_id').is(userId)
         }
 
-        Crud.list(req, bets(), query.get(), null, TIMESTAMP_SORT_DESC)
+        Crud.list(req, bets(), query.get(), ALL_FIELD, SJ_DESC)
     }
 
     /**
@@ -135,7 +135,7 @@ class GameController extends BaseController {
             query.and('user_id').is(userId)
         }
 
-        Crud.list(req, lotterys(), query.get(), null, TIMESTAMP_SORT_DESC)
+        Crud.list(req, lotterys(), query.get(), ALL_FIELD, SJ_DESC)
     }
 
     /**
@@ -156,7 +156,7 @@ class GameController extends BaseController {
         if (roomId != 0) {
             query.and('room_id').is(roomId)
         }
-        Crud.list(req, star_award_logs(), query.get(), null, TIMESTAMP_SORT_DESC)
+        Crud.list(req, star_award_logs(), query.get(), ALL_FIELD, SJ_DESC)
     }
 
 
