@@ -2,6 +2,7 @@ package com.ttpod.star.admin.crud
 
 import com.mongodb.BasicDBObject
 import com.mongodb.DBObject
+import com.ttpod.rest.anno.Rest
 import com.ttpod.rest.anno.RestWithSession
 import com.ttpod.rest.web.Crud
 import com.ttpod.star.admin.BaseController
@@ -17,7 +18,8 @@ import static com.ttpod.rest.common.doc.MongoKey.*
 import static com.ttpod.rest.common.util.WebUtils.$$
 import static com.ttpod.rest.groovy.CrudClosures.*
 
-@RestWithSession
+//@RestWithSession
+@Rest
 class GameController extends BaseController {
 
     static final Logger logger = LoggerFactory.getLogger(GameController.class)
