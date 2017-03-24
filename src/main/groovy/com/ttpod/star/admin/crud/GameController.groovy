@@ -146,7 +146,7 @@ class GameController extends BaseController {
      * @return
      */
     def star_award_logs(HttpServletRequest req) {
-        logger.debug('Received star_award_logs params is {}', req.getParameterMap())
+        logger.info('Received star_award_logs params is {}', req.getParameterMap())
         def query = Web.fillTimeBetween(req)
         def id = ServletRequestUtils.getIntParameter(req, '_id', 0)
         def roomId = ServletRequestUtils.getIntParameter(req, 'room_id', 0)
