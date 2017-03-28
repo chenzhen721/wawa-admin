@@ -78,9 +78,9 @@ class StatController extends BaseController {
         List<String> names = ['礼物']
         gameList.each {
             BasicDBObject obj ->
-                String id = obj['_id']
+                def id = obj['_id'] as Integer
                 String name = obj['name']
-                keys.add(id)
+                keys.add(id.toString())
                 names.add(name)
         }
         def cost_type = [
