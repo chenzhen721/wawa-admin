@@ -33,8 +33,8 @@ import static com.ttpod.rest.common.util.WebUtils.$$
  * date: 13-3-28 下午2:31
  * @author: yangyang.cong@ttpod.com
  */
-@Rest
-//@RestWithSession
+//@Rest
+@RestWithSession
 class FinanceController extends BaseController {
     DBCollection table() { adminMongo.getCollection('finance_log') }
 
