@@ -4,7 +4,8 @@ package com.ttpod.star.model;
 public enum DiamondActionType {
     送礼("send_gift", 0),
     订单退款("order_refunds", 0),
-    订单消费("order_cost", 1);
+    订单消费("order_cost", 1),
+    活动("activity",0);
 
     public String actionName;
 
