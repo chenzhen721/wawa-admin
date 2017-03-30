@@ -15,7 +15,7 @@ import static com.ttpod.rest.groovy.CrudClosures.*
 @RestWithSession
 class MissionController extends BaseController{
 
-    @Delegate Crud crud = new Crud(adminMongo.getCollection('missions'),
+    @Delegate Crud crud = new Crud(adminMongo.getCollection('missions'),Boolean.FALSE,
             [_id:Str,title:Str,pic_url:Str,icon_url:Str,coin_count:Int,order:Int,status:Bool,level:Int,total:Int,remark:Str,
                     type:Int],
             new Crud.QueryCondition(){
