@@ -146,7 +146,7 @@ class ApplyController extends BaseController {
                             }
 
                             //设置直播间排行榜新人加成分数
-                            //room_rank(user_id)
+                            room_rank(user_id)
 
                             //TODO 临时设置身份信息审核通过
                             record['status'] = ApplyType.通过.ordinal()
@@ -175,7 +175,7 @@ class ApplyController extends BaseController {
     }
 
     private void room_rank(Integer starId) {
-        rankMongo.getCollection('rooms').update($$(_id: starId), $$($set: ["new_points": 18]), true, false)
+        rankMongo.getCollection('rooms').update($$(_id: starId), $$($set: ["new_points": 10]), true, false)
     }
 
     private static final Map mapPro = [11: "北京", 12: "天津", 13: "河北", 14: "山西", 15: "内蒙古", 21: "辽宁",
