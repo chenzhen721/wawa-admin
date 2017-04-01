@@ -129,7 +129,7 @@ class DiamondController extends BaseController {
         def obj = $$('finance.diamond_count', num);
         def type = num >0 ? DiamondActionType.后台加钻.actionName : DiamondActionType.后台减钻.actionName
         def diamondId = userId + '_' + type + '_' + timestamp
-        def logWithId = $$(_id: diamondId, user_id: userId, cost: num, diamond_count: num,via: 'Admin', timestamp: timestamp,type:type)
+        def logWithId = $$(_id: diamondId, user_id: userId, cost: num, diamond_count: num,via: 'Admin', timestamp: timestamp,type:type,remark:remark)
         Boolean flag = num > 0 ? addCoin(userId, num, logWithId, obj) : minusCoin(userId, num, logWithId, obj)
         if(flag){
             Crud.opLog(OpType.diamond_add, [user_id: userId, order_id: diamondId, coin: num, remark: remark])
