@@ -1,16 +1,25 @@
 package com.ttpod.star.admin
 
+import com.mongodb.BasicDBObject
+import com.mongodb.DBCollection
 import com.mongodb.DBObject
 import com.ttpod.rest.anno.Rest
 import com.ttpod.rest.anno.RestWithSession
 import com.ttpod.rest.web.Crud
 import com.ttpod.star.model.DiamondActionType
+import com.ttpod.star.model.OpType
+import org.apache.commons.lang.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.ServletRequestUtils
 
 import javax.servlet.http.HttpServletRequest
+import static com.ttpod.rest.common.util.WebUtils.$$
 
+import static com.ttpod.rest.common.doc.MongoKey.$inc
+import static com.ttpod.rest.common.doc.MongoKey.$ne
+import static com.ttpod.rest.common.doc.MongoKey.$pull
+import static com.ttpod.rest.common.doc.MongoKey.$push
 import static com.ttpod.rest.common.doc.MongoKey.SJ_DESC
 
 /**
@@ -90,9 +99,9 @@ class DiamondController extends BaseController {
         das.each {
             DiamondActionType diamondActionType ->
                 if (diamondActionType.getIsIncAction() == 0) {
-                    inc.put(diamondActionType.actionName,diamondActionType.name())
+                    inc.put(diamondActionType.actionName, diamondActionType.name())
                 } else {
-                    desc.put(diamondActionType.actionName,diamondActionType.name())
+                    desc.put(diamondActionType.actionName, diamondActionType.name())
                 }
         }
 
@@ -104,5 +113,66 @@ class DiamondController extends BaseController {
         return ['title': map, 'data': data['data']]
     }
 
+    /**
+     * 钻石加币
+     * @param req
+     * @return
+     */
+    def add(HttpServletRequest req) {
+        Integer userId = ServletRequestUtils.getIntParameter(req, '_id', 0)
+        Long num = ServletRequestUtils.getLongParameter(req,'num',0L)
+        if (userId == 0 || num == 0L) {
+            return Web.missParam()
+        }
+        Long timestamp = new Date().getTime()
+        String remark = req['remark'] as String
+        String diamondId = userId + '_' + DiamondActionType.actionName + '_' + timestamp
+        def logWithId = $$(_id: diamondId, user_id: userId, cost: num,
+                via: 'Admin', type: DiamondActionType.actionName, timestamp: timestamp
+        )
 
+        def obj = $$('finance.diamond_count', num);
+        if (addCoin(userId, num, logWithId, obj)) {
+            Crud.opLog(OpType.diamond_add, [user_id: userId, order_id: diamondId, coin: num, remark: remark])
+        }
+        [code: 1]
+    }
+
+
+    private boolean addCoin(Integer userId, Long coin, BasicDBObject logWithId, BasicDBObject obj) {
+        String log_id = (String) logWithId.get("_id");
+        if (coin < 0 || log_id == null) {
+            return false;
+        }
+        if (logWithId.get("to_id") == null) {
+            logWithId.put("to_id", userId);
+        }
+        if (logWithId.get(timestamp) == null) {
+            logWithId.put(timestamp, System.currentTimeMillis());
+        }
+        DBCollection users = users();
+        DBObject my_user = users.findOne(new BasicDBObject(_id, userId));
+        if (my_user != null) {
+            if (null != my_user.get("qd")) {
+                String qd = my_user.get("qd").toString();
+                logWithId.append("qd", qd);
+            }
+        }
+        DBCollection logColl = adminMongo.getCollection('diamond_logs');
+        if (logColl.count(new BasicDBObject(_id, log_id)) == 0 &&
+                users.update(new BasicDBObject('_id', userId).append('diamond_logs._id', new BasicDBObject($ne, log_id)),
+                        new BasicDBObject($inc, obj)
+                                .append($push, new BasicDBObject('diamond_logs', logWithId)),
+                        false, false, writeConcern
+                ).getN() == 1) {
+
+            logColl.save(logWithId, writeConcern);
+            users.update(new BasicDBObject(_id, userId),
+                    new BasicDBObject($pull, new BasicDBObject('diamond_logs', new BasicDBObject(_id, log_id))),
+                    false, false, writeConcern);
+
+            return true;
+        }
+        return false;
+    }
 }
