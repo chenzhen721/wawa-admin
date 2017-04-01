@@ -127,7 +127,7 @@ class DiamondController extends BaseController {
         Long timestamp = new Date().getTime()
         String remark = req['remark'] as String
         def obj = $$('finance.diamond_count', num);
-        def type = num >0 ? DiamondActionType.后台加钻.name() : DiamondActionType.后台减钻.name()
+        def type = num >0 ? DiamondActionType.后台加钻.actionName : DiamondActionType.后台减钻.actionName
         def diamondId = userId + '_' + type + '_' + timestamp
         def logWithId = $$(_id: diamondId, user_id: userId, cost: num, diamond_count: num,via: 'Admin', timestamp: timestamp,type:type)
         Boolean flag = num > 0 ? addCoin(userId, num, logWithId, obj) : minusCoin(userId, num, logWithId, obj)
