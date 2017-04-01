@@ -127,7 +127,7 @@ class DiamondController extends BaseController {
         Long timestamp = new Date().getTime()
         String remark = req['remark'] as String
         String diamondId = userId + '_' + DiamondActionType.后台.actionName + '_' + timestamp
-        def logWithId = $$(_id: diamondId, user_id: userId, cost: num,
+        def logWithId = $$(_id: diamondId, user_id: userId, cost: num,diamond_count:num,
                 via: 'Admin', type: DiamondActionType.后台.actionName, timestamp: timestamp
         )
 
