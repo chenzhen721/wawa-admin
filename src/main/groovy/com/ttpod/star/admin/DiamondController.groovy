@@ -141,7 +141,7 @@ class DiamondController extends BaseController {
 
     private boolean addCoin(Integer userId, Long coin, BasicDBObject logWithId, BasicDBObject obj) {
         String log_id = (String) logWithId.get("_id");
-        if (coin < 0 || log_id == null) {
+        if (coin <= 0 || log_id == null) {
             return false;
         }
         if (logWithId.get("to_id") == null) {
@@ -178,7 +178,7 @@ class DiamondController extends BaseController {
 
     private boolean minusCoin(Integer userId, Long coin, BasicDBObject logWithId, BasicDBObject obj) {
         String log_id = (String) logWithId.get("_id");
-        if (coin < 0 || log_id == null) {
+        if (coin >= 0 || log_id == null) {
             return false;
         }
         if (logWithId.get("to_id") == null) {
