@@ -6,7 +6,8 @@ public enum DiamondActionType {
     订单退款("order_refunds", 0),
     订单消费("order_cost", 1),
     活动("activity",0),
-    后台("admin_add",0);
+    后台加钻("admin_add",0),
+    后台减钻("admin_minus",1);
 
     public String actionName;
 
