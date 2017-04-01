@@ -536,10 +536,10 @@ class UserController extends BaseController {
     }
 
     /**
-     * 设置经纪人提现信息
+     * 完善经纪人信息
      * @param req
      */
-    def set_cash_info(HttpServletRequest req) {
+    def info_complete(HttpServletRequest req) {
         logger.debug('Received set_cash_info params is {}', req.getParameterMap())
 
         def userId = req['user_id']
@@ -547,6 +547,9 @@ class UserController extends BaseController {
         if (StringUtils.isBlank(userId)) {
             return Web.missParam()
         }
+
+        // 身份证
+        def sfz = req['sfz']
         // 真实姓名
         def realName = req['real_name']
         // 卡号
@@ -558,7 +561,7 @@ class UserController extends BaseController {
         // 所属银行
         def bank = req['bank']
 
-        def map = [real_name: realName, bank_id: bankId, bank_location: bankLocation, bank_name: bankName, bank: bank]
+        def map = [real_name: realName, bank_id: bankId, bank_location: bankLocation, bank_name: bankName, bank: bank,sfz:sfz]
         def query = $$('_id': userId as Integer, 'priv': UserType.经纪人.ordinal())
         def update = $$('$set': $$('broker.cash': map))
         users().update(query, update)
