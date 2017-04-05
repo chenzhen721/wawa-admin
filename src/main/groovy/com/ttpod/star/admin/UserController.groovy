@@ -199,6 +199,7 @@ class UserController extends BaseController {
                         $$($group, [_id: null, bean_total: [$sum: '$bean_count']])
                 ).results().iterator()
                 if (beanStatIter.hasNext()) {
+                    // 脚本统计出来的能量 room_cost + game_award
                     obj.put("bean_period", beanStatIter.next().get("bean_total"))
                 }
                 //旗下主播数量
@@ -213,7 +214,7 @@ class UserController extends BaseController {
                     if (real_star_count != star_total) {
                         users().update($$(_id: user_id), $$($set: ['broker.star_total': real_star_count]))
                     }
-                    //一段时间内签约主播
+                    //一段时间内签约主播,被解约的也不会被查询出来
                     List<Integer> stars = getUidsByApplyTime(astime, aetime, user_id);
                     logger.debug("broker {} stars: {}", user_id, stars)
                     broker.put('apply_period_stars', stars.size())
