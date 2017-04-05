@@ -117,7 +117,7 @@ class GameController extends BaseController {
         def query = Web.fillTimeBetween(req)
         def userId = ServletRequestUtils.getIntParameter(req, 'user_id', 0)
         def roomId = ServletRequestUtils.getIntParameter(req, 'room_id', 0)
-        def roundId = ServletRequestUtils.getIntParameter(req, '_id', 0)
+        def roundId = ServletRequestUtils.getStringParameter(req, '_id', '')
         def gameId = ServletRequestUtils.getIntParameter(req, 'game_id', 0)
         def liveId = ServletRequestUtils.getStringParameter(req, 'live_id', '')
 
@@ -127,7 +127,7 @@ class GameController extends BaseController {
         if (roomId != 0) {
             query.and('room_id').is(roomId)
         }
-        if (roundId != 0) {
+        if (StringUtils.isNotBlank(roundId)) {
             query.and('_id').is(roundId)
         }
 
