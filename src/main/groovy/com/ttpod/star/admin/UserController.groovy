@@ -200,6 +200,7 @@ class UserController extends BaseController {
                 ).results().iterator()
                 if (beanStatIter.hasNext()) {
                     // 脚本统计出来的能量 room_cost + game_award
+
                     obj.put("bean_period", beanStatIter.next().get("bean_total"))
                 }
                 //旗下主播数量
@@ -380,7 +381,7 @@ class UserController extends BaseController {
         if (stars == null || stars.size() == 0) return result;
 
         timeQuery.put('user_id', $$($in: stars))
-        //logger.debug("broker caculateStars query: {}", timeQuery)
+        logger.debug("broker caculateStars query: {}", timeQuery)
         Iterator records = adminMongo.getCollection("stat_lives").aggregate(
                 new BasicDBObject('$match', timeQuery),
                 new BasicDBObject('$project', [_id: '$user_id', earned: '$earned']),
