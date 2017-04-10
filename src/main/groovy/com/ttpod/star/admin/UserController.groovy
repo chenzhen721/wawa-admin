@@ -5,15 +5,17 @@ import com.mongodb.DBCollection
 import com.mongodb.DBObject
 import com.mongodb.QueryBuilder
 import com.ttpod.rest.AppProperties
-import com.ttpod.rest.anno.Rest
 import com.ttpod.rest.anno.RestWithSession
 import com.ttpod.rest.common.doc.IMessageCode
 import com.ttpod.rest.common.util.MsgDigestUtil
 import com.ttpod.rest.web.Crud
 import com.ttpod.star.common.doc.Param
 import com.ttpod.star.common.util.ExportUtils
+import com.ttpod.star.common.util.IMUtil
 import com.ttpod.star.common.util.KeyUtils
 import com.ttpod.star.model.*
+import com.ttpod.star.web.api.notify.GameService
+import com.ttpod.star.web.api.notify.MessageSend
 import org.apache.commons.codec.binary.Base64
 import org.apache.commons.lang.StringUtils
 import org.slf4j.Logger
@@ -41,8 +43,8 @@ import static com.ttpod.rest.common.util.WebUtils.$$
  * date: 14-8-28 下午2:31
  */
 
-@Rest
-//@RestWithSession
+//@Rest
+@RestWithSession
 class UserController extends BaseController {
 
     @Resource
@@ -444,7 +446,11 @@ class UserController extends BaseController {
         return OK()
     }
 
-
+    /**
+     * 封杀设备需要关闭直播间
+     * @param req
+     * @return
+     */
     def ban(HttpServletRequest req) {
         def id = req.getInt(_id)
         String uid = getClientId(req, id)
@@ -452,12 +458,23 @@ class UserController extends BaseController {
         if (uid) {
             Integer hour = Math.max(1, ServletRequestUtils.getIntParameter(req, 'hour', 48))
             String token = userRedis.opsForValue().get(KeyUtils.USER.token(id))
-            if (token) {
+            Map user = userRedis.opsForHash().entries(KeyUtils.accessToken(token))
+            String priv = user.get('priv')
+            Boolean flag = Boolean.TRUE
+            // 如果是主播关闭直播间
+            if(priv == UserType.主播.ordinal().toString()){
+                flag = live_off(id)
+            }
+            if (token && flag) {
                 userRedis.delete(KeyUtils.USER.token(id))
                 userRedis.delete(KeyUtils.accessToken(token))
-                publish(KeyUtils.CHANNEL.user(id), '{"action":"sys.freeze"}')
-
+                def body = ["message": '管理员封杀设备', "userIds": id, "isNotify": 0, "isSave": 0,
+                            extra: [
+                                    event: 'system_live_open'
+                            ]]
+                IMUtil.sendToUsers(body)
             }
+
             String value = id
             if (StringUtils.isNotBlank(value)) {
                 if (StringUtils.isNotBlank(comment))
@@ -469,6 +486,68 @@ class UserController extends BaseController {
             }
         }
         [code: 0, msg: '无法获取客户端UID或者IP']
+    }
+
+    /**
+     * 封杀或者冻结调用关播功能
+     * @param roomId
+     * @return
+     */
+    private Boolean live_off(Integer roomId) {
+        final time = System.currentTimeMillis()
+        final oldRoom = rooms().findAndModify($$("_id": roomId, live: Boolean.TRUE),
+                $$($set, [live: false, live_id: '', position: null, live_end_time: time, pull_urls: null])
+        )
+        logger.debug('oldRoom is {}', oldRoom)
+        String live_id = oldRoom?.get("live_id")
+
+        Integer live_type = oldRoom?.get("live_type") as Integer
+        if (StringUtils.isBlank(live_id)) {
+            return Boolean.FALSE
+        }
+
+        userRedis.delete(KeyUtils.ROOM.liveFlag(roomId))
+        liveRedis.delete(liveRedis.keys(KeyUtils.LIVE.all(roomId)))
+        logMongo.getCollection("room_edit").update($$(type: "live_on", data: live_id, room: roomId), $$('$set': [etime: time]))
+        logRoomEdit('live_off', roomId, live_type, live_id)
+
+        def body = ['live': false, room_id: roomId]
+        MessageSend.publishLiveEvent(body)
+
+        def zhuboId = oldRoom.get("xy_star_id") as Integer
+
+        def reason = '管理员封杀设备'
+        // 管理员封杀设备后无法登陆
+        def ttl = 6000L
+        liveRedis.opsForValue().set(KeyUtils.LIVE.blackStar(zhuboId), KeyUtils.MARK_VAL, ttl, TimeUnit.SECONDS)
+        def publish_star_close_body = ['star_id': zhuboId, 'reason': reason, 'ttl': ttl]
+        MessageSend.publishStarCloseEvent(publish_star_close_body, zhuboId)
+
+        // 记录操作日志
+        def userId = Web.getCurrentUserId()
+        Crud.opLog(OpType.room_close, [user_id: userId])
+
+        // 关闭直播间通知游戏端
+        def game_id = oldRoom['game_id']
+        if (game_id != 0) {
+            if (!GameService.closeGame(roomId, game_id, live_id)) {
+                logger.error("请求关闭游戏失败")
+                 return Boolean.FALSE
+            }
+        }
+
+        return Boolean.TRUE
+    }
+
+    private void logRoomEdit(String type, Integer roomId, Integer live_type, Object data) {
+        Map obj = new HashMap();
+        obj.put("type", type);
+        obj.put("room", roomId);
+        obj.put("data", data);
+        obj.put("live_type", live_type);
+        obj.put("session", Web.getSession());
+        obj.put("timestamp", System.currentTimeMillis());
+        logMongo.getCollection("room_edit").save(new BasicDBObject(obj));
     }
 
     private final String[] clients = ['uid', 'ip']
