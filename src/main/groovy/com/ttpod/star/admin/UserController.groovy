@@ -463,7 +463,7 @@ class UserController extends BaseController {
             Boolean flag = Boolean.TRUE
             // 如果是主播关闭直播间
             if(priv == UserType.主播.ordinal().toString()){
-                flag = live_off(id)
+                flag = live_off(id,hour)
             }
             if (token && flag) {
                 userRedis.delete(KeyUtils.USER.token(id))
@@ -493,7 +493,7 @@ class UserController extends BaseController {
      * @param roomId
      * @return
      */
-    private Boolean live_off(Integer roomId) {
+    private Boolean live_off(Integer roomId,Integer hour) {
         final time = System.currentTimeMillis()
         final oldRoom = rooms().findAndModify($$("_id": roomId, live: Boolean.TRUE),
                 $$($set, [live: false, live_id: '', position: null, live_end_time: time, pull_urls: null])
@@ -518,7 +518,7 @@ class UserController extends BaseController {
 
         def reason = '管理员封杀设备'
         // 管理员封杀设备后无法登陆
-        def ttl = 6000L
+        def ttl = hour * 60 * 60 * 1000L
         liveRedis.opsForValue().set(KeyUtils.LIVE.blackStar(zhuboId), KeyUtils.MARK_VAL, ttl, TimeUnit.SECONDS)
         def publish_star_close_body = ['star_id': zhuboId, 'reason': reason, 'ttl': ttl]
         MessageSend.publishStarCloseEvent(publish_star_close_body, zhuboId)
