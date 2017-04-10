@@ -57,7 +57,8 @@ class UserController extends BaseController {
 
     DBCollection basicSalary() { adminMongo.getCollection('basic_salary') }
 
-    public static final BasicDBObject ROOM_LIST_USER_FILED = $$(nick_name: 1, 'finance.coin_spend_total': 1, "finance.bean_count_total": 1, pic: 1, broker: 1, star_total: 1)
+    public static
+    final BasicDBObject ROOM_LIST_USER_FILED = $$(nick_name: 1, 'finance.coin_spend_total': 1, "finance.bean_count_total": 1, pic: 1, broker: 1, star_total: 1)
 
     def list(HttpServletRequest req) {
         def query = Web.fillTimeBetween(req)
@@ -412,6 +413,9 @@ class UserController extends BaseController {
         return result;
     }
 
+    static final String FREEZE_TITLE = '冻结账户'
+    static final String FREEZE_CONTENT = '管理员冻结账户,请联系爱玩客户人员'
+
     def freeze(HttpServletRequest req) {
         def id = req.getInt(_id)
         Boolean status = !'0'.equals(req['status'])
@@ -434,13 +438,18 @@ class UserController extends BaseController {
                     userRedis.delete(KeyUtils.accessToken(token))
                 }
                 //是否为主播
-                def room = rooms().findOne($$(_id: id))
-                if (room) {//推送主播房间
-                    publish(KeyUtils.CHANNEL.room(id), [action: "room.freeze", data_d: ['reason': reason, user_id: id]])
-                } else {
-                    publish(KeyUtils.CHANNEL.user(id), '{"action":"sys.freeze"}')
+                if (StringUtils.isBlank(reason)) {
+                    reason = FREEZE_CONTENT
                 }
-
+                def body = IMUtil.buildSystemMessageBody(FREEZE_TITLE, reason, [id], 0, 0)
+                def room = rooms().findOne($$(_id: id),$$('live':1))
+                def live = room.containsField('live') ? room['live'] as Boolean : Boolean.FALSE
+                if (live) {
+                    //推送主播房间
+                    Long ttl = days == -1 ? 60 * 60 * 24 * 365 * 1000L : 60 * 60 * 24 * days * 1000L
+                    live_off(id, ttl)
+                }
+                IMUtil.sendToUsers(body)
             }
         }
         return OK()
@@ -453,6 +462,7 @@ class UserController extends BaseController {
      */
     static final String BAN_TITLE = '封杀设备'
     static final String BAN_CONTENT = '管理员封杀设备,请联系爱玩直播客服人员'
+
     def ban(HttpServletRequest req) {
         def id = req.getInt(_id)
         String uid = getClientId(req, id)
@@ -460,17 +470,17 @@ class UserController extends BaseController {
         if (uid) {
             Integer hour = Math.max(1, ServletRequestUtils.getIntParameter(req, 'hour', 48))
             String token = userRedis.opsForValue().get(KeyUtils.USER.token(id))
-            Map user = userRedis.opsForHash().entries(KeyUtils.accessToken(token))
-            String priv = user.get('priv')
-            Boolean flag = Boolean.TRUE
+            def room = rooms().findOne($$(_id: id),$$('live':1))
+            def live = room.containsField('live') ? room['live'] as Boolean : Boolean.FALSE
             // 如果是主播关闭直播间
-            if(priv == UserType.主播.ordinal().toString()){
-                flag = live_off(id,hour)
+            if (live) {
+                Long ttl = hour * 60 * 60 * 1000L
+                live_off(id, ttl)
             }
-            if (token && flag) {
+            if (token) {
                 userRedis.delete(KeyUtils.USER.token(id))
                 userRedis.delete(KeyUtils.accessToken(token))
-                if(StringUtils.isBlank(comment)){
+                if (StringUtils.isBlank(comment)) {
                     comment = BAN_CONTENT
                 }
                 def body = IMUtil.buildSystemMessageBody(BAN_TITLE, comment, [id], 0, 0)
@@ -495,7 +505,7 @@ class UserController extends BaseController {
      * @param roomId
      * @return
      */
-    private Boolean live_off(Integer roomId,Integer hour) {
+    private Boolean live_off(Integer roomId, Long ttl) {
         final time = System.currentTimeMillis()
         final oldRoom = rooms().findAndModify($$("_id": roomId, live: Boolean.TRUE),
                 $$($set, [live: false, live_id: '', position: null, live_end_time: time, pull_urls: null])
@@ -520,7 +530,6 @@ class UserController extends BaseController {
 
         def reason = '管理员封杀设备,如有疑问,请联系爱玩客服人员'
         // 管理员封杀设备后无法登陆
-        def ttl = hour * 60 * 60 * 1000L
 //        liveRedis.opsForValue().set(KeyUtils.LIVE.blackStar(zhuboId), KeyUtils.MARK_VAL, ttl, TimeUnit.SECONDS)
         def publish_star_close_body = ['star_id': zhuboId, 'reason': reason, 'ttl': ttl]
         MessageSend.publishStarCloseEvent(publish_star_close_body, zhuboId)
@@ -534,7 +543,7 @@ class UserController extends BaseController {
         if (game_id != 0) {
             if (!GameService.closeGame(roomId, game_id, live_id)) {
                 logger.error("请求关闭游戏失败")
-                 return Boolean.FALSE
+                return Boolean.FALSE
             }
         }
 
@@ -644,7 +653,7 @@ class UserController extends BaseController {
         // 所属银行
         def bank = req['bank']
 
-        def map = [real_name: realName, bank_id: bankId, bank_location: bankLocation, bank_name: bankName, bank: bank,sfz:sfz]
+        def map = [real_name: realName, bank_id: bankId, bank_location: bankLocation, bank_name: bankName, bank: bank, sfz: sfz]
         def query = $$('_id': userId as Integer, 'priv': UserType.经纪人.ordinal())
         def update = $$('$set': $$('broker.cash': map))
         users().update(query, update)
