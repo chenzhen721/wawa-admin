@@ -443,7 +443,7 @@ class UserController extends BaseController {
                 }
                 def body = IMUtil.buildSystemMessageBody(FREEZE_TITLE, reason, [id], 0, 0)
                 def room = rooms().findOne($$(_id: id),$$('live':1))
-                def live = room.containsField('live') ? room['live'] as Boolean : Boolean.FALSE
+                def live = room == null ? Boolean.FALSE : room['live'] as Boolean
                 if (live) {
                     //推送主播房间
                     Long ttl = days == -1 ? 60 * 60 * 24 * 365 * 1000L : 60 * 60 * 24 * days * 1000L
@@ -471,7 +471,7 @@ class UserController extends BaseController {
             Integer hour = Math.max(1, ServletRequestUtils.getIntParameter(req, 'hour', 48))
             String token = userRedis.opsForValue().get(KeyUtils.USER.token(id))
             def room = rooms().findOne($$(_id: id),$$('live':1))
-            def live = room.containsField('live') ? room['live'] as Boolean : Boolean.FALSE
+            def live = room == null ? Boolean.FALSE : room['live'] as Boolean
             // 如果是主播关闭直播间
             if (live) {
                 Long ttl = hour * 60 * 60 * 1000L
