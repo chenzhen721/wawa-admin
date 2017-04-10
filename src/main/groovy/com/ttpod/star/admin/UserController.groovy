@@ -451,6 +451,8 @@ class UserController extends BaseController {
      * @param req
      * @return
      */
+    static final String BAN_TITLE = '封杀设备'
+    static final String BAN_CONTENT = '管理员封杀设备,请联系爱玩直播客服人员'
     def ban(HttpServletRequest req) {
         def id = req.getInt(_id)
         String uid = getClientId(req, id)
@@ -468,10 +470,10 @@ class UserController extends BaseController {
             if (token && flag) {
                 userRedis.delete(KeyUtils.USER.token(id))
                 userRedis.delete(KeyUtils.accessToken(token))
-                def body = ["message": '管理员封杀设备', "userIds": id, "isNotify": 0, "isSave": 0,
-                            extra: [
-                                    event: 'system_live_open'
-                            ]]
+                if(StringUtils.isBlank(comment)){
+                    comment = BAN_CONTENT
+                }
+                def body = IMUtil.buildSystemMessageBody(BAN_TITLE, comment, [id], 0, 0)
                 IMUtil.sendToUsers(body)
             }
 
