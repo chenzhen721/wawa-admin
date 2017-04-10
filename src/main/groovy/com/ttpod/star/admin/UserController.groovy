@@ -516,10 +516,10 @@ class UserController extends BaseController {
 
         def zhuboId = oldRoom.get("xy_star_id") as Integer
 
-        def reason = '管理员封杀设备'
+        def reason = '管理员封杀设备,如有疑问,请联系爱玩客服人员'
         // 管理员封杀设备后无法登陆
         def ttl = hour * 60 * 60 * 1000L
-        liveRedis.opsForValue().set(KeyUtils.LIVE.blackStar(zhuboId), KeyUtils.MARK_VAL, ttl, TimeUnit.SECONDS)
+//        liveRedis.opsForValue().set(KeyUtils.LIVE.blackStar(zhuboId), KeyUtils.MARK_VAL, ttl, TimeUnit.SECONDS)
         def publish_star_close_body = ['star_id': zhuboId, 'reason': reason, 'ttl': ttl]
         MessageSend.publishStarCloseEvent(publish_star_close_body, zhuboId)
 
