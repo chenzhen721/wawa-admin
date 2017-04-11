@@ -195,8 +195,8 @@ class UnionPermController extends BaseController {
                 return [code: 0, msg: "渠道号重复"]
             }
             ids.add(_id)
-//            operation(OpType.channel_add_user.name(), prop,
-//                    [_id: user['_id'], nick_name: user['nick_name'], qd: user['qd']])
+            operation(OpType.channel_add_user.name(), prop,
+                    [_id: user['_id'], nick_name: user['nick_name'], qd: user['qd']])
             [code: 1]
         }
     }
@@ -237,8 +237,8 @@ class UnionPermController extends BaseController {
             if (newUser == null) {
                 return [code: 0, msg: "渠道号重复"]
             }
-//            operation(OpType.channel_add_user.name(), prop,
-//                    [_id: user['_id'], nick_name: user['nick_name'], qd: user['qd']])
+            operation(OpType.channel_add_user.name(), prop,
+                    [_id: user['_id'], nick_name: user['nick_name'], qd: user['qd']])
             [code: 1]
         }
     }
@@ -272,8 +272,8 @@ class UnionPermController extends BaseController {
             if (newUser != null) {
                 return [code: 0, msg: "用户已存在"]
             }
-//            operation(OpType.channel_add_user.name(), prop,
-//                    [_id: user['_id'], nick_name: user['nick_name'], qd: user['qd']])
+            operation(OpType.channel_add_user.name(), prop,
+                    [_id: user['_id'], nick_name: user['nick_name'], qd: user['qd']])
             [code: 1]
         }
     }
@@ -317,8 +317,8 @@ class UnionPermController extends BaseController {
             if (remove == null) {
                 return [code: 0, msg: "无此用户"]
             }
-//            operation(OpType.channel_del_user.name(), [_id: req[_id]],
-//                    [_id: user['_id'], nick_name: user['nick_name'], qd: user['qd']])
+            operation(OpType.channel_del_user.name(), [_id: req[_id]],
+                    [_id: user['_id'], nick_name: user['nick_name'], qd: user['qd']])
             [code: 1]
         }
     }

@@ -194,7 +194,7 @@ class ChannelController extends BaseController {
             map.put('app_name', appName)
         }
         if (table().save(new BasicDBObject(map)).getN() == 1) {
-//            Crud.opLog(table().getName() + "_add", map);
+            Crud.opLog(table().getName() + "_add", map);
         }
         return IMessageCode.OK;
     }
@@ -247,7 +247,7 @@ class ChannelController extends BaseController {
         }
         if (map.size() > 0 && table().update(new BasicDBObject(_id, id), new BasicDBObject($set, map)).getN() == 1) {
             map.put(_id, id);//just For Log
-//            Crud.opLog(table().getName() + "_edit", map);
+            Crud.opLog(table().getName() + "_edit", map);
         }
         return IMessageCode.OK;
     }
