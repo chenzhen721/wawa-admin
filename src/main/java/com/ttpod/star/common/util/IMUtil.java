@@ -3,10 +3,14 @@ package com.ttpod.star.common.util;
 import com.ttpod.rest.AppProperties;
 import com.ttpod.rest.common.util.JSONUtil;
 import com.ttpod.rest.web.StaticSpring;
+import com.ttpod.star.model.IMType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by wqh on 2016/11/11.
@@ -40,5 +44,43 @@ public class IMUtil {
                 }
             }
         });
+    }
+
+    static final Long MESSAGE_EXPIRE = 60 * 60 * 1000L;
+
+    /**
+     * 构建系统消息
+     *
+     * @param title
+     * @param text
+     * @param userIds
+     * @param isNotify
+     * @param isSave
+     * @return
+     */
+    public static Map<String, Object> buildSystemMessageBody(String title, String text, List<Integer> userIds, Integer isNotify, Integer isSave) {
+        Map<String, Object> body = new HashMap<String, Object>();
+        Map<String, Object> message = new HashMap<String, Object>();
+        Long now = System.currentTimeMillis();
+        Long expireTime = now + MESSAGE_EXPIRE;
+        Map<String, Object> extra = new HashMap<String, Object>();
+        extra.put("event", IMType.系统消息.getEvent());
+
+        Map<String, Object> data = new HashMap<String, Object>();
+        data.put("title", title);
+        data.put("text", text);
+        data.put("ts", now);
+        data.put("expire_time", expireTime);
+
+        message.put("action", IMType.系统消息.getAction());
+        message.put("data", data);
+
+        body.put("user_ids", userIds);
+        body.put("isNotify", isNotify);
+        body.put("isSave", isSave);
+        body.put("extra", extra);
+        body.put("message", message);
+        logger.debug("body is " +  body);
+        return body;
     }
 }
