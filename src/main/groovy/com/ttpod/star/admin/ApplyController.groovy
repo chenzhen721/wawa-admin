@@ -175,7 +175,7 @@ class ApplyController extends BaseController {
     }
 
     private void room_rank(Integer starId) {
-        rankMongo.getCollection('rooms').update($$(_id: starId), $$($set: ["new_points": 10]), true, false)
+        rankMongo.getCollection('rooms').update($$(_id: starId), $$($set: ["new_points": 1]), true, false)
     }
 
     private static final Map mapPro = [11: "北京", 12: "天津", 13: "河北", 14: "山西", 15: "内蒙古", 21: "辽宁",
