@@ -25,7 +25,7 @@ class RedPacketController extends BaseController {
 
     @Delegate
     Crud crud = new Crud(gameLogMongo.getCollection('red_packet_conditions'), Boolean.TRUE,
-            [_id                  : Int, desc: Str, count_down: Int, order: Int, type: Int,
+            [_id                  : Int, desc: Str, cool_down: Int, order: Int, type: Int,
              award_limit          : Int, status: Bool, timestamp: Timestamp, cost_coin_condition: Int, check_in_condition: Int,
              game_number_condition: Int, send_gift_number_condition: Int, reward_coin_min: Int, reward_coin_max: Int,
              reward_cash_amount   : Str, reward_cash_ratio: Str,lock:Bool],
