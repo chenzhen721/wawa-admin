@@ -4,16 +4,20 @@ import com.mongodb.BasicDBObject
 import com.mongodb.DBObject
 import com.ttpod.rest.anno.Rest
 import com.ttpod.rest.anno.RestWithSession
+import com.ttpod.rest.common.doc.TwoTableCommit
 import com.ttpod.rest.persistent.KGS
 import com.ttpod.rest.web.Crud
 import com.ttpod.rest.web.StaticSpring
 import com.ttpod.star.admin.BaseController
 import com.ttpod.star.admin.Web
 import com.ttpod.star.model.ApplyType
+import com.ttpod.star.model.RedPacketAcquireType
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.web.bind.ServletRequestUtils
+
+import static com.ttpod.rest.common.doc.MongoKey.$inc
 import static com.ttpod.rest.common.util.WebUtils.$$
 
 import javax.annotation.Resource
@@ -31,7 +35,7 @@ import static com.ttpod.rest.groovy.CrudClosures.*
 @RestWithSession
 class RedPacketApplyController extends BaseController {
 
-     static final Logger logger = LoggerFactory.getLogger(RedPacketApplyController.class)
+    static final Logger logger = LoggerFactory.getLogger(RedPacketApplyController.class)
 
     @Resource
     KGS productKGS
@@ -68,8 +72,8 @@ class RedPacketApplyController extends BaseController {
         if (userId != 0) {
             query.and('user_id').is(userId)
         }
-        def field = $$('match_condition':0)
-        Crud.list(req, log, query.get(),field , SJ_DESC)
+        def field = $$('match_condition': 0)
+        Crud.list(req, log, query.get(), field, SJ_DESC)
     }
 
     /**
@@ -97,6 +101,7 @@ class RedPacketApplyController extends BaseController {
     /**
      * 批量拒绝
      * 拒绝要退钱
+     * 今日之
      * @param req
      */
     def batch_refuse(HttpServletRequest req) {
@@ -111,32 +116,39 @@ class RedPacketApplyController extends BaseController {
         if (applyList.size() != ids.length) {
             return Web.notAllowed()
         }
-
+        def red_packet_logs = gameLogMongo.getCollection('red_packet_logs')
         def apply_update = $$('$set': $$('status': ApplyType.未通过.ordinal(), 'last_modify': new Date().getTime()))
         for (DBObject apply : applyList) {
             def userId = apply['user_id'] as Integer
             def income = apply['income'] as Long
+            def amount = apply['amount'] as Long
             def user_query = $$('_id': userId, 'status': Boolean.TRUE)
             def user_update = $$('$inc': ['finance.cash_count': income])
             if (users().update(user_query, user_update).getN() == 1) {
                 logger.debug('update users ok')
                 def applyId = apply['_id'].toString()
                 def apply_query = $$('_id': applyId, 'status': ApplyType.未处理.ordinal())
-                try {
-                    if(apply_logs.update(apply_query, apply_update).getN() == 0){
-                        logger.error('update apply error ')
-                        user_update = $$('$inc': ['finance.cash_count': -income])
-                        users().update(user_query, user_update)
-                    }
-                } catch (Exception e) {
-                    println("${e.printStackTrace()}")
-                    logger.error('update mongodb error ,error is {}', e.getMessage())
-                    user_update = $$('$inc': ['finance.cash_count': -income])
-                    users().update(user_query, user_update)
+                def red_packet_log = $$('_id': logId, 'user_id': userId, 'coin_count': 0, 'cash_count': amount, 'type': RedPacketAcquireType.提现拒绝.actionName, date: new Date().format('yyyyMMdd'), refuse_id: applyId)
+
+                // 先审批更新，不成功则跳过
+                if(apply_logs.update(apply_query,apply_update).getN() == 0){
+                    continue
                 }
+
+                Crud.doTwoTableCommit(red_packet_log, [
+                        main           : { users() },
+                        logColl        : { red_packet_logs },
+                        queryWithId    : { $$('_id': userId) },
+                        update         : {
+                            $$($inc, ['finance.cash_count': amount])
+                        },
+                        successCallBack: { true },
+                        rollBack       : {}
+                ] as TwoTableCommit)
             }
         }
         return [code: 1]
     }
+
 
 }
