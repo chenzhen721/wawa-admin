@@ -12,6 +12,7 @@ import com.ttpod.star.admin.BaseController
 import com.ttpod.star.admin.Web
 import com.ttpod.star.model.ApplyType
 import com.ttpod.star.model.RedPacketAcquireType
+import org.apache.commons.lang.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.data.mongodb.core.MongoTemplate
@@ -84,15 +85,16 @@ class RedPacketApplyController extends BaseController {
     def batch_pass(HttpServletRequest req) {
         logger.debug('Received batch pass params is {}',req.getParameterMap())
 
-        def ids = req.getParameterValues('_ids')
-        if (ids.length == 0) {
+        def ids = ServletRequestUtils.getStringParameter(req,'_ids','')
+        if (StringUtils.isBlank(ids)) {
             return Web.missParam()
         }
+        String [] arr = ids.split(',')
 
         def apply_logs = gameLogMongo.getCollection('red_packet_apply_logs')
-        def query = $$('_id': ['$in': ids], 'status': ApplyType.未处理.ordinal())
+        def query = $$('_id': ['$in': arr], 'status': ApplyType.未处理.ordinal())
         def applyList = apply_logs.find(query).toArray()
-        if (applyList.size() != ids.length) {
+        if (applyList.size() != arr.length) {
             return Web.notAllowed()
         }
         def update = $$('$set': $$('status': ApplyType.通过.ordinal(), 'last_modify': new Date().getTime()))
@@ -108,15 +110,16 @@ class RedPacketApplyController extends BaseController {
      */
     def batch_refuse(HttpServletRequest req) {
         logger.debug('Received batch refuse params is {}',req.getParameterMap())
-        def ids = req.getParameterValues('_ids')
-        if (ids.length == 0) {
+        def ids = ServletRequestUtils.getStringParameter(req,'_ids','')
+        if (StringUtils.isBlank(ids)) {
             return Web.missParam()
         }
+        String [] arr = ids.split(',')
 
         def apply_logs = gameLogMongo.getCollection('red_packet_apply_logs')
-        def query = $$('_id': ['$in': ids], 'status': ApplyType.未处理.ordinal())
+        def query = $$('_id': ['$in': arr], 'status': ApplyType.未处理.ordinal())
         def applyList = apply_logs.find(query).toArray()
-        if (applyList.size() != ids.length) {
+        if (applyList.size() != arr.length) {
             return Web.notAllowed()
         }
         def red_packet_logs = gameLogMongo.getCollection('red_packet_logs')
@@ -131,6 +134,7 @@ class RedPacketApplyController extends BaseController {
                 logger.debug('update users ok')
                 def applyId = apply['_id'].toString()
                 def apply_query = $$('_id': applyId, 'status': ApplyType.未处理.ordinal())
+                def logId = userId + '_' + new Date().getTime()
                 def red_packet_log = $$('_id': logId, 'user_id': userId, 'coin_count': 0, 'cash_count': amount, 'type': RedPacketAcquireType.提现拒绝.actionName, date: new Date().format('yyyyMMdd'), refuse_id: applyId)
 
                 // 先审批更新，不成功则跳过
