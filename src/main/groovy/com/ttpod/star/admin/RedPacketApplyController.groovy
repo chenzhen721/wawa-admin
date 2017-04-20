@@ -130,13 +130,13 @@ class RedPacketApplyController extends BaseController {
             logger.debug('update users ok')
             def applyId = apply['_id'].toString()
             def apply_query = $$('_id': applyId, 'status': ApplyType.未处理.ordinal())
-            def logId = userId + '_' + new Date().getTime()
-            def red_packet_log = $$('_id': logId, 'user_id': userId, 'coin_count': 0, 'cash_count': amount, 'type': RedPacketAcquireType.提现拒绝.actionName, date: new Date().format('yyyyMMdd'), refuse_id: applyId)
 
             // 先审批更新，不成功则跳过
             if(apply_logs.update(apply_query,apply_update).getN() == 0){
                 continue
             }
+            def logId = userId + '_' + new Date().getTime()
+            def red_packet_log = $$('_id': logId, 'user_id': userId, 'coin_count': 0, 'cash_count': amount, 'type': RedPacketAcquireType.提现拒绝.actionName, date: new Date().format('yyyyMMdd'), refuse_id: applyId)
 
             Crud.doTwoTableCommit(red_packet_log, [
                     main           : { users() },
