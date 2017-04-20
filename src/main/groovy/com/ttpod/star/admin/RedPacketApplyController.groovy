@@ -138,7 +138,7 @@ class RedPacketApplyController extends BaseController {
             def logId = userId + '_' + new Date().getTime()
             def red_packet_log = $$('_id': logId, 'user_id': userId, 'coin_count': 0, 'cash_count': amount, 'type': RedPacketAcquireType.提现拒绝.actionName, date: new Date().format('yyyyMMdd'), refuse_id: applyId)
 
-            Crud.doTwoTableCommit(red_packet_log, [
+            def transaction = Crud.doTwoTableCommit(red_packet_log, [
                     main           : { users() },
                     logColl        : { red_packet_logs },
                     queryWithId    : { $$('_id': userId, 'status': Boolean.TRUE) },
@@ -148,6 +148,10 @@ class RedPacketApplyController extends BaseController {
                     successCallBack: { true },
                     rollBack       : {}
             ] as TwoTableCommit)
+
+            if(!transaction){
+                logger.error('mongodb update error')
+            }
         }
         return [code: 1]
     }
