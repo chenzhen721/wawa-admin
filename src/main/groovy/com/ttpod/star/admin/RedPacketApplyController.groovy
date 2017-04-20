@@ -126,33 +126,28 @@ class RedPacketApplyController extends BaseController {
         def apply_update = $$('$set': $$('status': ApplyType.未通过.ordinal(), 'last_modify': new Date().getTime()))
         for (DBObject apply : applyList) {
             def userId = apply['user_id'] as Integer
-            def income = apply['income'] as Long
             def amount = apply['amount'] as Long
-            def user_query = $$('_id': userId, 'status': Boolean.TRUE)
-            def user_update = $$('$inc': ['finance.cash_count': income])
-            if (users().update(user_query, user_update).getN() == 1) {
-                logger.debug('update users ok')
-                def applyId = apply['_id'].toString()
-                def apply_query = $$('_id': applyId, 'status': ApplyType.未处理.ordinal())
-                def logId = userId + '_' + new Date().getTime()
-                def red_packet_log = $$('_id': logId, 'user_id': userId, 'coin_count': 0, 'cash_count': amount, 'type': RedPacketAcquireType.提现拒绝.actionName, date: new Date().format('yyyyMMdd'), refuse_id: applyId)
+            logger.debug('update users ok')
+            def applyId = apply['_id'].toString()
+            def apply_query = $$('_id': applyId, 'status': ApplyType.未处理.ordinal())
+            def logId = userId + '_' + new Date().getTime()
+            def red_packet_log = $$('_id': logId, 'user_id': userId, 'coin_count': 0, 'cash_count': amount, 'type': RedPacketAcquireType.提现拒绝.actionName, date: new Date().format('yyyyMMdd'), refuse_id: applyId)
 
-                // 先审批更新，不成功则跳过
-                if(apply_logs.update(apply_query,apply_update).getN() == 0){
-                    continue
-                }
-
-                Crud.doTwoTableCommit(red_packet_log, [
-                        main           : { users() },
-                        logColl        : { red_packet_logs },
-                        queryWithId    : { $$('_id': userId) },
-                        update         : {
-                            $$($inc, ['finance.cash_count': amount])
-                        },
-                        successCallBack: { true },
-                        rollBack       : {}
-                ] as TwoTableCommit)
+            // 先审批更新，不成功则跳过
+            if(apply_logs.update(apply_query,apply_update).getN() == 0){
+                continue
             }
+
+            Crud.doTwoTableCommit(red_packet_log, [
+                    main           : { users() },
+                    logColl        : { red_packet_logs },
+                    queryWithId    : { $$('_id': userId, 'status': Boolean.TRUE) },
+                    update         : {
+                        $$($inc, ['finance.cash_count': amount])
+                    },
+                    successCallBack: { true },
+                    rollBack       : {}
+            ] as TwoTableCommit)
         }
         return [code: 1]
     }
