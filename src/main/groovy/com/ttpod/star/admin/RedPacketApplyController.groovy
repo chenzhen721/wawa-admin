@@ -82,6 +82,8 @@ class RedPacketApplyController extends BaseController {
      * @return
      */
     def batch_pass(HttpServletRequest req) {
+        logger.debug('Received batch pass params is {}',req.getParameterMap())
+
         def ids = req.getParameterValues('_ids')
         if (ids.length == 0) {
             return Web.missParam()
@@ -105,6 +107,7 @@ class RedPacketApplyController extends BaseController {
      * @param req
      */
     def batch_refuse(HttpServletRequest req) {
+        logger.debug('Received batch refuse params is {}',req.getParameterMap())
         def ids = req.getParameterValues('_ids')
         if (ids.length == 0) {
             return Web.missParam()
