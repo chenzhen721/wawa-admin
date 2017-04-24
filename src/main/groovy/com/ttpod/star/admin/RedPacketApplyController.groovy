@@ -2,12 +2,10 @@ package com.ttpod.star.admin.crud
 
 import com.mongodb.BasicDBObject
 import com.mongodb.DBObject
-import com.ttpod.rest.anno.Rest
 import com.ttpod.rest.anno.RestWithSession
 import com.ttpod.rest.common.doc.TwoTableCommit
 import com.ttpod.rest.persistent.KGS
 import com.ttpod.rest.web.Crud
-import com.ttpod.rest.web.StaticSpring
 import com.ttpod.star.admin.BaseController
 import com.ttpod.star.admin.Web
 import com.ttpod.star.model.ApplyType
@@ -15,19 +13,15 @@ import com.ttpod.star.model.RedPacketAcquireType
 import org.apache.commons.lang.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.web.bind.ServletRequestUtils
-
-import static com.ttpod.rest.common.doc.MongoKey.$inc
-import static com.ttpod.rest.common.util.WebUtils.$$
 
 import javax.annotation.Resource
 import javax.servlet.http.HttpServletRequest
 
-import static com.ttpod.rest.common.doc.MongoKey.ALL_FIELD
+import static com.ttpod.rest.common.doc.MongoKey.$inc
 import static com.ttpod.rest.common.doc.MongoKey.SJ_DESC
+import static com.ttpod.rest.common.util.WebUtils.$$
 import static com.ttpod.rest.groovy.CrudClosures.*
-
 
 /**
  * 2016/10/12
@@ -155,6 +149,5 @@ class RedPacketApplyController extends BaseController {
         }
         return [code: 1]
     }
-
 
 }
