@@ -297,6 +297,7 @@ class StatController extends BaseController {
             [k: "mission_coin", v: '任务奖励'],
             [k: "login_coin", v: '签到奖励'],
             [k: "game_coin", v: '游戏奖励'],
+            [k: "red_packet_coin", v: '红包奖励/兑换'],
             [k: "total", v: '增加阳光总数']
     ]
 
@@ -314,13 +315,6 @@ class StatController extends BaseController {
         data.put('list', list)
         data.put('heads', [inc: INC_HEADS, dec: DEC_HEADS])
         result.put('data', data)
-        // 游戏列表
-//        def map = new HashMap()
-//        adminMongo.getCollection('games').find().each {
-//            BasicDBObject obj ->
-//                map.put(obj['_id'].toString(), obj['name'].toString())
-//        }
-//        result.put('gameList',map)
         return result;
     }
 
@@ -880,5 +874,6 @@ class StatController extends BaseController {
         }
         Crud.list(req, logMongo.getCollection('sign_logs'), query.get(), ALL_FIELD, MongoKey.SJ_DESC);
     }
+
 
 }

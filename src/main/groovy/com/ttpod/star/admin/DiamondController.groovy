@@ -4,23 +4,17 @@ import com.mongodb.BasicDBObject
 import com.mongodb.DBCollection
 import com.mongodb.DBObject
 import com.ttpod.rest.anno.Rest
-import com.ttpod.rest.anno.RestWithSession
 import com.ttpod.rest.web.Crud
 import com.ttpod.star.model.DiamondActionType
 import com.ttpod.star.model.OpType
-import org.apache.commons.lang.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.ServletRequestUtils
 
 import javax.servlet.http.HttpServletRequest
-import static com.ttpod.rest.common.util.WebUtils.$$
 
-import static com.ttpod.rest.common.doc.MongoKey.$inc
-import static com.ttpod.rest.common.doc.MongoKey.$ne
-import static com.ttpod.rest.common.doc.MongoKey.$pull
-import static com.ttpod.rest.common.doc.MongoKey.$push
-import static com.ttpod.rest.common.doc.MongoKey.SJ_DESC
+import static com.ttpod.rest.common.doc.MongoKey.*
+import static com.ttpod.rest.common.util.WebUtils.$$
 
 /**
  * 钻石的统计
@@ -92,7 +86,7 @@ class DiamondController extends BaseController {
     def daily_stat(HttpServletRequest req) {
         def query = Web.fillTimeBetween(req)
         def diamond_reports = adminMongo.getCollection('diamond_dailyReport_stat')
-        def data = Crud.list(req, diamond_reports, query.get(), null, SJ_DESC)
+        def data = Crud.list(req, diamond_reports, query.get(), ALL_FIELD, SJ_DESC)
         DiamondActionType[] das = DiamondActionType.values()
         def inc = [:]
         def desc = [:]
