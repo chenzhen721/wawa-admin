@@ -3,18 +3,19 @@ package com.ttpod.star.admin.crud
 import com.mongodb.BasicDBObject
 import com.mongodb.DBObject
 import com.ttpod.rest.anno.Rest
-import com.ttpod.rest.anno.RestWithSession
-import com.ttpod.rest.persistent.KGS
 import com.ttpod.rest.web.Crud
-import com.ttpod.rest.web.StaticSpring
 import com.ttpod.star.admin.BaseController
-import org.springframework.data.mongodb.core.MongoTemplate
+import com.ttpod.star.admin.Web
+import com.ttpod.star.model.RedPacketAcquireType
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import org.springframework.web.bind.ServletRequestUtils
 
-import javax.annotation.Resource
 import javax.servlet.http.HttpServletRequest
 
+import static com.ttpod.rest.common.doc.MongoKey.ALL_FIELD
+import static com.ttpod.rest.common.doc.MongoKey.SJ_DESC
 import static com.ttpod.rest.groovy.CrudClosures.*
-
 
 /**
  * 2016/10/12
@@ -22,6 +23,9 @@ import static com.ttpod.rest.groovy.CrudClosures.*
  */
 @Rest
 class RedPacketController extends BaseController {
+
+    static final Logger logger = LoggerFactory.getLogger(RedPacketController.class)
+
 
     @Delegate
     Crud crud = new Crud(gameLogMongo.getCollection('red_packet_conditions'), Boolean.TRUE,
@@ -35,4 +39,33 @@ class RedPacketController extends BaseController {
                 }
             }
     )
+
+    /**
+     * 红包领取日志
+     * @param req
+     */
+    def acquire_logs(HttpServletRequest req){
+        logger.debug('Received acquire_logs params is {}',req.getParameterMap())
+        def red_packet_logs = gameLogMongo.getCollection('red_packet_logs')
+
+        def userId = ServletRequestUtils.getIntParameter(req,'_id',0)
+        def query = Web.fillTimeBetween(req)
+        if(userId != 0){
+            query.and('user_id').is(userId)
+        }
+
+        query.and('type').notEquals(RedPacketAcquireType.提现拒绝.actionName)
+        RedPacketAcquireType [] redPacketAcquireTypes = RedPacketAcquireType.values()
+        Map<String,String> map = new HashMap<String,String>()
+        for(RedPacketAcquireType tmp : redPacketAcquireTypes){
+            map.put(tmp.actionName,tmp.name())
+        }
+
+        Crud.list(req, red_packet_logs, query.get(), ALL_FIELD, SJ_DESC){ List<BasicDBObject> list ->
+            for (BasicDBObject obj : list) {
+                def type = obj['type'] as String
+                obj.put('type',map[type].toString())
+            }
+        }
+    }
 }
