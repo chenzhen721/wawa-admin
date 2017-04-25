@@ -834,7 +834,8 @@ class StatController extends BaseController {
     def red_packet_logs(HttpServletRequest req) {
         def map = ['system':'红包','newcomer':'新人','friend':'好友','exchange':'兑换','unlock':'解锁']
         def data = super.list(req, Web.fillTimeBetween(req).and('type').is('red_packet').get())
-        return [code: 1, 'title': map, 'data': data['data']]
+        data.put('title',map)
+        return [code: 1, 'data': data]
 
     }
 
