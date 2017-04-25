@@ -826,6 +826,15 @@ class StatController extends BaseController {
         super.list(req, Web.fillTimeBetween(req).and('type').is('check_in').get())
     }
 
+
+    /**
+     * 红包统计
+     * @param req
+     */
+    def red_packet_logs(HttpServletRequest req) {
+        super.list(req, Web.fillTimeBetween(req).and('type').is('red_packet').get())
+    }
+
     /**
      * 任务统计
      * @param req
