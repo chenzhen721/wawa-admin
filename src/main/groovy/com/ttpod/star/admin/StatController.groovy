@@ -832,11 +832,14 @@ class StatController extends BaseController {
      * @param req
      */
     def red_packet_logs(HttpServletRequest req) {
-        def map = ['system':'红包','newcomer':'新人','friend':'好友','exchange':'兑换','unlock':'解锁']
-        def data = super.list(req, Web.fillTimeBetween(req).and('type').is('red_packet').get())
-        data.put('title',map)
-        return [code: 1, 'data': data]
-
+        def queryBuilder =  Web.fillTimeBetween(req).and('type').is('red_packet')
+        Map result = Crud.list(req, table(), queryBuilder.get(), ALL_FIELD, SJ_DESC);
+        def list = result.get('data')
+        Map data = new HashMap();
+        data.put('list', list)
+        data.put('title', ['system':'红包','newcomer':'新人','friend':'好友','exchange':'兑换','unlock':'解锁'])
+        result.put('data', data)
+        return result;
     }
 
     /**
