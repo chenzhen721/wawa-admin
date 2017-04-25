@@ -297,13 +297,14 @@ class StatController extends BaseController {
             [k: "mission_coin", v: '任务奖励'],
             [k: "login_coin", v: '签到奖励'],
             [k: "game_coin", v: '游戏奖励'],
-            [k: "red_packet_coin", v: '红包奖励/兑换'],
+            [k: "red_packet_coin", v: '红包奖励'],
             [k: "total", v: '增加阳光总数']
     ]
 
     private static final def DEC_HEADS = [
             [k: "send_gift", v: '送礼'],
             [k: "game_spend_coin", v: '游戏消费'],
+            [k: "unlock_spend_coin", v: '红包解锁'],
             [k: "total", v: '消费阳光总计']
     ]
 
