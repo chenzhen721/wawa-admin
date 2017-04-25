@@ -23,7 +23,7 @@ class CashController extends BaseController {
 
     static final Logger logger = LoggerFactory.getLogger(CashController.class)
 
-    def cash_daily_report() { adminMongo.getCollection('red_packet_dailyReport_stat') }
+    def cash_daily_report() { adminMongo.getCollection('cash_dailyReport_stat') }
 
 
     /**
