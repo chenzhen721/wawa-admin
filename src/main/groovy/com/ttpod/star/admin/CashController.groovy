@@ -14,11 +14,10 @@ import static com.ttpod.rest.common.doc.MongoKey.ALL_FIELD
 import static com.ttpod.rest.common.doc.MongoKey.SJ_DESC
 
 /**
- * date: 13-3-28 下午2:31
- * @author: yangyang.cong@ttpod.com
+ * date: 2017-04-25
+ * @author: monkey
  */
-//@RestWithSession
-@Rest
+@RestWithSession
 class CashController extends BaseController {
 
     static final Logger logger = LoggerFactory.getLogger(CashController.class)
