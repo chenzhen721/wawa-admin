@@ -35,7 +35,7 @@ class CashController extends BaseController {
         def query = Web.fillTimeBetween(req)
         def data = Crud.list(req, cash_daily_report(), query.get(), ALL_FIELD, SJ_DESC)
         def inc = [:]
-        def desc = ['apply_pass_amount':'税前提现','apply_pass_income':'个人所得']
+        def desc = ['apply_pass_amount':'税前提现','apply_pass_income':'个人所得','apply_refuse':'提现拒绝']
 
         RedPacketAcquireType[] redPacketAcquireTypes = RedPacketAcquireType.values()
         for(RedPacketAcquireType redPacketAcquireType : redPacketAcquireTypes){
