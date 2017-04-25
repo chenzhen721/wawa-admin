@@ -53,6 +53,6 @@ class CashController extends BaseController {
                 desc: desc
         )
 
-        return ['title': map, 'data': data['data']]
+        return [code: 1,'title': map, 'data': data['data']]
     }
 }

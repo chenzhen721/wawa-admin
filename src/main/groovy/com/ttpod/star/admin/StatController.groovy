@@ -297,13 +297,14 @@ class StatController extends BaseController {
             [k: "mission_coin", v: '任务奖励'],
             [k: "login_coin", v: '签到奖励'],
             [k: "game_coin", v: '游戏奖励'],
-            [k: "red_packet_coin", v: '红包奖励/兑换'],
+            [k: "red_packet_coin", v: '红包奖励'],
             [k: "total", v: '增加阳光总数']
     ]
 
     private static final def DEC_HEADS = [
             [k: "send_gift", v: '送礼'],
             [k: "game_spend_coin", v: '游戏消费'],
+            [k: "unlock_spend_coin", v: '红包解锁'],
             [k: "total", v: '消费阳光总计']
     ]
 
@@ -824,6 +825,22 @@ class StatController extends BaseController {
      */
     def check_in_logs(HttpServletRequest req) {
         super.list(req, Web.fillTimeBetween(req).and('type').is('check_in').get())
+    }
+
+
+    /**
+     * 红包统计
+     * @param req
+     */
+    def red_packet_logs(HttpServletRequest req) {
+        def queryBuilder =  Web.fillTimeBetween(req).and('type').is('red_packet')
+        Map result = Crud.list(req, table(), queryBuilder.get(), ALL_FIELD, SJ_DESC);
+        def list = result.get('data')
+        Map data = new HashMap();
+        data.put('list', list)
+        data.put('title', ['system':'红包','newcomer':'新人','friend':'好友','exchange':'兑换','unlock':'解锁'])
+        result.put('data', data)
+        return result;
     }
 
     /**
