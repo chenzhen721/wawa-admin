@@ -838,7 +838,7 @@ class StatController extends BaseController {
         def list = result.get('data')
         Map data = new HashMap();
         data.put('list', list)
-        data.put('title', ['system':'红包','newcomer':'新人','friend':'好友','exchange':'兑换','unlock':'解锁'])
+        data.put('title', ['system':'红包','newcomer':'新人','friend':'好友','exchange':'兑换','unlock':'解锁','apply':'提现成功'])
         result.put('data', data)
         return result;
     }
