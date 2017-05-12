@@ -1,5 +1,6 @@
 package com.ttpod.star.admin
 
+import com.mongodb.DBCollection
 import com.ttpod.rest.anno.Rest
 import com.ttpod.rest.anno.RestWithSession
 import com.ttpod.rest.web.Crud
@@ -22,7 +23,7 @@ class CashController extends BaseController {
 
     static final Logger logger = LoggerFactory.getLogger(CashController.class)
 
-    def cash_daily_report() { adminMongo.getCollection('cash_dailyReport_stat') }
+    DBCollection cash_daily_report() { adminMongo.getCollection('cash_dailyReport_stat') }
 
 
     /**

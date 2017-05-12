@@ -414,7 +414,7 @@ class UserController extends BaseController {
     }
 
     static final String FREEZE_TITLE = '冻结账户'
-    static final String FREEZE_CONTENT = '管理员冻结账户,请联系爱玩客户人员'
+    static final String FREEZE_CONTENT = '管理员冻结账户,请联系客户人员'
 
     def freeze(HttpServletRequest req) {
         def id = req.getInt(_id)
@@ -461,7 +461,7 @@ class UserController extends BaseController {
      * @return
      */
     static final String BAN_TITLE = '封杀设备'
-    static final String BAN_CONTENT = '管理员封杀设备,请联系爱玩直播客服人员'
+    static final String BAN_CONTENT = '管理员封杀设备,请联系客服人员'
 
     def ban(HttpServletRequest req) {
         def id = req.getInt(_id)
@@ -528,7 +528,7 @@ class UserController extends BaseController {
 
         def zhuboId = oldRoom.get("xy_star_id") as Integer
 
-        def reason = '管理员封杀设备,如有疑问,请联系爱玩客服人员'
+        def reason = '管理员封杀设备,如有疑问,请联系客服人员'
         // 管理员封杀设备后无法登陆
 //        liveRedis.opsForValue().set(KeyUtils.LIVE.blackStar(zhuboId), KeyUtils.MARK_VAL, ttl, TimeUnit.SECONDS)
         def publish_star_close_body = ['star_id': zhuboId, 'reason': reason, 'ttl': ttl]
