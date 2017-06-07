@@ -95,6 +95,7 @@ class PushController extends BaseController {
                         "action": "msg.system",
                         "data"  : [
                                 "title"      : title,
+                                "type":2,
 //                                "image": one['image'],
 //                                "link": one['link'],
                                 "text"       : text,
