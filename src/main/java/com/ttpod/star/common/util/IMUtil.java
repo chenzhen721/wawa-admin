@@ -71,7 +71,7 @@ public class IMUtil {
         data.put("text", text);
         data.put("ts", now);
         data.put("expire_time", expireTime);
-
+        data.put("type", 2);
         message.put("action", IMType.系统消息.getAction());
         message.put("data", data);
 

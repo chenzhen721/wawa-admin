@@ -199,7 +199,7 @@ class StarController extends BaseController {
                     def tmp = System.currentTimeMillis()
                     applys.update(apply, new BasicDBObject('$set',
                             [status: ApplyType.解约.ordinal(), lastModif: tmp, remark: getTerminateType(remark)]))
-                    logMongo.getCollection('member_applys').findAndModify(new BasicDBObject(xy_user_id: id, status: ApplyType.通过.ordinal()),
+                    familyMongo.getCollection('member_applys').findAndModify(new BasicDBObject(xy_user_id: id, status: ApplyType.通过.ordinal()),
                             new BasicDBObject('$set': [status: ApplyType.关闭.ordinal(), lastmodif: tmp, msg: 'terminate']))
                     familyMongo.getCollection('members').updateMulti($$(uid:id), $$($set,$$(user_priv:UserType.普通用户.ordinal())))
                 }
