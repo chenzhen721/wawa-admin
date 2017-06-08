@@ -129,16 +129,17 @@ public abstract class BaseController extends FreemarkerSupport7 {
     public static final String stime = "stime";
     public static final String _id = MongoKey._id;
     static final String finance_coin_count = "finance.coin_count";
+    static final String finance_diamond_count = "finance.diamond_count";
     static final String finance_coin_spend_total = "finance.coin_spend_total";
     static final String finance_log="finance_log";
     static final String finance_log_id=finance_log+"."+_id;
 
 
 
-    public boolean addCoin(Integer userId,Long coin,BasicDBObject logWithId)
+    public boolean addDiamond(Integer userId, Long diamond, BasicDBObject logWithId)
     {
-        BasicDBObject obj =  new BasicDBObject(finance_coin_count,coin);
-        return  this.addCoin(userId,coin,logWithId,obj);
+        BasicDBObject obj = new BasicDBObject(finance_diamond_count,diamond);
+        return  this.addCoin(userId,diamond,logWithId,obj);
     }
 
 

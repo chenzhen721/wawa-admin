@@ -26,8 +26,7 @@ import static com.ttpod.rest.common.doc.MongoKey.*
 import static com.ttpod.rest.common.util.WebUtils.$$
 
 /**
- * @author: zhen.chen@2339.com
- * Date: 2014/12/1 16:18
+ * 小新推送
  */
 @Rest
 class PushController extends BaseController {

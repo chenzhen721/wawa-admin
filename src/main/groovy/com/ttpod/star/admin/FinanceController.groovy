@@ -4,7 +4,6 @@ import com.mongodb.BasicDBObject
 import com.mongodb.DBCollection
 import com.mongodb.DBObject
 import com.mongodb.QueryBuilder
-import com.ttpod.rest.anno.Rest
 import com.ttpod.rest.anno.RestWithSession
 import com.ttpod.rest.common.doc.IMessageCode
 import com.ttpod.rest.common.util.WebUtils
@@ -82,7 +81,7 @@ class FinanceController extends BaseController {
                 session: Web.getSession(),
                 remark: remark
         )
-        if (addCoin(id, num, logWithId)) {
+        if (addDiamond(id, num, logWithId)) {
             Crud.opLog(OpType.finance_add, [user_id: id, order_id: orderId, coin: num, remark: remark])
         }
         [code: 1]
@@ -125,7 +124,7 @@ class FinanceController extends BaseController {
             logWithId.put('to_id', target)
             to_id = target
         }
-        if (addCoin(to_id, coin, logWithId)) {
+        if (addDiamond(to_id, coin, logWithId)) {
             Crud.opLog(OpType.repair_order, logWithId)
             return [code: 1]
         }
@@ -778,14 +777,10 @@ class FinanceController extends BaseController {
     def donate_exp(HttpServletRequest req) {
         def num = req.getInt('num')
         def userId = req.getInt(_id)
-//        def row = users().update($$(_id, userId), $$($inc, $$('finance.coin_spend_total', num)), false, false, writeConcern).getN()
         def query = $$(_id, userId)
-        def update = $$($inc, $$('finance.coin_spend_total', num))
+        def update = $$($inc, $$('exp', num))
         def user = users().findAndModify(query, null, null, false, update, true, false)
         if (user != null) {
-            def finance = user['finance'] as Map
-            def coin_spend_total = finance.containsKey('coin_spend_total') ? finance['coin_spend_total'] as Long : 0L
-            Web.setSpend(userId, 'spend', coin_spend_total)
 //            messageController.sendSingleMsg(userId, '经验奖励', "尊敬的么么用户，您好！恭喜你获得了${num}经验奖励！", MsgType.系统消息);
             Crud.opLog(OpType.finance_donate_exp, [user_id: userId, num: num])
         }
