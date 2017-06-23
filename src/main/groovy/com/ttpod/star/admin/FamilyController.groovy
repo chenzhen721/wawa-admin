@@ -32,7 +32,7 @@ import static com.ttpod.rest.common.doc.MongoKey._id
  * @author: haigen.xiong@ttpod.com
  */
 @RestWithSession
-class GroupController extends BaseController {
+class FamilyController extends BaseController {
 
     @Resource
     MessageController messageController

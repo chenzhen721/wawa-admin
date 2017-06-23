@@ -28,8 +28,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 /**
- * date: 13-10-11 下午2:31
- * @author: haigen.xiong@ttpod.com
+ * 黑名单管理
  */
 @RestWithSession
 class BlacklistController extends BaseController{

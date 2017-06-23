@@ -17,8 +17,7 @@ import javax.servlet.http.HttpServletRequest
 import static com.ttpod.rest.common.doc.MongoKey.ALL_FIELD
 
 /**
- * date: 13-3-28 下午2:31
- * @author: yangyang.cong@ttpod.com
+ * 敏感字管理
  */
 //@Rest
 @RestWithSession

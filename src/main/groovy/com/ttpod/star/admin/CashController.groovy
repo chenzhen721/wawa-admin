@@ -29,8 +29,7 @@ import static com.ttpod.rest.groovy.CrudClosures.Str
 import static com.ttpod.rest.groovy.CrudClosures.Timestamp
 
 /**
- * date: 2017-04-25
- * @author: monkey
+ * 现金相关接口
  */
 @RestWithSession
 class CashController extends BaseController {
