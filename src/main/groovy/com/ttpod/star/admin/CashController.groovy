@@ -37,32 +37,8 @@ class CashController extends BaseController {
     static final Logger logger = LoggerFactory.getLogger(CashController.class)
 
     DBCollection cash_daily_report() { adminMongo.getCollection('cash_dailyReport_stat') }
-    DBCollection cash_apply_logs() { gameLogMongo.getCollection('cash_apply_logs') }
-    DBCollection withdraw_rules() { gameLogMongo.getCollection('withdraw_rules') }
-    DBCollection cash_logs() { gameLogMongo.getCollection('cash_logs') }
-
-    @Resource
-    KGS productKGS
-    /**
-     * day_apply_limit 每日限制申请提现次数
-     * withdraw_min_cash 最小提现金额 单位 分
-     * level_condition 提现等级限制
-     * count_condition 提现次数
-     * _id 随便用个id计数器
-     * tariff 税率填写0.2 则需要 扣除20%的提现金额，填写0 则不扣税
-     */
-    @Delegate
-    Crud crud = new Crud(withdraw_rules(), Boolean.TRUE,
-            [_id            : {
-                productKGS.nextId()
-            }, desc         : Str, day_apply_limit: Int, order: Int, withdraw_min_cash: Int, tariff: Str,
-             level_condition: Int, status: Bool, timestamp: Timestamp, count_condition: Int],
-            new Crud.QueryCondition() {
-                public DBObject sortby(HttpServletRequest req) {
-                    return new BasicDBObject('order', 1);
-                }
-            }
-    )
+    DBCollection cash_apply_logs() { adminMongo.getCollection('cash_apply_logs') }
+    DBCollection cash_logs() { logMongo.getCollection('cash_logs') }
 
     /**
      * 提现申请
