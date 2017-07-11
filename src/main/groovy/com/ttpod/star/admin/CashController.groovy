@@ -1,14 +1,11 @@
 package com.ttpod.star.admin
 
-import com.mongodb.BasicDBObject
 import com.mongodb.DBCollection
 import com.mongodb.DBObject
-import com.ttpod.rest.anno.Rest
 import com.ttpod.rest.anno.RestWithSession
 import com.ttpod.rest.common.doc.TwoTableCommit
-import com.ttpod.rest.persistent.KGS
 import com.ttpod.rest.web.Crud
-import com.ttpod.star.model.ApplyType
+import com.ttpod.star.model.CashApplyType
 import com.ttpod.star.model.RedPacketAcquireType
 import com.ttpod.star.model.RedPacketCostType
 import org.apache.commons.lang.StringUtils
@@ -16,17 +13,10 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.ServletRequestUtils
 
-import javax.annotation.Resource
 import javax.servlet.http.HttpServletRequest
 
-import static com.ttpod.rest.common.doc.MongoKey.$inc
-import static com.ttpod.rest.common.doc.MongoKey.ALL_FIELD
-import static com.ttpod.rest.common.doc.MongoKey.SJ_DESC
+import static com.ttpod.rest.common.doc.MongoKey.*
 import static com.ttpod.rest.common.util.WebUtils.$$
-import static com.ttpod.rest.groovy.CrudClosures.Bool
-import static com.ttpod.rest.groovy.CrudClosures.Int
-import static com.ttpod.rest.groovy.CrudClosures.Str
-import static com.ttpod.rest.groovy.CrudClosures.Timestamp
 
 /**
  * 现金相关接口
@@ -67,12 +57,12 @@ class CashController extends BaseController {
         }
         String [] arr = ids.split(',')
 
-        def query = $$('_id': ['$in': arr], 'status': ApplyType.未处理.ordinal())
+        def query = $$('_id': ['$in': arr], 'status': CashApplyType.未处理.ordinal())
         def applyList = cash_apply_logs().find(query).toArray()
         if (applyList.size() != arr.length) {
             return Web.notAllowed()
         }
-        def update = $$('$set': $$('status': ApplyType.通过.ordinal(), 'last_modify': new Date().getTime()))
+        def update = $$('$set': $$('status': CashApplyType.通过.ordinal(), 'last_modify': new Date().getTime()))
         cash_apply_logs().update(query, update, false, true, writeConcern)
         return [code: 1]
     }
@@ -90,18 +80,18 @@ class CashController extends BaseController {
         }
         String [] arr = ids.split(',')
 
-        def query = $$('_id': ['$in': arr], 'status': ApplyType.未处理.ordinal())
+        def query = $$('_id': ['$in': arr], 'status': CashApplyType.未处理.ordinal())
         def applyList = cash_apply_logs().find(query).toArray()
         if (applyList.size() != arr.length) {
             return Web.notAllowed()
         }
-        def apply_update = $$('$set': $$('status': ApplyType.未通过.ordinal(), 'last_modify': new Date().getTime()))
+        def apply_update = $$('$set': $$('status': CashApplyType.拒绝.ordinal(), 'last_modify': new Date().getTime()))
         for (DBObject apply : applyList) {
             def userId = apply['user_id'] as Integer
             def amount = apply['amount'] as Long
             logger.debug('update users ok')
             def applyId = apply['_id'].toString()
-            def apply_query = $$('_id': applyId, 'status': ApplyType.未处理.ordinal())
+            def apply_query = $$('_id': applyId, 'status': CashApplyType.未处理.ordinal())
 
             // 先审批更新，不成功则跳过
             if(cash_apply_logs().update(apply_query,apply_update).getN() == 0){
