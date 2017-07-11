@@ -56,13 +56,6 @@ public abstract class HttpsClientUtils {
         try {
             KeyStore keyStore  = KeyStore.getInstance("PKCS12");
             InputStream instream = new ClassPathResource(certPath).getInputStream();
-            BufferedReader bi = new BufferedReader(new InputStreamReader(instream));
-            String tex1t;
-            String msg = "";
-            while ((tex1t = bi.readLine()) != null) {
-                msg += tex1t;
-            }
-            System.out.println(msg.length());
             keyStore.load(instream, mchId.toCharArray());
             // Trust own CA and all self-signed certs
             SSLContext sslcontext = SSLContexts.custom()
