@@ -76,7 +76,7 @@ class FinanceController extends BaseController {
         def logWithId = new BasicDBObject(
                 _id: orderId,
                 user_id: id,
-                coin: num,
+                diamond: num,
                 via: 'Admin',
                 session: Web.getSession(),
                 remark: remark
@@ -95,7 +95,7 @@ class FinanceController extends BaseController {
         def userId = req['user_id'] as Integer
         def target = req['target'] as Integer
         def cny = req['cny'] as Integer
-        def coin = req['coin'] as Long
+        def diamond = req['coin'] as Long
         def via = req['via']
         def shop = req['shop']
         def broker = req['broker']
@@ -108,7 +108,7 @@ class FinanceController extends BaseController {
                 _id: order_id,
                 user_id: userId,
                 cny: cny,
-                coin: coin,
+                diamond: diamond,
                 via: via,
                 shop: shop,//商品类型
                 ext: broker, // 如果经纪人id 填写在这里
