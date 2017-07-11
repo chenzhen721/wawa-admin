@@ -12,12 +12,14 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
 
 import javax.net.ssl.SSLContext;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.security.KeyStore;
@@ -51,7 +53,7 @@ public abstract class HttpsClientUtils {
         CloseableHttpResponse response = null;
         try {
             KeyStore keyStore  = KeyStore.getInstance("PKCS12");
-            FileInputStream instream = new FileInputStream(new File(certPath));
+            InputStream instream = new ClassPathResource(certPath).getInputStream();
             keyStore.load(instream, mchId.toCharArray());
             // Trust own CA and all self-signed certs
             SSLContext sslcontext = SSLContexts.custom()

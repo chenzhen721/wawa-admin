@@ -363,6 +363,7 @@
                     <include>**/*.xml</include>
                     <include>apple/*</include>
                     <include>unionpay/*</include>
+                    <include>weixin/*</include>
                 </includes>
                 <filtering>false</filtering>
             </resource>
