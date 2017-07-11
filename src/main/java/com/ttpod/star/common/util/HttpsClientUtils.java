@@ -44,7 +44,7 @@ public abstract class HttpsClientUtils {
 
     public static final String mchId = "1432143502";
 
-    public static final String certPath = "C:\\Users\\Administrator\\Desktop\\apiclient_cert.p12";
+    public static final String certPath = "weixin/apiclient_cert.p12";
 
     public static String ssl(String url,String data){
         url = redPackUrl;
