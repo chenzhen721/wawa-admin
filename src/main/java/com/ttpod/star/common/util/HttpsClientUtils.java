@@ -33,7 +33,7 @@ public abstract class HttpsClientUtils {
 
     public static final Charset UTF8 =Charset.forName("UTF-8");
 
-    public static final String redPackUrl = "https://api.mch.weixin.qq.com/mmpaymkttransfers/gethbinfo";
+    public static final String redPackUrl = "https://api.mch.weixin.qq.com/mmpaymkttransfers/sendredpack";
 
     public static final String context = "<xml>" +
             "<sign><![CDATA[E1EE61A91C8E90F299DE6AE075D60A2D]]></sign>" +
