@@ -49,15 +49,12 @@
     <mongo:db-factory dbname="xy_union" id="unionFactory" mongo-ref="mongo"/>
     <mongo:db-factory dbname="game_log" id="gameLogFactory" mongo-ref="mongo"/>
     <mongo:db-factory dbname="shop" id="shopFactory" mongo-ref="mongo"/>
+    <mongo:db-factory dbname="xy_user" id="userFactory" mongo-ref="mongo"/>
 
     <!--<mongo:db-factory dbname="xy" id="userFactory" mongo-ref="mongo" write-concern="REPLICA_ACKNOWLEDGED" />-->
 
 
     <bean id="mainMongo" class="org.springframework.data.mongodb.core.MongoTemplate">
-        <constructor-arg ref="mainFactory"/>
-    </bean>
-
-    <bean id="userMongo" class="org.springframework.data.mongodb.core.MongoTemplate">
         <constructor-arg ref="mainFactory"/>
     </bean>
 
@@ -100,6 +97,10 @@
 
     <bean id="shopMongo" class="org.springframework.data.mongodb.core.MongoTemplate">
         <constructor-arg ref="shopFactory"/>
+    </bean>
+
+    <bean id="userMongo" class="org.springframework.data.mongodb.core.MongoTemplate">
+        <constructor-arg ref="userFactory"/>
     </bean>
 
 </beans>

@@ -1,29 +1,123 @@
 package com.ttpod.star.admin
 
-import com.ttpod.rest.anno.Rest
+import com.mongodb.DBCollection
+import com.mongodb.DBObject
 import com.ttpod.rest.anno.RestWithSession
+import com.ttpod.rest.common.doc.TwoTableCommit
 import com.ttpod.rest.web.Crud
+import com.ttpod.star.model.CashApplyType
 import com.ttpod.star.model.RedPacketAcquireType
 import com.ttpod.star.model.RedPacketCostType
+import org.apache.commons.lang.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.web.bind.ServletRequestUtils
 
 import javax.servlet.http.HttpServletRequest
 
-import static com.ttpod.rest.common.doc.MongoKey.ALL_FIELD
-import static com.ttpod.rest.common.doc.MongoKey.SJ_DESC
+import static com.ttpod.rest.common.doc.MongoKey.*
+import static com.ttpod.rest.common.util.WebUtils.$$
 
 /**
- * date: 2017-04-25
- * @author: monkey
+ * 现金相关接口
  */
 @RestWithSession
 class CashController extends BaseController {
 
     static final Logger logger = LoggerFactory.getLogger(CashController.class)
 
-    def cash_daily_report() { adminMongo.getCollection('cash_dailyReport_stat') }
+    DBCollection cash_daily_report() { adminMongo.getCollection('cash_dailyReport_stat') }
+    DBCollection cash_apply_logs() { adminMongo.getCollection('cash_apply_logs') }
+    DBCollection cash_logs() { logMongo.getCollection('cash_logs') }
 
+    /**
+     * 提现申请
+     * @param req
+     * @return
+     */
+    def apply_logs(HttpServletRequest req) {
+        def userId = ServletRequestUtils.getIntParameter(req, 'user_id', 0)
+        def query = Web.fillTimeBetween(req)
+        if (userId != 0) {
+            query.and('user_id').is(userId)
+        }
+        def field = $$('match_condition': 0)
+        Crud.list(req, cash_apply_logs(), query.get(), field, SJ_DESC)
+    }
+
+    /**
+     * 批量通过
+     * @param req
+     * @return
+     */
+    def batch_pass(HttpServletRequest req) {
+        def ids = ServletRequestUtils.getStringParameter(req,'_ids','')
+        if (StringUtils.isBlank(ids)) {
+            return Web.missParam()
+        }
+        String [] arr = ids.split(',')
+
+        def query = $$('_id': ['$in': arr], 'status': CashApplyType.未处理.ordinal())
+        def applyList = cash_apply_logs().find(query).toArray()
+        if (applyList.size() != arr.length) {
+            return Web.notAllowed()
+        }
+        def update = $$('$set': $$('status': CashApplyType.通过.ordinal(), 'last_modify': new Date().getTime()))
+        cash_apply_logs().update(query, update, false, true, writeConcern)
+        return [code: 1]
+    }
+
+    /**
+     * 批量拒绝
+     * 拒绝要退钱
+     * 今日之
+     * @param req
+     */
+    def batch_refuse(HttpServletRequest req) {
+        def ids = ServletRequestUtils.getStringParameter(req,'_ids','')
+        if (StringUtils.isBlank(ids)) {
+            return Web.missParam()
+        }
+        String [] arr = ids.split(',')
+
+        def query = $$('_id': ['$in': arr], 'status': CashApplyType.未处理.ordinal())
+        def applyList = cash_apply_logs().find(query).toArray()
+        if (applyList.size() != arr.length) {
+            return Web.notAllowed()
+        }
+        def apply_update = $$('$set': $$('status': CashApplyType.拒绝.ordinal(), 'last_modify': new Date().getTime()))
+        for (DBObject apply : applyList) {
+            def userId = apply['user_id'] as Integer
+            def amount = apply['amount'] as Long
+            logger.debug('update users ok')
+            def applyId = apply['_id'].toString()
+            def apply_query = $$('_id': applyId, 'status': CashApplyType.未处理.ordinal())
+
+            // 先审批更新，不成功则跳过
+            if(cash_apply_logs().update(apply_query,apply_update).getN() == 0){
+                continue
+            }
+            def logId = userId + '_' + new Date().getTime()
+            def red_packet_log = $$('_id': logId, 'user_id': userId, 'coin_count': 0, 'cash_count': amount,
+                            'type': RedPacketAcquireType.提现拒绝.actionName, date: new Date().format('yyyyMMdd'), refuse_id: applyId)
+
+            def transaction = Crud.doTwoTableCommit(red_packet_log, [
+                    main           : { users() },
+                    logColl        : { cash_logs() },
+                    queryWithId    : { $$('_id': userId, 'status': Boolean.TRUE) },
+                    update         : {
+                        $$($inc, ['finance.cash_count': amount])
+                    },
+                    successCallBack: { true },
+                    rollBack       : {}
+            ] as TwoTableCommit)
+
+            if(!transaction){
+                logger.error('mongodb update error')
+            }
+        }
+        return [code: 1]
+    }
 
     /**
      * 现金日报表

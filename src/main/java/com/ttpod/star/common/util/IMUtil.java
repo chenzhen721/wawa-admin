@@ -35,6 +35,7 @@ public class IMUtil {
             public void run() {
                 try {
                     String result = HttpClientUtils.postJson(IM_DOMAIN + "/api/publish/" + path, JSONUtil.beanToJson(body));
+                    logger.info("result: {}", result);
                     if (result != null && JSONUtil.jsonToMap(result).get("code") != 1) {
                         logger.error("push error" + result);
                     }
@@ -71,7 +72,7 @@ public class IMUtil {
         data.put("text", text);
         data.put("ts", now);
         data.put("expire_time", expireTime);
-
+        data.put("type", 2);
         message.put("action", IMType.系统消息.getAction());
         message.put("data", data);
 

@@ -26,8 +26,7 @@ import static com.ttpod.rest.common.doc.MongoKey.*
 import static com.ttpod.rest.common.util.WebUtils.$$
 
 /**
- * @author: zhen.chen@2339.com
- * Date: 2014/12/1 16:18
+ * 小新推送
  */
 @Rest
 class PushController extends BaseController {
@@ -95,6 +94,7 @@ class PushController extends BaseController {
                         "action": "msg.system",
                         "data"  : [
                                 "title"      : title,
+                                "type":2,
 //                                "image": one['image'],
 //                                "link": one['link'],
                                 "text"       : text,

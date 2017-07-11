@@ -9,8 +9,7 @@ import javax.servlet.http.HttpServletRequest
 
 import static com.ttpod.rest.groovy.CrudClosures.*
 /**
- * date: 13-3-28 下午2:31
- * @author: yangyang.cong@ttpod.com
+ * 任务管理
  */
 @RestWithSession
 class MissionController extends BaseController{

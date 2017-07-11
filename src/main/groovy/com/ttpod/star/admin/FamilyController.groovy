@@ -32,7 +32,7 @@ import static com.ttpod.rest.common.doc.MongoKey._id
  * @author: haigen.xiong@ttpod.com
  */
 @RestWithSession
-class GroupController extends BaseController {
+class FamilyController extends BaseController {
 
     @Resource
     MessageController messageController
@@ -156,7 +156,7 @@ class GroupController extends BaseController {
                     if (1 == users().update($$(_id, obj.get(_id)), $$($unset, $$("family", 1))).getN())
                     {
 
-                        logMongo.getCollection('member_applys').findAndModify($$(family_id: family_id, xy_user_id:  obj.get(_id), status: ApplyType.通过.ordinal()),
+                        familyMongo.getCollection('member_applys').findAndModify($$(family_id: family_id, xy_user_id:  obj.get(_id), status: ApplyType.通过.ordinal()),
                                 $$('$set': [status: ApplyType.关闭.ordinal(), lastmodif:time]))
                         //给成员发送消息
                         messageController.sendSingleMsg(obj.get(_id) as Integer, '家族解散', '你所在的家族'+family.get('family_name')+'因为家族徽章/家族名称相关词汇违规而被解散。如有任何疑问欢迎联系客服QQ', MsgType.系统消息);

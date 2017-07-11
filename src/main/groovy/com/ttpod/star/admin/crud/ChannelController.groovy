@@ -26,7 +26,7 @@ import static com.ttpod.rest.common.doc.MongoKey.SJ_DESC
 import org.apache.commons.lang.StringUtils
 
 /**
- * date: 13-4-19 下午2:31
+ * 渠道管理
  */
 //@Rest
 @RestWithSession
