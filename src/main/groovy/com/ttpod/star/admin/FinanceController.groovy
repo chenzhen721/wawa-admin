@@ -124,7 +124,7 @@ class FinanceController extends BaseController {
             logWithId.put('to_id', target)
             to_id = target
         }
-        if (addDiamond(to_id, coin, logWithId)) {
+        if (addDiamond(to_id, diamond, logWithId)) {
             Crud.opLog(OpType.repair_order, logWithId)
             return [code: 1]
         }
