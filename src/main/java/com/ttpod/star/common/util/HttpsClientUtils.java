@@ -15,9 +15,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 
 import javax.net.ssl.SSLContext;
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -44,7 +46,7 @@ public abstract class HttpsClientUtils {
 
     public static final String mchId = "1432143502";
 
-    public static final String certPath = "weixin/apiclient_cert.p12";
+    public static final String certPath = "/weixin/apiclient_cert.p12";
 
     public static String ssl(String url,String data){
         url = redPackUrl;
@@ -54,6 +56,13 @@ public abstract class HttpsClientUtils {
         try {
             KeyStore keyStore  = KeyStore.getInstance("PKCS12");
             InputStream instream = new ClassPathResource(certPath).getInputStream();
+            BufferedReader bi = new BufferedReader(new InputStreamReader(instream));
+            String tex1t;
+            String msg = "";
+            while ((tex1t = bi.readLine()) != null) {
+                msg += tex1t;
+            }
+            System.out.println(msg.length());
             keyStore.load(instream, mchId.toCharArray());
             // Trust own CA and all self-signed certs
             SSLContext sslcontext = SSLContexts.custom()
