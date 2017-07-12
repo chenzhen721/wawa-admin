@@ -1,15 +1,19 @@
 package com.ttpod.star.admin
 
+import com.mongodb.BasicDBObject
 import com.mongodb.DBCollection
 import com.mongodb.DBObject
 import com.ttpod.rest.anno.RestWithSession
 import com.ttpod.rest.common.doc.TwoTableCommit
 import com.ttpod.rest.web.Crud
+import com.ttpod.star.common.util.AddressUtils
 import com.ttpod.star.common.util.HttpsClientUtils
-
+import com.ttpod.star.common.util.WeixinUtils
 import com.ttpod.star.model.CashApplyType
 import com.ttpod.star.model.RedPacketAcquireType
 import com.ttpod.star.model.RedPacketCostType
+import groovy.xml.MarkupBuilder
+import groovy.xml.MarkupBuilderHelper
 import org.apache.commons.lang.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -64,9 +68,43 @@ class CashController extends BaseController {
         if (applyList.size() != arr.length) {
             return Web.notAllowed()
         }
-        def update = $$('$set': $$('status': CashApplyType.通过.ordinal(), 'last_modify': new Date().getTime()))
-        cash_apply_logs().update(query, update, false, true, writeConcern)
+        //
+        applyList.each {BasicDBObject obj ->
+            Map xml = buildSendPack(obj.toMap())
+            def update = $$('$set': $$('status': CashApplyType.通过.ordinal(), 'last_modify': new Date().getTime(), 'weixin_params': $$(xml)))
+            //默认发送成功
+            if (cash_apply_logs().update($$(_id: obj.get("_id")), update, false, true, writeConcern).getN() == 1) {
+                String rtnXml = HttpsClientUtils.execute(WeixinUtils.SEND_PACK_URL, mapToXml(xml), WeixinUtils.CERT_PATH, WeixinUtils.MCH_ID)
+                Map result = xmlToMap(rtnXml)
+                //TODO 判断是否发送成功，若失败更新当前状态，记录失败原因
+
+            }
+        }
+
         return [code: 1]
+    }
+
+    private Map buildSendPack(Map map) {
+        Map<String, Object> result = new TreeMap<String, Object>();
+        result.put("nonce_str", WeixinUtils.createNoncestr(32))
+        // 商户订单号（每个订单号必须唯一）。组成：mch_id+yyyymmdd+10位一天内不能重复的数字。接口根据商户订单号支持重入，如出现超时可再调用。
+        result.put("mch_billno", WeixinUtils.getMchBillNo())
+        result.put("mch_id", WeixinUtils.MCH_ID) // 微信支付分配的商户号
+        result.put("wxappid", WeixinUtils.APP_ID) // 微信分配的公众账号ID（企业号corpid即为此appId）
+        result.put("send_name", "来吼官方") //TODO 商户名称, 红包发送者名称
+        result.put("re_openid", map.get("account")) // "oy-yfuAMQ4tynMP98bOdMmuS4Bk4"; // 接受红包的用户.用户在wxappid下的openid
+        result.put("total_amount", map.get("amount")) // 付款金额，单位分
+        result.put("total_num", "1") // 红包发放总人数
+        result.put("wishing", "大吉大利，今晚吃鸡") //TODO 红包祝福语
+        result.put("client_ip", AddressUtils.getLocalHost()) // 调用接口的机器Ip地址
+        result.put("act_name", "提现") //TODO 活动名称
+        result.put("remark", "ThankYou2") //TODO 备注信息
+        String sign = WeixinUtils.createSign("UTF-8", result) // 签名
+        result.put("sign", sign)
+        result
+//        String xmlParam = mapToXml(map)
+//        logger.info("sendRedPack, 入参xmlParam=" + xmlParam)
+//        xmlParam
     }
 
     /**
@@ -121,10 +159,26 @@ class CashController extends BaseController {
         return [code: 1]
     }
 
-    //TODO 发红包接口测试，不行回退
+    //发红包接口测试，不行回退
     def testRedPack(HttpServletRequest req) {
-        HttpsClientUtils.execute()
+        def map = [amount: 100, account: "opUFIwXkPyH9kULk1xrDllhO1PsQ"]
+
+        buildSendPack(map)
+
+        String result = HttpsClientUtils.execute(WeixinUtils.SEND_PACK_URL, "", WeixinUtils.CERT_PATH, WeixinUtils.MCH_ID)
+        logger.info(result)
     }
+
+
+
+
+
+
+
+
+
+
+
 
     /**
      * 现金日报表
@@ -156,4 +210,23 @@ class CashController extends BaseController {
 
         return [code: 1,'title': map, 'data': data['data']]
     }
+
+    private static String mapToXml(Map<String, Object> map) {
+        def sw = new StringWriter()
+        MarkupBuilder markupBuilder = new MarkupBuilder(sw)
+        def mkp = markupBuilder.getMkp() as MarkupBuilderHelper
+        def root = markupBuilder.createNode("xml")
+            map.each { String k, Object val ->
+                def node = markupBuilder.createNode(k)
+                mkp.yieldUnescaped("<![CDATA[$val]]>")
+                markupBuilder.nodeCompleted(null, node)
+            }
+        markupBuilder.nodeCompleted(null, root)
+        sw.toString()
+    }
+
+    private static Map xmlToMap(String xml) {
+        xml
+    }
+
 }

@@ -52,7 +52,7 @@ etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
 字段名|类型|是否必须|取值|说明
 ---|---|---|---|---
 \_id|String|false||edit必传
-user_ids|Array|true||推送用户ID
+user_ids|String|true||推送用户ID,以逗号分隔
 text|String|true||运营消息内容
 link_url|String|false||运营消息链接
 img_url|String|false||运营消息图片

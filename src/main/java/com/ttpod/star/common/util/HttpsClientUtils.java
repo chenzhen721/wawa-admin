@@ -35,12 +35,6 @@ public class HttpsClientUtils {
     private static final String KEY_ALGORITHM = ((java.security.Security.getProperty("ssl.KeyManagerFactory.algorithm") == null)? "sunx509" : java.security.Security.getProperty("ssl.KeyManagerFactory.algorithm"));
 
     public static final String url = "https://api.mch.weixin.qq.com/mmpaymkttransfers/gethbinfo";
-//    public static final String url = "https://api.mch.weixin.qq.com/mmpaymkttransfers/sendredpack";
-
-
-    public static final String mcId = "1432143502";
-
-    public static final String certPath = "/weixin/apiclient_cert.p12";
 
     public static final String context = "<xml>" +
             "<sign><![CDATA[E1EE61A91C8E90F299DE6AE075D60A2D]]></sign>" +
@@ -86,15 +80,16 @@ public class HttpsClientUtils {
         return null;
     }
 
-    public static void execute() {
-        SSLContext sslContext = buildSSLContext(certPath, mcId);
+    public static String execute(String url, String context, String path, String password) {
+        SSLContext sslContext = buildSSLContext(path, password);
         if (sslContext == null) {
             logger.error("holy shit! init sslContext failed.");
-            return;
+            return null;
         }
         SSLSocketFactory sslFactory = sslContext.getSocketFactory();
 
         HttpsURLConnection urlCon = null;
+        StringBuilder message = new StringBuilder();
         try {
             urlCon = (HttpsURLConnection) (new URL(url)).openConnection();
 
@@ -112,7 +107,7 @@ public class HttpsClientUtils {
             BufferedReader in = new BufferedReader(new InputStreamReader(urlCon.getInputStream()));
             String line;
             while ((line = in.readLine()) != null) {
-                System.out.println(line);
+                message.append(line);
             }
         } catch (MalformedURLException e) {
             e.printStackTrace();
@@ -120,12 +115,12 @@ public class HttpsClientUtils {
             e.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
-        }
-        /*finally {
+        } finally {
             if (urlCon != null) {
                 urlCon.disconnect();
             }
-        }*/
+        }
+        return message.toString();
     }
 
     public static void main(String[] args) throws Exception {
