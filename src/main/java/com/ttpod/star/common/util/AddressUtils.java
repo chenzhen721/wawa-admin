@@ -21,7 +21,7 @@ public class AddressUtils {
                 Enumeration addresses = netInterface.getInetAddresses();
                 while (addresses.hasMoreElements()) {
                     ip = (InetAddress) addresses.nextElement();
-                    if (ip != null &&  !ip.isLoopbackAddress() &&  !ip.isSiteLocalAddress()  && ip instanceof Inet4Address) {
+                    if (ip != null && ip instanceof Inet4Address) {
                         System.out.println("本机的IP = " + ip.getHostAddress());
                         return ip.getHostAddress();
                     }
