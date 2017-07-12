@@ -74,7 +74,7 @@ public class WeixinUtils {
      * @param map 微信入参map
      * @return
      */
-    /*public static String mapToXml(Map<String, Object> map) {
+    public static String mapToXml(Map<String, Object> map) {
         StringBuilder xml = new StringBuilder("<xml>");
 
         Iterator<Map.Entry<String, Object>> iter = map.entrySet().iterator();
@@ -86,6 +86,6 @@ public class WeixinUtils {
         }
         xml.append("</xml>");
         return xml.toString();
-    }*/
+    }
 
 }

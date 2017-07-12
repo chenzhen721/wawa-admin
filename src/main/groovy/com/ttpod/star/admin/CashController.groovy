@@ -74,7 +74,7 @@ class CashController extends BaseController {
             def update = $$('$set': $$('status': CashApplyType.通过.ordinal(), 'last_modify': new Date().getTime(), 'weixin_params': $$(xml)))
             //默认发送成功
             if (cash_apply_logs().update($$(_id: obj.get("_id")), update, false, true, writeConcern).getN() == 1) {
-                String rtnXml = HttpsClientUtils.execute(WeixinUtils.SEND_PACK_URL, mapToXml(xml), WeixinUtils.CERT_PATH, WeixinUtils.MCH_ID)
+                String rtnXml = HttpsClientUtils.execute(WeixinUtils.SEND_PACK_URL, WeixinUtils.mapToXml(xml), WeixinUtils.CERT_PATH, WeixinUtils.MCH_ID)
                 Map result = xmlToMap(rtnXml)
                 //TODO 判断是否发送成功，若失败更新当前状态，记录失败原因
 
@@ -162,7 +162,7 @@ class CashController extends BaseController {
     //发红包接口测试，不行回退
     def testRedPack(HttpServletRequest req) {
         def map = [amount: 100, account: "opUFIwXkPyH9kULk1xrDllhO1PsQ"]
-        String result = HttpsClientUtils.execute(WeixinUtils.SEND_PACK_URL, mapToXml(buildSendPack(map)), WeixinUtils.CERT_PATH, WeixinUtils.MCH_ID)
+        String result = HttpsClientUtils.execute(WeixinUtils.SEND_PACK_URL, WeixinUtils.mapToXml(buildSendPack(map)), WeixinUtils.CERT_PATH, WeixinUtils.MCH_ID)
         logger.info(result)
     }
 
@@ -206,20 +206,6 @@ class CashController extends BaseController {
         )
 
         return [code: 1,'title': map, 'data': data['data']]
-    }
-
-    private static String mapToXml(Map<String, Object> map) {
-        def sw = new StringWriter()
-        MarkupBuilder markupBuilder = new MarkupBuilder(sw)
-        def mkp = markupBuilder.getMkp() as MarkupBuilderHelper
-        def root = markupBuilder.createNode("xml")
-            map.each { String k, Object val ->
-                def node = markupBuilder.createNode(k)
-                mkp.yieldUnescaped("<![CDATA[$val]]>")
-                markupBuilder.nodeCompleted(null, node)
-            }
-        markupBuilder.nodeCompleted(null, root)
-        sw.toString()
     }
 
     private static Map xmlToMap(String xml) {
