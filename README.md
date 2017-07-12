@@ -7,4 +7,4 @@
 
 ## 相关接口
 
-* [API](/doc/api.md) 
+* [API(日常运用)](/doc/api_menu1.md) 
