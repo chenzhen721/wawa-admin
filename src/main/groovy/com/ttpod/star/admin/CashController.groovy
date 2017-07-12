@@ -123,7 +123,7 @@ class CashController extends BaseController {
 
     //TODO 发红包接口测试，不行回退
     def testRedPack(HttpServletRequest req) {
-        logger.info(HttpsClientUtils.execute())
+        HttpsClientUtils.execute()
     }
 
     /**
