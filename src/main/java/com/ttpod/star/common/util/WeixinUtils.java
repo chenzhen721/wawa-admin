@@ -17,7 +17,7 @@ public class WeixinUtils {
     public static final Logger logger = LoggerFactory.getLogger(WeixinUtils.class);
     public static final String SEND_PACK_URL = "https://api.mch.weixin.qq.com/mmpaymkttransfers/sendredpack";
     public static final String MCH_ID = "1476104702"; //微信支付分配的商户号
-    public static final String APP_ID = "wx45d43a50adf5a470"; //微信分配的公众账号ID（在mp.weixin.qq.com申请的）
+    public static final String APP_ID = "wx9778e46ed6e27241"; //微信分配的公众账号ID（在mp.weixin.qq.com申请的）
     public static final String CERT_PATH = "/weixin/apiclient_cert.p12";
     public static final String API_KEY = "62110ce299081ba6ab3bfbf77ff7be9f";
 
