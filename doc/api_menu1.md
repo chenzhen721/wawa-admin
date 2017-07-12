@@ -8,7 +8,7 @@
 
 字段名|类型|是否必须|取值|说明
 ---|---|---|---|---
-stime|String|false|yyyy-MM-dd HH\:\mm\:ss|创建时间开始
+stime|String|false|yyyy-MM-dd HH\:mm\:ss|创建时间开始
 etime|String|false|yyyy-MM-dd HH\:mm\:ss|创建时间结束
 
 * 返回
