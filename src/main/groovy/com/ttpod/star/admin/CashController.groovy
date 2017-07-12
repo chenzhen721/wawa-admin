@@ -6,6 +6,7 @@ import com.ttpod.rest.anno.RestWithSession
 import com.ttpod.rest.common.doc.TwoTableCommit
 import com.ttpod.rest.web.Crud
 import com.ttpod.star.common.util.HttpsClientUtils
+
 import com.ttpod.star.model.CashApplyType
 import com.ttpod.star.model.RedPacketAcquireType
 import com.ttpod.star.model.RedPacketCostType
@@ -122,7 +123,7 @@ class CashController extends BaseController {
 
     //TODO 发红包接口测试，不行回退
     def testRedPack(HttpServletRequest req) {
-        logger.info(HttpsClientUtils.ssl(null, null))
+        logger.info(HttpsClientUtils.execute())
     }
 
     /**
