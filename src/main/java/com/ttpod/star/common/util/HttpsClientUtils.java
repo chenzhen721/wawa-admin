@@ -34,8 +34,8 @@ public class HttpsClientUtils {
     private static final String KEYSTORE_TYPE = "PKCS12";
     private static final String KEY_ALGORITHM = ((java.security.Security.getProperty("ssl.KeyManagerFactory.algorithm") == null)? "sunx509" : java.security.Security.getProperty("ssl.KeyManagerFactory.algorithm"));
 
-//    public static final String url = "https://api.mch.weixin.qq.com/mmpaymkttransfers/gethbinfo";
-    public static final String url = "https://api.mch.weixin.qq.com/mmpaymkttransfers/sendredpack";
+    public static final String url = "https://api.mch.weixin.qq.com/mmpaymkttransfers/gethbinfo";
+//    public static final String url = "https://api.mch.weixin.qq.com/mmpaymkttransfers/sendredpack";
 
 
     public static final String mcId = "1432143502";
