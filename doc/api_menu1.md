@@ -8,8 +8,8 @@
 
 字段名|类型|是否必须|取值|说明
 ---|---|---|---|---
-stime|String|false|yyyy-MM-dd HH\\:mm\\:ss|创建时间开始
-etime|String|false|yyyy-MM-dd HH\:mm\:ss|创建时间结束
+stime|String|false|yyyy-MM-dd HH: mm:ss|创建时间开始
+etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
 
 * 返回
 
@@ -61,8 +61,8 @@ umeng_text|String|true||通知栏内容
 uemng_event_roomId||||跳转房间ID
 umeng_event_url||||跳转页面地址
 status|int|true|默认为0|推送状态 0-未推送 1-已推送 2-已取消
-stime|String|false|yyyy-MM-dd HH\:mm\:ss|预期推送开始时间(暂不支持，二期实现)
-etime|String|false|yyyy-MM-dd HH\:mm\:ss|预期推送结束时间（暂不支持，二期实现）
+stime|String|false|yyyy-MM-dd HH: mm:ss|预期推送开始时间(暂不支持，二期实现)
+etime|String|false|yyyy-MM-dd HH: mm:ss|预期推送结束时间（暂不支持，二期实现）
 
 * 返回
 
