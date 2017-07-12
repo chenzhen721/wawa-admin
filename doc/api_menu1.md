@@ -1,7 +1,7 @@
 # 日常运营
 
 ## 公告通知 - 消息通知
-1. 通知列表
+    ## 通知列表
 
 * API {GET|POST} http://test-aiadmin.memeyule.com/push/list.json
 * 参数
@@ -41,7 +41,8 @@ etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
     "all_page": 12
 }
 ```
-2. 通知添加/修改
+
+    ## 通知添加/修改
 
 * API 添加 {GET|POST} http://test-aiadmin.memeyule.com/push/add.json
       修改 {GET|POST} http://test-aiadmin.memeyule.com/push/add.json
