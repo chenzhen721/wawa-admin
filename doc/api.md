@@ -1,54 +1,78 @@
-# 来吼 - ADMIN系统
+# 日常运营
 
-## 域名
+## 公告通知 - 消息通知
+1. 通知列表
 
-* 正式服： http://aiadmin.memeyule.com
-* 测试服： http://test-aiadmin.memeyule.com
+* API {GET|POST} http://test-aiadmin.memeyule.com/push/list.json
+* 参数
 
-## 连接Socket
 字段名|类型|是否必须|取值|说明
 ---|---|---|---|---
-access_token|String|true||用户token
-platform|Number|false|1:Android(默认),2:iOS,3:PC|平台
 
-eg:
-```javascript
-connect('http://test.aiim.memeyule.com:6060?accessToken=xxxxx&platform=1')
-```
+stime|String|false|yyyy-MM-dd HH:mm:ss|创建时间开始
+etime|String|false|yyyy-MM-dd HH:mm:ss|创建时间结束
 
-## 数据格式
-
-
-消息格式：
+* 返回
 ```json
 {
-    "action" : "message.receive", //消息action用来区分不同的操作
-    "action_extra": "", // 可选字段，客户端根据需要，自己定义内容
-    "data" : { // 消息体主体数据
-        //...
-    }
+    "count": 68,
+    "data": [{
+        "_id": "12781_1499761668655",
+        "user_ids": [1201065], //消息推送的用户ID
+        "text": "哈哈家族，嗨起来！houhou,EEE", //运营消息内容
+        "link_url": "",  //运营消息链接
+        "img_url": "", //运营消息图片
+        "isNotify": true, //是否推送通知栏 （以下字段为true的时候可用）
+        "umeng_event": "redirect_msg", //通知栏事件类型: 
+                                       //    打开首页("redirect_app"),
+                                       //    跳至消息("redirect_msg"),
+                                       //    打开房间("redirect_room"),
+                                       //    跳至页面("redirect_url");
+        "umeng_title": "wo shi title", //通知栏标题
+        "umeng_text": "wo shi text",   //通知栏内容
+        "uemng_event_roomId": "",      //跳转房间ID
+        "umeng_event_url": "",         //跳转页面地址
+        "status": "1",                 //推送状态 0-未推送 1-已推送 2-已取消
+        "stime": "",                   //推送开始时间
+        "etime": "",                   //推送结束时间
+        "timestamp": 1499761668656     //创建时间
+    }],
+    "code": 1,
+    "all_page": 12
 }
 ```
+2. 通知添加/修改
 
-用户数据格式（`userInfo`）：
+* API 添加 {GET|POST} http://test-aiadmin.memeyule.com/push/add.json
+      修改 {GET|POST} http://test-aiadmin.memeyule.com/push/add.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+\_id|String|false||edit必传
+user_ids|Array|true||推送用户ID
+text|String|true||运营消息内容
+link_url|String|false||运营消息链接
+img_url|String|false||运营消息图片
+isNotify|Boolean|true|true,false|是否推送通知栏(以下字段标记为必传取决于notify为true)
+umeng_event|String|true||打开首页("redirect_app"),跳至消息("redirect_msg"),打开房间("redirect_room"),跳至页面("redirect_url");
+umeng_title|String|true||通知栏标题
+umeng_text|String|true||通知栏内容
+uemng_event_roomId||||跳转房间ID
+umeng_event_url||||跳转页面地址
+status|int|true|默认为0|推送状态 0-未推送 1-已推送 2-已取消
+stime|String|false|yyyy-MM-dd HH:mm:ss|预期推送开始时间(暂不支持，二期实现)
+etime|String|false|yyyy-MM-dd HH:mm:ss|预期推送结束时间（暂不支持，二期实现）
+
+* 返回
+
+    成功
 ```json
-{
-    "_id": 1300379,
-    "finance": {
-        "bean_count_total": 11111,
-        "coin_spend_total": 1111
-    },
-    "nick_name": "我是小新",
-    "pic": "http://img.sumeme.com/22/6/1403510731734.jpg",
-    "priv": 2
-}
+{"code": 1}
 ```
-
-## 相关接口
-
-* [API](/doc/api.md) (仅后端使用)
-* [发送 socket 消息](/doc/send.md)
-* [接收 socket 消息](/doc/receive.md)
-
+    失败
+```json
+{"code": 0, "msg":"失败原因"}
+```
 
 
