@@ -161,7 +161,7 @@ class CashController extends BaseController {
 
     //发红包接口测试，不行回退
     def testRedPack(HttpServletRequest req) {
-        [[amount: 100, account: "opUFIwXkPyH9kULk1xrDllhO1PsQ"], [amount: 100, account: "ooUNZwajJWx-SCWyvu7rspNlAH0Q"]].each {Map map ->
+        [[amount: 100, account: "ooUNZwerQ6xEaukwIqAGn7nKHTp4"]].each {Map map ->
             String result = HttpsClientUtils.execute(WeixinUtils.SEND_PACK_URL, WeixinUtils.mapToXml(buildSendPack(map)), WeixinUtils.CERT_PATH, WeixinUtils.MCH_ID)
             logger.info(result)
         }
