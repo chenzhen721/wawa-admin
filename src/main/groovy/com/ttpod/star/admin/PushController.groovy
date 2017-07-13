@@ -47,7 +47,7 @@ class PushController extends BaseController {
             _id: { it == null ? "${Web.currentUserId}_${System.currentTimeMillis()}" as String: it as String},
             user_ids: {String ids-> if (StringUtils.isNotBlank(ids)) { ids.split(",").collect { it as Integer}}},
             text: Str, link_url:Str, img_url: Str, is_notify: {Boolean.valueOf((String)it)}, umeng_title: Str, umeng_text: Str,
-            umeng_event: Str, umeng_event_room_id: {it as Integer}, umeng_event_url: Str,timestamp:Timestamp, status:{it == null ? 0 : it as Integer},
+            umeng_event: Str, umeng_event_room_id: {it}, umeng_event_url: Str,timestamp:Timestamp, status:{StringUtils.isBlank(it as String) ? 0 : it as Integer},
             stime:{String str->  StringUtils.isBlank(str) ? null : Web.getTime(str).getTime()},
             etime:{String str->  StringUtils.isBlank(str) ? null : Web.getTime(str).getTime()}
     ]
