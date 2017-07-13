@@ -31,7 +31,7 @@ etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
                                        //    跳至页面("redirect_url");
         "umeng_title": "wo shi title", //通知栏标题
         "umeng_text": "wo shi text",   //通知栏内容
-        "uemng_event_roomId": "",      //跳转房间ID
+        "umeng_event_room_id": "",      //跳转房间ID
         "umeng_event_url": "",         //跳转页面地址
         "status": "1",                 //推送状态 0-未推送 1-已推送 2-已取消
         "stime": "",                   //推送开始时间
@@ -60,7 +60,7 @@ is_notify|Boolean|true|true,false|是否推送通知栏(以下字段标记为必
 umeng_event|String|true||打开首页("redirect_app"),跳至消息("redirect_msg"),打开房间("redirect_room"),跳至页面("redirect_url");
 umeng_title|String|true||通知栏标题
 umeng_text|String|true||通知栏内容
-uemng_event_roomId||||跳转房间ID
+umeng_event_room_id||||跳转房间ID
 umeng_event_url||||跳转页面地址
 status|int|true|默认为0|推送状态 0-未推送 1-已推送 2-已取消
 stime|String|false|yyyy-MM-dd HH: mm:ss|预期推送开始时间(暂不支持，二期实现)

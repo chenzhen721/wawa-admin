@@ -47,7 +47,7 @@ class PushController extends BaseController {
             _id: { it == null ? "${Web.currentUserId}_${System.currentTimeMillis()}" as String: it as String},
             user_ids: {String ids-> if (StringUtils.isNotBlank(ids)) { ids.split(",").collect { it as Integer}}},
             text: Str, link_url:Str, img_url: Str, is_notify: {Boolean.valueOf((String)it)}, umeng_title: Str, umeng_text: Str,
-            umeng_event: Str, uemng_event_roomId: {it as Integer}, umeng_event_url: Str,timestamp:Timestamp, status:{it == null ? 0 : it as Integer},
+            umeng_event: Str, umeng_event_room_id: {it as Integer}, umeng_event_url: Str,timestamp:Timestamp, status:{it == null ? 0 : it as Integer},
             stime:{String str->  StringUtils.isBlank(str) ? null : Web.getTime(str).getTime()},
             etime:{String str->  StringUtils.isBlank(str) ? null : Web.getTime(str).getTime()}
     ]
@@ -147,7 +147,7 @@ class PushController extends BaseController {
             msg = "发送用户ID为空"
         }
         if (map.get("is_notify") as Boolean) {
-            if (UmengEventType.打开房间.getEventType().equals(map.get("umeng_event")) && StringUtils.isBlank(map.get("uemng_event_roomId") as String)) {
+            if (UmengEventType.打开房间.getEventType().equals(map.get("umeng_event")) && StringUtils.isBlank(map.get("umeng_event_room_id") as String)) {
                 msg = "房间ID为空"
             }
             if (UmengEventType.跳至页面.getEventType().equals(map.get("umeng_event")) && StringUtils.isBlank(map.get("umeng_event_url") as String)) {
@@ -185,13 +185,13 @@ class PushController extends BaseController {
                             ],
                             "extra": [
                                 "event": map.get("umeng_event"),
-                                "room_id": map.get("uemng_event_roomId"),
+                                "room_id": map.get("umeng_event_room_id"),
                                 "url": map.get("umeng_event_url")
                             ]
                     ]
             ] as Map)
         }
-        if (map.get("uemng_event_roomId") == null) {
+        if (map.get("umeng_event_room_id") == null) {
             (result["umeng"]["extra"] as Map).remove("room_id")
         }
         if (map.get("umeng_event_url") == null) {
