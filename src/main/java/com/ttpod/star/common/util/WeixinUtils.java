@@ -21,6 +21,7 @@ public class WeixinUtils {
     public static final String APP_ID = "wx45d43a50adf5a470"; //微信分配的公众账号ID（在mp.weixin.qq.com申请的）
     public static final String CERT_PATH = "/weixin/apiclient_cert.p12";
     public static final String API_KEY = "62110ce299081ba6ab3bfbf77ff7be9f";
+    public static final String LAIHOU_APP_ID = "wx85c1789a23ef15f9"; //开发者平台注册的APP ID
 
     public static final Random rd = new Random();
 
