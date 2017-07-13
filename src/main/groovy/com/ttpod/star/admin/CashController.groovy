@@ -7,6 +7,7 @@ import com.ttpod.rest.anno.RestWithSession
 import com.ttpod.rest.common.doc.TwoTableCommit
 import com.ttpod.rest.web.Crud
 import com.ttpod.star.common.util.AddressUtils
+import com.ttpod.star.common.util.ExportUtils
 import com.ttpod.star.common.util.HttpsClientUtils
 import com.ttpod.star.common.util.WeixinUtils
 import com.ttpod.star.model.CashApplyType
@@ -20,6 +21,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.web.bind.ServletRequestUtils
 
 import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 
 import static com.ttpod.rest.common.doc.MongoKey.*
 import static com.ttpod.rest.common.util.WebUtils.$$
@@ -56,7 +58,7 @@ class CashController extends BaseController {
      * @param req
      * @return
      */
-    def batch_pass(HttpServletRequest req) {
+    def batch_pass(HttpServletRequest req, HttpServletResponse res) {
         def ids = ServletRequestUtils.getStringParameter(req,'_ids','')
         if (StringUtils.isBlank(ids)) {
             return Web.missParam()
@@ -64,47 +66,23 @@ class CashController extends BaseController {
         String [] arr = ids.split(',')
 
         def query = $$('_id': ['$in': arr], 'status': CashApplyType.未处理.ordinal())
+        def lastModify = new Date().getTime()
         def applyList = cash_apply_logs().find(query).toArray()
         if (applyList.size() != arr.length) {
             return Web.notAllowed()
         }
-        //
-        applyList.each {BasicDBObject obj ->
-            Map xml = buildSendPack(obj.toMap())
-            def update = $$('$set': $$('status': CashApplyType.通过.ordinal(), 'last_modify': new Date().getTime(), 'weixin_params': $$(xml)))
-            //默认发送成功
-            if (cash_apply_logs().update($$(_id: obj.get("_id")), update, false, true, writeConcern).getN() == 1) {
-                String rtnXml = HttpsClientUtils.execute(WeixinUtils.SEND_PACK_URL, WeixinUtils.mapToXml(xml), WeixinUtils.CERT_PATH, WeixinUtils.MCH_ID)
-                Map result = xmlToMap(rtnXml)
-                //TODO 判断是否发送成功，若失败更新当前状态，记录失败原因
-
+        def update = $$('$set': $$('status': CashApplyType.通过.ordinal(), 'last_modify': lastModify, 'batch_id': lastModify))
+        if (cash_apply_logs().update(query, update, false, true, writeConcern).getN() > 0) {
+            def sb = new StringBuilder(WeixinUtils.LAIHOU_APP_ID).append(ExportUtils.ls)
+            String fileName = "${lastModify}(${new Date().format('yyyy-MM-dd HH:mm:ss')})"
+            applyList.each { BasicDBObject obj ->
+                if (StringUtils.isNotBlank(obj.get('account') as String)) {
+                    sb.append(obj.get('account')).append(ExportUtils.ls)
+                }
             }
+            ExportUtils.response(res, fileName, sb.toString())
         }
-
-        return [code: 1]
-    }
-
-    private Map buildSendPack(Map map) {
-        Map<String, Object> result = new TreeMap<String, Object>();
-        result.put("nonce_str", WeixinUtils.createNoncestr(32))
-        // 商户订单号（每个订单号必须唯一）。组成：mch_id+yyyymmdd+10位一天内不能重复的数字。接口根据商户订单号支持重入，如出现超时可再调用。
-        result.put("mch_billno", WeixinUtils.getMchBillNo())
-        result.put("mch_id", WeixinUtils.MCH_ID) // 微信支付分配的商户号
-        result.put("wxappid", WeixinUtils.APP_ID) // 微信分配的公众账号ID（企业号corpid即为此appId）
-        result.put("send_name", "来吼官方") //TODO 商户名称, 红包发送者名称
-        result.put("re_openid", map.get("account")) // "oy-yfuAMQ4tynMP98bOdMmuS4Bk4"; // 接受红包的用户.用户在wxappid下的openid
-        result.put("total_amount", map.get("amount")) // 付款金额，单位分
-        result.put("total_num", "1") // 红包发放总人数
-        result.put("wishing", "大吉大利，今晚吃鸡") //TODO 红包祝福语
-        result.put("client_ip", AddressUtils.getLocalHost()) // 调用接口的机器Ip地址
-        result.put("act_name", "提现") //TODO 活动名称
-        result.put("remark", "ThankYou2") //TODO 备注信息
-        String sign = WeixinUtils.createSign("UTF-8", result) // 签名
-        result.put("sign", sign)
-        result
-//        String xmlParam = mapToXml(map)
-//        logger.info("sendRedPack, 入参xmlParam=" + xmlParam)
-//        xmlParam
+        return [code: 0]
     }
 
     /**
@@ -159,25 +137,6 @@ class CashController extends BaseController {
         return [code: 1]
     }
 
-    //发红包接口测试，不行回退
-    def testRedPack(HttpServletRequest req) {
-        [[amount: 100, account: "ok2Ip1kwAkESfDpIsP-EXli4ikXY"]].each {Map map ->
-            String result = HttpsClientUtils.execute(WeixinUtils.SEND_PACK_URL, WeixinUtils.mapToXml(buildSendPack(map)), WeixinUtils.CERT_PATH, WeixinUtils.MCH_ID)
-            logger.info(result)
-        }
-    }
-
-
-
-
-
-
-
-
-
-
-
-
     /**
      * 现金日报表
      * @param req
@@ -209,8 +168,33 @@ class CashController extends BaseController {
         return [code: 1,'title': map, 'data': data['data']]
     }
 
-    private static Map xmlToMap(String xml) {
-        xml
+    @Deprecated
+    private Map buildSendPack(Map map) {
+        Map<String, Object> result = new TreeMap<String, Object>();
+        result.put("nonce_str", WeixinUtils.createNoncestr(32))
+        // 商户订单号（每个订单号必须唯一）。组成：mch_id+yyyymmdd+10位一天内不能重复的数字。接口根据商户订单号支持重入，如出现超时可再调用。
+        result.put("mch_billno", WeixinUtils.getMchBillNo())
+        result.put("mch_id", WeixinUtils.MCH_ID) // 微信支付分配的商户号
+        result.put("wxappid", WeixinUtils.APP_ID) // 微信分配的公众账号ID（企业号corpid即为此appId）
+        result.put("send_name", "来吼官方") // 商户名称, 红包发送者名称
+        result.put("re_openid", map.get("account")) // "oy-yfuAMQ4tynMP98bOdMmuS4Bk4"; // 接受红包的用户.用户在wxappid下的openid
+        result.put("total_amount", map.get("amount")) // 付款金额，单位分
+        result.put("total_num", "1") // 红包发放总人数
+        result.put("wishing", "大吉大利，今晚吃鸡") // 红包祝福语
+        result.put("client_ip", AddressUtils.getLocalHost()) // 调用接口的机器Ip地址
+        result.put("act_name", "提现") // 活动名称
+        result.put("remark", "ThankYou2") // 备注信息
+        String sign = WeixinUtils.createSign("UTF-8", result) // 签名
+        result.put("sign", sign)
+        result
+    }
+
+    //发红包接口测试，不行回退
+    @Deprecated
+    def testRedPack(HttpServletRequest req) {
+        //微信公众号对应的openId，例如：ok2Ip1kwAkESfDpIsP-EXli4ikXY
+        Map xml = buildSendPack([amount: 100, account: "ok2Ip1kwAkESfDpIsP-EXli4ikXY"])
+        String rtnXml = HttpsClientUtils.execute(WeixinUtils.SEND_PACK_URL, WeixinUtils.mapToXml(xml), WeixinUtils.CERT_PATH, WeixinUtils.MCH_ID)
     }
 
 }
