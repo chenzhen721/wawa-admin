@@ -53,9 +53,9 @@ etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
 ---|---|---|---|---
 \_id|String|false||edit必传
 user_ids|String|true||推送用户ID,以逗号分隔
-text|String|true||运营消息内容
+text|String|false||运营消息内容（与img_url至少选其一）
+img_url|String|false||运营消息图片（与text至少选其一）
 link_url|String|false||运营消息链接
-img_url|String|false||运营消息图片
 is_notify|Boolean|true|true,false|是否推送通知栏(以下字段标记为必传取决于notify为true)
 umeng_event|String|true||打开首页("redirect_app"),跳至消息("redirect_msg"),打开房间("redirect_room"),跳至页面("redirect_url");
 umeng_title|String|true||通知栏标题

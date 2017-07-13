@@ -152,8 +152,8 @@ class PushController extends BaseController {
 
     private Map check(Map map) {
         def msg = ""
-        if (StringUtils.isBlank(map.get("text") as String)) {
-            msg = "消息内容为空"
+        if (StringUtils.isBlank(map.get("text") as String) && StringUtils.isBlank(map.get("img_url") as String)) {
+            msg = "文字或图片至少填一个"
         }
         if (CollectionUtils.isEmpty(map.get("user_ids") as Collection)) {
             msg = "发送用户ID为空"
