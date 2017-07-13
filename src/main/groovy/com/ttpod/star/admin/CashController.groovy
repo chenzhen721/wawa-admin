@@ -80,7 +80,7 @@ class CashController extends BaseController {
                     sb.append(obj.get('account')).append(ExportUtils.ls)
                 }
             }
-            ExportUtils.response(res, fileName, sb.toString())
+            return ExportUtils.response(res, fileName, sb.toString())
         }
         return [code: 0]
     }
