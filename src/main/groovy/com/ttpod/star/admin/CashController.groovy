@@ -72,7 +72,7 @@ class CashController extends BaseController {
             return Web.notAllowed()
         }
         def sb = new StringBuilder(WeixinUtils.LAIHOU_APP_ID).append(ExportUtils.ls)
-        String fileName = "${lastModify}(${new Date().format('yyyy-MM-dd HH:mm:ss')})"
+        String fileName = "${lastModify}-${new Date().format('yyyy-MM-dd-HH-mm-ss')}.txt"
         def update = $$('$set': $$('status': CashApplyType.通过.ordinal(), 'last_modify': lastModify, 'batch_id': lastModify))
         if (cash_apply_logs().update(query, update, false, true, writeConcern).getN() > 0) {
             applyList.each { BasicDBObject obj ->
