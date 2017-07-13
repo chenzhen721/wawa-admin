@@ -71,18 +71,17 @@ class CashController extends BaseController {
         if (applyList.size() != arr.length) {
             return Web.notAllowed()
         }
+        def sb = new StringBuilder(WeixinUtils.LAIHOU_APP_ID).append(ExportUtils.ls)
+        String fileName = "${lastModify}(${new Date().format('yyyy-MM-dd HH:mm:ss')})"
         def update = $$('$set': $$('status': CashApplyType.通过.ordinal(), 'last_modify': lastModify, 'batch_id': lastModify))
         if (cash_apply_logs().update(query, update, false, true, writeConcern).getN() > 0) {
-            def sb = new StringBuilder(WeixinUtils.LAIHOU_APP_ID).append(ExportUtils.ls)
-            String fileName = "${lastModify}(${new Date().format('yyyy-MM-dd HH:mm:ss')})"
             applyList.each { BasicDBObject obj ->
                 if (StringUtils.isNotBlank(obj.get('account') as String)) {
-                    sb.append(obj.get('account')).append(ExportUtils.ls)
+                    sb.append(obj.get('account')).append("  ").append(obj.get('income')).append(ExportUtils.ls)
                 }
             }
-            return ExportUtils.response(res, fileName, sb.toString())
         }
-        return [code: 0]
+        ExportUtils.response(res, fileName, sb.toString())
     }
 
     /**
