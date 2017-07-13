@@ -102,6 +102,18 @@ class PushController extends BaseController {
         return IMessageCode.OK
     }
 
+    def change_status(HttpServletRequest req) {
+        def id = req.getParameter("_id") as String
+        def status = req.getParameter("status") as String
+        if (StringUtils.isBlank(id) || StringUtils.isBlank(status)) {
+            return Web.missParam()
+        }
+        if ("0".equals(status)) {
+            return [code: 0, msg: "不支持更新至当前状态"]
+        }
+        return edit(req)
+    }
+
     private Map getParam(HttpServletRequest req) {
         //判断是add还是edit
         Boolean isAdd = Boolean.FALSE
