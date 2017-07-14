@@ -97,3 +97,68 @@ status|int|true||推送状态 1-已推送（立即推送） 2-已取消 不支�
 ```json
 {"code": 0, "msg":"失败原因"}
 ```
+
+## 提现管理
+### 1.提现列表
+
+* API {GET|POST} http://test-aiadmin.memeyule.com/cash/apply_logs.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+user_id|int|false||用户ID
+page|int|false||页码
+size|int|false||每页记录数
+
+* 返回
+```json
+{
+    "count": 17,
+    "data": [{
+        "_id": "1201085_1499852578136",
+        "nick_name": "萌新806811", //昵称
+        "date": "20170712",
+        "amount": 200, //申请提现金额
+        "income": 200, //到账金额
+        "status": 1, //  1未处理，2通过，3拒绝 
+        "last_modify": 1499941995599, //更新时间
+        "user_id": 1201085, //用户ID
+        "account": "ooUNZwajJWx-SCWyvu7rspNlAH0Q", //微信OPENID
+        "timestamp": 1499852578140, //申请时间
+        "batch_id": 1499941995599 //批量ID
+    }],
+    "code": 1,
+    "all_page": 1
+}
+```
+
+### 2.批量通过
+
+* API {GET|POST} http://test-aiadmin.memeyule.com/cash/batch_pass.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+_ids|string|true||记录ID，多个以逗号隔开
+
+* 返回
+```json
+{
+    "code": 1,
+    "data": "123" //生成微信红包同步文件内容  
+}
+```
+
+### 3.批量拒绝
+
+* API {GET|POST} http://test-aiadmin.memeyule.com/cash/batch_refuse.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+_ids|string|true||记录ID，多个以逗号隔开
+
+* 返回
+```json
+{ "code": 1 }
+```
