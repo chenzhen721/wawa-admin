@@ -152,7 +152,9 @@ class PushController extends BaseController {
 
     private Map check(Map map) {
         def msg = ""
-        if (StringUtils.isBlank(map.get("text") as String) && StringUtils.isBlank(map.get("img_url") as String)) {
+        if (StringUtils.isBlank(map.get("text") as String)
+                && StringUtils.isBlank(map.get("img_url") as String)
+                && StringUtils.isNotBlank(map.get("link_url") as String)) {
             msg = "文字或图片至少填一个"
         }
         if (CollectionUtils.isEmpty(map.get("user_ids") as Collection)) {
@@ -203,11 +205,17 @@ class PushController extends BaseController {
                     ]
             ] as Map)
         }
-        if (map.get("umeng_event_room_id") == null) {
-            (result["umeng"]["extra"] as Map).remove("room_id")
+        //支持不发送APP内消息
+        if (StringUtils.isBlank(map.get("text") as String) && StringUtils.isBlank(map.get("img_url") as String)) {
+            result.remove('message')
         }
-        if (map.get("umeng_event_url") == null) {
-            (result["umeng"]["extra"] as Map).remove("url")
+        if (result['umeng'] != null) {
+            if (map.get("umeng_event_room_id") == null) {
+                (result["umeng"]["extra"] as Map).remove("room_id")
+            }
+            if (map.get("umeng_event_url") == null) {
+                (result["umeng"]["extra"] as Map).remove("url")
+            }
         }
         return result
     }
