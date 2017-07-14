@@ -175,7 +175,7 @@ public class ExportUtils {
             str = "";
         }
         byte[] b = str.getBytes(GBK);
-        res.addHeader("Content-Disposition", "attachment;filename=" + fileName);
+        res.addHeader("Content-Disposition", "attachment;filename=" + fileName + ".csv");
         res.addHeader("Content-Length", b.length + "");
         res.setContentType("application/octet-stream;charset=" + GBK.toString());
         res.setCharacterEncoding(GBK.toString());

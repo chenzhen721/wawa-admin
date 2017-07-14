@@ -13,8 +13,6 @@ import com.ttpod.star.common.util.WeixinUtils
 import com.ttpod.star.model.CashApplyType
 import com.ttpod.star.model.RedPacketAcquireType
 import com.ttpod.star.model.RedPacketCostType
-import groovy.xml.MarkupBuilder
-import groovy.xml.MarkupBuilderHelper
 import org.apache.commons.lang.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -72,7 +70,6 @@ class CashController extends BaseController {
             return Web.notAllowed()
         }
         def sb = new StringBuilder(WeixinUtils.LAIHOU_APP_ID).append(ExportUtils.ls)
-        String fileName = "${lastModify}-${new Date().format('yyyy-MM-dd-HH-mm-ss')}.txt"
         def update = $$('$set': $$('status': CashApplyType.通过.ordinal(), 'last_modify': lastModify, 'batch_id': lastModify))
         if (cash_apply_logs().update(query, update, false, true, writeConcern).getN() > 0) {
             applyList.each { BasicDBObject obj ->
@@ -80,8 +77,9 @@ class CashController extends BaseController {
                     sb.append(obj.get('account')).append("  ").append(obj.get('income')).append(ExportUtils.ls)
                 }
             }
+            return [code: 1, data: sb.toString()]
         }
-        ExportUtils.response(res, fileName, sb.toString())
+        return [code: 0]
     }
 
     /**
