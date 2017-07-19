@@ -20,6 +20,7 @@ etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
     "data": [{
         "_id": "12781_1499761668655",
         "user_ids": [1201065], //消息推送的用户ID
+        "push_type": 0, //推送类型
         "text": "哈哈家族，嗨起来！houhou,EEE", //运营消息内容
         "link_url": "",  //运营消息链接
         "img_url": "", //运营消息图片
@@ -52,7 +53,8 @@ etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
 字段名|类型|是否必须|取值|说明
 ---|---|---|---|---
 \_id|String|false||edit必传
-user_ids|String|true||推送用户ID,以逗号分隔
+user_ids|String|false||推送用户ID,以逗号分隔
+push_type|int|true|默认为0|推送类型 0-指定用户推送 1-全部用户推送
 text|String|false||运营消息内容（与img_url至少选其一）
 img_url|String|false||运营消息图片（与text至少选其一）
 link_url|String|false||运营消息链接
@@ -60,8 +62,8 @@ is_notify|Boolean|true|true,false|是否推送通知栏(以下字段标记为必
 umeng_event|String|true||打开首页("redirect_app"),跳至消息("redirect_msg"),打开房间("redirect_room"),跳至页面("redirect_url");
 umeng_title|String|true||通知栏标题
 umeng_text|String|true||通知栏内容
-umeng_event_room_id||||跳转房间ID
-umeng_event_url||||跳转页面地址
+umeng_event_room_id|int|false||跳转房间ID
+umeng_event_url|string|false||跳转页面地址
 status|int|true|默认为0|推送状态 0-未推送 1-已推送 2-已取消
 stime|String|false|yyyy-MM-dd HH: mm:ss|预期推送开始时间(暂不支持，二期实现)
 etime|String|false|yyyy-MM-dd HH: mm:ss|预期推送结束时间（暂不支持，二期实现）

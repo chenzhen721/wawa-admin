@@ -33,8 +33,8 @@ class CashController extends BaseController {
     static final Logger logger = LoggerFactory.getLogger(CashController.class)
 
     DBCollection cash_daily_report() { adminMongo.getCollection('cash_dailyReport_stat') }
-    DBCollection cash_apply_logs() { adminMongo.getCollection('cash_apply_logs') }
-    DBCollection cash_logs() { logMongo.getCollection('cash_logs') }
+    DBCollection cash_apply_logs() { adminMongo.getCollection('cash_apply_logs') } //提现申请日志
+    DBCollection cash_logs() { logMongo.getCollection('cash_logs') } //提现申请操作日志
 
     /**
      * 提现申请

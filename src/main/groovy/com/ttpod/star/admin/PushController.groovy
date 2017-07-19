@@ -46,6 +46,7 @@ class PushController extends BaseController {
     public final Map<String, Closure> props = [
             _id: { it == null ? "${Web.currentUserId}_${System.currentTimeMillis()}" as String: it as String},
             user_ids: {String ids-> if (StringUtils.isNotBlank(ids)) { ids.split(",").collect { it as Integer}}},
+            push_type: { StringUtils.isBlank(it as String) ? 0 : it as Integer }, //默认为：0，推送制定用户；1，全部用户
             text: Str, link_url:Str, img_url: Str, is_notify: {Boolean.valueOf((String)it)}, umeng_title: Str, umeng_text: Str,
             umeng_event: Str, umeng_event_room_id: {StringUtils.isBlank(it as String) ? null : it as Integer}, umeng_event_url: Str,timestamp:Timestamp, status:{StringUtils.isBlank(it as String) ? 0 : it as Integer},
             stime:{String str->  StringUtils.isBlank(str) ? null : Web.getTime(str).getTime()},
@@ -74,7 +75,7 @@ class PushController extends BaseController {
             if (map.get("status") == 1) {
                 //推送信息
                 def message = buildMessage(map)
-                IMUtil.sendToUser(IMUtil.SEND_TO_GROUP, message)
+                sendToUser(map, message)
             }
             return OK()
         }
@@ -96,7 +97,7 @@ class PushController extends BaseController {
             if (result.get("status") == 1) {
                 //推送信息
                 def message = buildMessage(result)
-                IMUtil.sendToUser(IMUtil.SEND_TO_GROUP, message)
+                sendToUser(map, message)
             }
         }
         return IMessageCode.OK
@@ -157,7 +158,10 @@ class PushController extends BaseController {
                 && StringUtils.isNotBlank(map.get("link_url") as String)) {
             msg = "文字或图片至少填一个"
         }
-        if (CollectionUtils.isEmpty(map.get("user_ids") as Collection)) {
+        if (map.get('push_type') == null) {
+            msg = "推送类型为空"
+        }
+        if (0 == map.get('push_type') && CollectionUtils.isEmpty(map.get("user_ids") as Collection)) {
             msg = "发送用户ID为空"
         }
         if (map.get("is_notify") as Boolean) {
@@ -218,6 +222,15 @@ class PushController extends BaseController {
             }
         }
         return result
+    }
+
+    // 推送信息
+    private void sendToUser(Map map, Object body) {
+        String path = IMUtil.SEND_TO_GROUP
+        if (1 == map.get('push_type')) {
+            path = IMUtil.SEND_TO_ALL
+        }
+        IMUtil.sendToUser(path, body)
     }
 
     // ---------------------友盟消息推送
