@@ -144,4 +144,57 @@ etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
 ## 登录日统计 （同线上）
 
 ## 钻石日报表
+### 列表
 
+* API {GET|POST} http://test-aiadmin.memeyule.com/stat/diamond_log.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+stime|String|false|yyyy-MM-dd HH: mm:ss|创建时间开始
+etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
+
+* 返回
+
+```json
+{
+    "title": { //表头信息
+        "inc": {  // 加钻石
+            "user_pay": "充值加钻",
+            "hand_coin": "后台加钻",
+            "cash_exchange_add_diamond": "现金兑换",
+            "family_award": "家族奖励",
+            "use_item": "道具奖励",
+            "family_event": "寻宝奖励",
+            "open_card": "翻牌奖励"
+        },
+        "desc": { //减钻石
+            "open_card": "钻石翻牌",
+            "apply_family": "开通家族",
+            "hand_cut_diamond": "后台减钻"
+        }
+    },
+    "count": 984,
+    "data": [
+        {
+            "_id": "20170719_finance",
+            "inc": { //加钻石
+                "total": 317,
+                "use_item": 8,
+                "open_card": 167,
+                "family_award": 2,
+                "family_event": 2
+            },
+            "dec": { //减钻石
+                "total": 0
+            },
+            "begin_surplus": 0, //昨日结余
+            "end_surplus": 317, //当日结余
+            "today_balance": 317, //合计
+            "timestamp": 1500393600000 //时间
+        }
+    ],
+    "code": 1,
+    "all_page": 164
+}
+```
