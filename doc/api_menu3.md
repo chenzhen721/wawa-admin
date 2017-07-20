@@ -79,7 +79,7 @@ etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
 ## 道具使用统计
 ### 列表
 
-* API {GET|POST} http://test-aiadmin.memeyule.com/stat/use_item.json
+* API {GET|POST} http://test-aiadmin.memeyule.com/stat/use_item_log.json
 * 参数
 
 字段名|类型|是否必须|取值|说明

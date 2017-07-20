@@ -6,6 +6,7 @@ import com.ttpod.rest.anno.RestWithSession
 import com.ttpod.rest.common.doc.MongoKey
 import com.ttpod.rest.web.Crud
 import com.ttpod.star.common.util.ExportUtils
+import com.ttpod.star.model.DiamondActionType
 import com.ttpod.star.model.PayType
 import org.apache.commons.lang.StringUtils
 import org.slf4j.Logger
@@ -71,6 +72,24 @@ class StatController extends BaseController {
     def mic_log(HttpServletRequest req) {
         def query = Web.fillTimeBetween(req).and('type').is('on_mic').get()
         Crud.list(req, adminMongo.getCollection('stat_mic'), query, ALL_FIELD, SJ_DESC)
+    }
+
+    def diamond_log(HttpServletRequest req) {
+        def query = Web.fillTimeBetween(req)
+        def diamond_reports = adminMongo.getCollection('finance_daily_log')
+        def data = Crud.list(req, diamond_reports, query.get(), ALL_FIELD, SJ_DESC)
+        DiamondActionType[] das = DiamondActionType.values()
+        def inc = [:]
+        def desc = [:]
+        das.each {
+            DiamondActionType diamondActionType ->
+                if (diamondActionType.getIsIncAction() == 0) {
+                    inc.put(diamondActionType.actionName, diamondActionType.name())
+                } else {
+                    desc.put(diamondActionType.actionName, diamondActionType.name())
+                }
+        }
+        data.putAll([title: [inc: inc, desc: desc]])
     }
 
 
