@@ -77,7 +77,7 @@ class StatController extends BaseController {
     def diamond_log(HttpServletRequest req) {
         def query = Web.fillTimeBetween(req)
         def diamond_reports = adminMongo.getCollection('finance_daily_log')
-        def data = Crud.list(req, diamond_reports, query.get(), $$(begin_surplus: 1, end_surplus: 1, inc: 1, dec: 1), SJ_DESC)
+        def data = Crud.list(req, diamond_reports, query.get(), $$(begin_surplus: 1, end_surplus: 1, inc: 1, dec: 1, timestamp: 1, today_balance: 1), SJ_DESC)
         DiamondActionType[] das = DiamondActionType.values()
         def inc = [:]
         def desc = [:]
