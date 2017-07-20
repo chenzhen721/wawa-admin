@@ -6,6 +6,7 @@ import com.ttpod.rest.anno.RestWithSession
 import com.ttpod.rest.common.doc.MongoKey
 import com.ttpod.rest.web.Crud
 import com.ttpod.star.common.util.ExportUtils
+import com.ttpod.star.model.CashActionType
 import com.ttpod.star.model.DiamondActionType
 import com.ttpod.star.model.PayType
 import org.apache.commons.lang.StringUtils
@@ -74,6 +75,11 @@ class StatController extends BaseController {
         Crud.list(req, adminMongo.getCollection('stat_mic'), query, ALL_FIELD, SJ_DESC)
     }
 
+    /**
+     * 钻石日报
+     * @param req
+     * @return
+     */
     def diamond_log(HttpServletRequest req) {
         def query = Web.fillTimeBetween(req)
         def diamond_reports = adminMongo.getCollection('finance_daily_log')
@@ -90,6 +96,25 @@ class StatController extends BaseController {
                 }
         }
         data.putAll([title: [inc: inc, desc: desc]])
+        data
+    }
+
+    def cash_log(HttpServletRequest req) {
+        def query = Web.fillTimeBetween(req)
+        def diamond_reports = adminMongo.getCollection('finance_daily_log')
+        def data = Crud.list(req, diamond_reports, query.get(), $$(cash_begin_surplus: 1, cash_end_surplus: 1, cash_inc: 1, cash_dec: 1, timestamp: 1, cash_today_balance: 1, cash_pay: 1), SJ_DESC)
+        def inc = [:]
+        def desc = [:]
+        def cash_pay = [total_cash: "发放金额", total_expand: "税后金额"]
+        CashActionType.values().each {
+            CashActionType diamondActionType ->
+                if (diamondActionType.getIsIncAction() == 0) {
+                    inc.put(diamondActionType.actionName, diamondActionType.name())
+                } else {
+                    desc.put(diamondActionType.actionName, diamondActionType.name())
+                }
+        }
+        data.putAll([title: [inc: inc, desc: desc, cash_pay: cash_pay]])
         data
     }
 
@@ -162,7 +187,7 @@ class StatController extends BaseController {
     ]
 
     /**
-     * 保留
+     * 财务数据、月报
      * @param req
      * @return
      */
