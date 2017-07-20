@@ -90,6 +90,7 @@ class StatController extends BaseController {
                 }
         }
         data.putAll([title: [inc: inc, desc: desc]])
+        data
     }
 
 
