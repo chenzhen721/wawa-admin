@@ -102,6 +102,11 @@ class StatController extends BaseController {
         super.list(req, Web.fillTimeBetween(req).and('type').is(type).get())
     }*/
 
+    def finance_log(HttpServletRequest req) {
+        QueryBuilder queryBuilder = Web.fillTimeBetween(req).and('type').is('finance')
+        super.list(req, queryBuilder.get())
+    }
+
     /**
      * 充值渠道 注册统计
      * @param req
