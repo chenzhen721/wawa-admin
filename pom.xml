@@ -40,7 +40,7 @@
         <pic.domain>https://aiimg.sumeme.com/</pic.domain>
         <api.domain>http://aiapi.memeyule.com/</api.domain>
         <user.domain>http://aiuser.memeyule.com/</user.domain>
-        <im.domain>http://aiim.memeyule.com:6060</im.domain>
+        <im.domain>http://aiim.memeyule.com:6070</im.domain>
         <redis.port>6379</redis.port>
         <mongo.port>10000</mongo.port>
 
@@ -72,7 +72,7 @@
                 <!--<api.domain>http://test.api.ttxiu.com/</api.domain>-->
                 <api.domain>http://localhost:8080/</api.domain>
                 <user.domain>http://localhost:8082/</user.domain>
-                <im.domain>http://test-aiim.memeyule.com:6060</im.domain>
+                <im.domain>http://test-aiim.memeyule.com:6070</im.domain>
             </properties>
 
             <activation>
@@ -363,6 +363,7 @@
                     <include>**/*.xml</include>
                     <include>apple/*</include>
                     <include>unionpay/*</include>
+                    <include>weixin/*</include>
                 </includes>
                 <filtering>false</filtering>
             </resource>

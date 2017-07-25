@@ -1,24 +1,22 @@
 package com.ttpod.star.model;
 
 
-public enum DiamondActionType {
-    充值加钻("user_pay", 0),
-    后台加钻("hand_coin", 0),
-    现金兑换("cash_exchange_add_diamond", 0),
-    家族奖励("family_award", 0),
-    道具奖励("use_item", 0),
-    寻宝奖励("family_event", 0),
-    翻牌奖励("open_card", 0),
+public enum CashActionType {
+    现金兑换("apply_refuse", 0),//
+    道具奖励("use_item", 0),//
+    寻宝奖励("family_event", 0),//
+    翻牌奖励("open_card", 0),//
+    新人奖励("new_user", 0),//
+    新手引导("user_guide", 0),
 
-    钻石翻牌("open_card", 1),
-    开通家族("apply_family", 1),
-    后台减钻("hand_cut_diamond", 1);
+    申请提现("apply_cash", 1),//
+    后台减钻("cash_exchange_decrease_cash", 1);//
 
     public String actionName;
 
     public Integer isIncAction;
 
-    private DiamondActionType(String actionName, Integer isIncAction) {
+    private CashActionType(String actionName, Integer isIncAction) {
         this.actionName = actionName;
         this.isIncAction = isIncAction;
     }

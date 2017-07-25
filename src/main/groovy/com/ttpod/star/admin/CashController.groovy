@@ -1,10 +1,15 @@
 package com.ttpod.star.admin
 
+import com.mongodb.BasicDBObject
 import com.mongodb.DBCollection
 import com.mongodb.DBObject
 import com.ttpod.rest.anno.RestWithSession
 import com.ttpod.rest.common.doc.TwoTableCommit
 import com.ttpod.rest.web.Crud
+import com.ttpod.star.common.util.AddressUtils
+import com.ttpod.star.common.util.ExportUtils
+import com.ttpod.star.common.util.HttpsClientUtils
+import com.ttpod.star.common.util.WeixinUtils
 import com.ttpod.star.model.CashApplyType
 import com.ttpod.star.model.RedPacketAcquireType
 import com.ttpod.star.model.RedPacketCostType
@@ -14,6 +19,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.web.bind.ServletRequestUtils
 
 import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 
 import static com.ttpod.rest.common.doc.MongoKey.*
 import static com.ttpod.rest.common.util.WebUtils.$$
@@ -27,8 +33,8 @@ class CashController extends BaseController {
     static final Logger logger = LoggerFactory.getLogger(CashController.class)
 
     DBCollection cash_daily_report() { adminMongo.getCollection('cash_dailyReport_stat') }
-    DBCollection cash_apply_logs() { adminMongo.getCollection('cash_apply_logs') }
-    DBCollection cash_logs() { logMongo.getCollection('cash_logs') }
+    DBCollection cash_apply_logs() { adminMongo.getCollection('cash_apply_logs') } //提现申请日志
+    DBCollection cash_logs() { logMongo.getCollection('cash_logs') } //提现申请操作日志
 
     /**
      * 提现申请
@@ -50,7 +56,7 @@ class CashController extends BaseController {
      * @param req
      * @return
      */
-    def batch_pass(HttpServletRequest req) {
+    def batch_pass(HttpServletRequest req, HttpServletResponse res) {
         def ids = ServletRequestUtils.getStringParameter(req,'_ids','')
         if (StringUtils.isBlank(ids)) {
             return Web.missParam()
@@ -58,13 +64,22 @@ class CashController extends BaseController {
         String [] arr = ids.split(',')
 
         def query = $$('_id': ['$in': arr], 'status': CashApplyType.未处理.ordinal())
+        def lastModify = new Date().getTime()
         def applyList = cash_apply_logs().find(query).toArray()
         if (applyList.size() != arr.length) {
             return Web.notAllowed()
         }
-        def update = $$('$set': $$('status': CashApplyType.通过.ordinal(), 'last_modify': new Date().getTime()))
-        cash_apply_logs().update(query, update, false, true, writeConcern)
-        return [code: 1]
+        def sb = new StringBuilder(WeixinUtils.LAIHOU_APP_ID).append(ExportUtils.ls)
+        def update = $$('$set': $$('status': CashApplyType.通过.ordinal(), 'last_modify': lastModify, 'batch_id': lastModify))
+        if (cash_apply_logs().update(query, update, false, true, writeConcern).getN() > 0) {
+            applyList.each { BasicDBObject obj ->
+                if (StringUtils.isNotBlank(obj.get('account') as String)) {
+                    sb.append(obj.get('account')).append("  ").append(obj.get('income')).append(ExportUtils.ls)
+                }
+            }
+            return [code: 1, data: sb.toString()]
+        }
+        return [code: 0]
     }
 
     /**
@@ -149,4 +164,34 @@ class CashController extends BaseController {
 
         return [code: 1,'title': map, 'data': data['data']]
     }
+
+    @Deprecated
+    private Map buildSendPack(Map map) {
+        Map<String, Object> result = new TreeMap<String, Object>();
+        result.put("nonce_str", WeixinUtils.createNoncestr(32))
+        // 商户订单号（每个订单号必须唯一）。组成：mch_id+yyyymmdd+10位一天内不能重复的数字。接口根据商户订单号支持重入，如出现超时可再调用。
+        result.put("mch_billno", WeixinUtils.getMchBillNo())
+        result.put("mch_id", WeixinUtils.MCH_ID) // 微信支付分配的商户号
+        result.put("wxappid", WeixinUtils.APP_ID) // 微信分配的公众账号ID（企业号corpid即为此appId）
+        result.put("send_name", "来吼官方") // 商户名称, 红包发送者名称
+        result.put("re_openid", map.get("account")) // "oy-yfuAMQ4tynMP98bOdMmuS4Bk4"; // 接受红包的用户.用户在wxappid下的openid
+        result.put("total_amount", map.get("amount")) // 付款金额，单位分
+        result.put("total_num", "1") // 红包发放总人数
+        result.put("wishing", "大吉大利，今晚吃鸡") // 红包祝福语
+        result.put("client_ip", AddressUtils.getLocalHost()) // 调用接口的机器Ip地址
+        result.put("act_name", "提现") // 活动名称
+        result.put("remark", "ThankYou2") // 备注信息
+        String sign = WeixinUtils.createSign("UTF-8", result) // 签名
+        result.put("sign", sign)
+        result
+    }
+
+    //发红包接口测试，不行回退
+    @Deprecated
+    def testRedPack(HttpServletRequest req) {
+        //微信公众号对应的openId，例如：ok2Ip1kwAkESfDpIsP-EXli4ikXY
+        Map xml = buildSendPack([amount: 100, account: "ok2Ip1kwAkESfDpIsP-EXli4ikXY"])
+        String rtnXml = HttpsClientUtils.execute(WeixinUtils.SEND_PACK_URL, WeixinUtils.mapToXml(xml), WeixinUtils.CERT_PATH, WeixinUtils.MCH_ID)
+    }
+
 }
