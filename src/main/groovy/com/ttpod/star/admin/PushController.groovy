@@ -97,7 +97,7 @@ class PushController extends BaseController {
             if (result.get("status") == 1) {
                 //推送信息
                 def message = buildMessage(result)
-                sendToUser(map, message)
+                sendToUser(result, message)
             }
         }
         return IMessageCode.OK
