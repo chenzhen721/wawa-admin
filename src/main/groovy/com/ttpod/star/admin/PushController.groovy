@@ -191,7 +191,7 @@ class PushController extends BaseController {
                             "expire_time": System.currentTimeMillis() + MESSAGE_EXPIRE
                     ]
                 ],
-                "user_ids": map.get("user_ids")
+                "user_ids": map.get("user_ids")?:[]
         ] as Map
         if (map.get("is_notify")) {
             result.putAll([
