@@ -83,7 +83,7 @@ class CardController extends BaseController{
     }
 
     //默认翻牌cd，如果不填使用默认cd
-    def props = [_id:{it != null ?: seqKGS.nextId()}, status: Int, type: Int, category: Int, level: Int,
+    Map<String, Closure> props = [_id:{it != null ?: seqKGS.nextId()}, status: Int, type: Int, category: Int, level: Int,
                  next_level_id: Str, pic: Str, cate_pic: Str, levelup: Int, timestamp:Timestamp,
                  cds: {String cd -> StringUtils.isNotBlank(cd) ?: StringUtils.join(cds, ",")},
                  coin_rate: { StringUtils.isBlank(it as String) ? 0: it as Double}, coin_min: Int, coin_max: Int,
@@ -124,9 +124,8 @@ class CardController extends BaseController{
         //TODO 必填校验
 
         Map map = new HashMap()
-        for (Map.Entry<String, Closure> entry : props.entrySet()) {
-            String key = entry.getKey()
-            Object val = entry.getValue().call(req.getParameter(key))
+        props.each {String key, Closure value ->
+            Object val = value.call(req.getParameter(key))
             if (val != null) {
                 map.put(key, val)
             }
@@ -151,16 +150,14 @@ class CardController extends BaseController{
         }
 
         Map map = new HashMap()
-        for (Map.Entry<String, Closure> entry : props.entrySet()) {
-            String key = entry.getKey()
-            if(key.equals(_id)){
-                continue
-            }
-            String strValue = req.getParameter(key)
-            if(StringUtils.isNotEmpty(strValue)){
-                Object val = entry.getValue().call(strValue)
-                if (val != null) {
-                    map.put(key, val)
+        props.each {String key, Closure value ->
+            if(!key.equals(_id)){
+                String strValue = req.getParameter(key)
+                if(StringUtils.isNotEmpty(strValue)){
+                    Object val = value.call(strValue)
+                    if (val != null) {
+                        map.put(key, val)
+                    }
                 }
             }
         }
