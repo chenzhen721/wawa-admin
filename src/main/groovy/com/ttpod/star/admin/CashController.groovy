@@ -104,9 +104,9 @@ class CashController extends BaseController {
 
         Long cd = System.currentTimeMillis() + 30 * 1000
         def cards = new HashMap()
-        cards.put(cardId, $$(cd:cd, count:count))
+        cards.put("cards.${cardId}".toString(), $$(cd:cd, count:count))
 
-        if(user_cards().update($$(_id : userId, 'invitor_logs._id': [$ne: logId]).append(entryKey,[$not: [$gte:1]]), $$($set: [cards: cards], $push: [invitor_logs: [_id:logId, timestamp: System.currentTimeMillis()]])).getN() == 1
+        if(user_cards().update($$(_id : userId, 'invitor_logs._id': [$ne: logId]).append(entryKey,[$not: [$gte:1]]), $$($set: cards, $push: [invitor_logs: [_id:logId, timestamp: System.currentTimeMillis()]])).getN() == 1
                 || user_cards().update($$(_id : userId, 'invitor_logs._id': [$ne: logId]).append(entryKey,[$gte:1]), $$($inc: $$(entryKey, count), $push: [invitor_logs: [_id:logId, timestamp: System.currentTimeMillis()]])).getN() == 1){
             //发牌成功，更新日志
             invitor_logs().update($$(_id: logId), $$($set: [status: 2, last_modify: System.currentTimeMillis()]))
