@@ -14,6 +14,7 @@ import com.ttpod.star.model.CashApplyType
 import com.ttpod.star.model.RedPacketAcquireType
 import com.ttpod.star.model.RedPacketCostType
 import org.apache.commons.lang.StringUtils
+import org.bson.types.ObjectId
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.ServletRequestUtils
@@ -81,7 +82,7 @@ class CashController extends BaseController {
             if (logs != null) {
                 logs.each {BasicDBObject obj ->
                     //do two table commit
-                    def _id = obj['_id'] as String
+                    def _id = obj['_id'] as ObjectId
                     def invitor = obj['invitor'] as Integer
                     if (!setHeroCard(invitor, INVITOR_HERO_CARD, 1, _id)) {
                         logger.error("card send error, invitor_logs._id: ${_id}, invitor: ${invitor}, batch_id: ${lastModify}")
@@ -98,18 +99,18 @@ class CashController extends BaseController {
         return [code: 0]
     }
 
-    Boolean setHeroCard(Integer userId, String cardId, Integer count, String logId) {
+    Boolean setHeroCard(Integer userId, String cardId, Integer count, Object logId) {
         String entryKey = "cards.${cardId}.count"
 
         Long cd = System.currentTimeMillis() + 30 * 1000
         def cards = new HashMap()
         cards.put(cardId, $$(cd:cd, count:count))
 
-        if(user_cards().update($$(_id : userId, 'invitor_logs._id': [$ne: logId]).append(entryKey,[$not: [$gte:1]]), $$($set: cards, $push: [invitor_logs: [_id:logId, timestamp: System.currentTimeMillis()]])).getN() == 1
+        if(user_cards().update($$(_id : userId, 'invitor_logs._id': [$ne: logId]).append(entryKey,[$not: [$gte:1]]), $$($set: [cards: cards], $push: [invitor_logs: [_id:logId, timestamp: System.currentTimeMillis()]])).getN() == 1
                 || user_cards().update($$(_id : userId, 'invitor_logs._id': [$ne: logId]).append(entryKey,[$gte:1]), $$($inc: $$(entryKey, count), $push: [invitor_logs: [_id:logId, timestamp: System.currentTimeMillis()]])).getN() == 1){
             //发牌成功，更新日志
             invitor_logs().update($$(_id: logId), $$($set: [status: 2, last_modify: System.currentTimeMillis()]))
-            user_cards().update($$(_id: userId), $$($pull: [invitor: [_id: logId]]))
+            user_cards().update($$(_id: userId), $$($pull: [invitor_logs: [_id: logId]]))
             return true
         }
         return false
