@@ -32,7 +32,7 @@ class CashController extends BaseController {
 
     static final Logger logger = LoggerFactory.getLogger(CashController.class)
 
-    public static final String INVITOR_HERO_CARD = ""
+    public static final String INVITOR_HERO_CARD = "hinvitor0001"
 
     DBCollection cash_daily_report() { adminMongo.getCollection('cash_dailyReport_stat') }
     DBCollection cash_apply_logs() { adminMongo.getCollection('cash_apply_logs') } //提现申请日志

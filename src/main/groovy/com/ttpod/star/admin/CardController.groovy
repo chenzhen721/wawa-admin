@@ -83,9 +83,9 @@ class CardController extends BaseController{
     }
 
     //默认翻牌cd，如果不填使用默认cd
-    Map<String, Closure> props = [_id:{it != null ?: seqKGS.nextId()}, status: Int, type: Int, category: Int, level: Int,
+    Map<String, Closure> props = [_id:{it != null ? it : seqKGS.nextId()}, status: Int, type: Int, category: Int, level: Int,
                  next_level_id: Str, pic: Str, cate_pic: Str, levelup: Int, timestamp:Timestamp,
-                 cds: {String cd -> StringUtils.isNotBlank(cd) ?: StringUtils.join(cds, ",")},
+                 cds: {String cd -> StringUtils.isNotBlank(cd) ? cd : StringUtils.join(cds, ",")},
                  coin_rate: { StringUtils.isBlank(it as String) ? 0: it as Double}, coin_min: Int, coin_max: Int,
                  cash_rate: { StringUtils.isBlank(it as String) ? 0: it as Double}, cash_min: Int, cash_max: Int,
                  exp_rate: { StringUtils.isBlank(it as String) ? 0: it as Double}, exp_min: Int, exp_max: Int,
