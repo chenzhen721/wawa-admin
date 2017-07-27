@@ -14,6 +14,7 @@ import com.ttpod.star.model.CashApplyType
 import com.ttpod.star.model.RedPacketAcquireType
 import com.ttpod.star.model.RedPacketCostType
 import org.apache.commons.lang.StringUtils
+import org.bson.types.ObjectId
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.ServletRequestUtils
@@ -32,9 +33,13 @@ class CashController extends BaseController {
 
     static final Logger logger = LoggerFactory.getLogger(CashController.class)
 
+    public static final String INVITOR_HERO_CARD = "hinvitor0001"
+
     DBCollection cash_daily_report() { adminMongo.getCollection('cash_dailyReport_stat') }
     DBCollection cash_apply_logs() { adminMongo.getCollection('cash_apply_logs') } //提现申请日志
     DBCollection cash_logs() { logMongo.getCollection('cash_logs') } //提现申请操作日志
+    DBCollection invitor_logs() { adminMongo.getCollection('invitor_logs')}
+    DBCollection user_cards() { gameLogMongo.getCollection('user_cards')}
 
     /**
      * 提现申请
@@ -72,6 +77,18 @@ class CashController extends BaseController {
         def sb = new StringBuilder(WeixinUtils.LAIHOU_APP_ID).append(ExportUtils.ls)
         def update = $$('$set': $$('status': CashApplyType.通过.ordinal(), 'last_modify': lastModify, 'batch_id': lastModify))
         if (cash_apply_logs().update(query, update, false, true, writeConcern).getN() > 0) {
+            logger.info("batch_pass cash apply success, ids:" + arr)
+            def logs = invitor_logs().find($$(status: 1, user_id: [$in: applyList*.user_id as Set]))?.toArray()
+            if (logs != null) {
+                logs.each {BasicDBObject obj ->
+                    //do two table commit
+                    def _id = obj['_id'] as ObjectId
+                    def invitor = obj['invitor'] as Integer
+                    if (!setHeroCard(invitor, INVITOR_HERO_CARD, 1, _id)) {
+                        logger.error("card send error, invitor_logs._id: ${_id}, invitor: ${invitor}, batch_id: ${lastModify}")
+                    }
+                }
+            }
             applyList.each { BasicDBObject obj ->
                 if (StringUtils.isNotBlank(obj.get('account') as String)) {
                     sb.append(obj.get('account')).append("  ").append(obj.get('income')).append(ExportUtils.ls)
@@ -80,6 +97,23 @@ class CashController extends BaseController {
             return [code: 1, data: sb.toString()]
         }
         return [code: 0]
+    }
+
+    Boolean setHeroCard(Integer userId, String cardId, Integer count, Object logId) {
+        String entryKey = "cards.${cardId}.count"
+
+        Long cd = System.currentTimeMillis() + 30 * 1000
+        def cards = new HashMap()
+        cards.put("cards.${cardId}".toString(), $$(cd:cd, count:count))
+
+        if(user_cards().update($$(_id : userId, 'invitor_logs._id': [$ne: logId]).append(entryKey,[$not: [$gte:1]]), $$($set: cards, $push: [invitor_logs: [_id:logId, timestamp: System.currentTimeMillis()]])).getN() == 1
+                || user_cards().update($$(_id : userId, 'invitor_logs._id': [$ne: logId]).append(entryKey,[$gte:1]), $$($inc: $$(entryKey, count), $push: [invitor_logs: [_id:logId, timestamp: System.currentTimeMillis()]])).getN() == 1){
+            //发牌成功，更新日志
+            invitor_logs().update($$(_id: logId), $$($set: [status: 2, last_modify: System.currentTimeMillis()]))
+            user_cards().update($$(_id: userId), $$($pull: [invitor_logs: [_id: logId]]))
+            return true
+        }
+        return false
     }
 
     /**
