@@ -115,13 +115,12 @@ class CardController extends BaseController{
                     return qb.get()
                 }
                 public DBObject sortby(HttpServletRequest req) {
-                 return new BasicDBObject(["status": -1, level: 1, timestamp: -1])
+                 return new BasicDBObject(["status": -1, category: 1, level: 1, timestamp: -1])
                 }
             }
     )
 
     def add_card(HttpServletRequest req) {
-        //TODO 必填校验
 
         Map map = new HashMap()
         props.each {String key, Closure value ->
@@ -133,8 +132,14 @@ class CardController extends BaseController{
         def category = ServletRequestUtils.getIntParameter(req, 'category')
         def level = ServletRequestUtils.getIntParameter(req, 'level')
 
-        map.put('cate_pic', cates[category])
-        map.put('pic', level_pics.get(level))
+        if ('1'.equals(map.get('type'))) {
+            if (StringUtils.isBlank(map.get('cate_pic') as String)) {
+                map.put('cate_pic', cates[category])
+            }
+            if (StringUtils.isBlank(map.get('pic') as String)) {
+                map.put('pic', level_pics.get(level))
+            }
+        }
 
         if(table().save(new BasicDBObject(map)).getN() == 1){
             Crud.opLog(table().getName() + "_add", map)
