@@ -82,17 +82,19 @@ class CardController extends BaseController{
         }
     }
 
+    Closure IntWithDefault = {String str->  (str == null || str.isEmpty()) ? 0 : Integer.valueOf(str)  }
+
     //默认翻牌cd，如果不填使用默认cd
     Map<String, Closure> props = [_id:{it != null ? it : seqKGS.nextId()}, status: Int, type: Int, category: Int, level: Int,
                  next_level_id: { it ?: ""}, pic: Str, cate_pic: Str, levelup: Int, timestamp:Timestamp,
                  cds: {String cd -> StringUtils.isNotBlank(cd) ? cd : StringUtils.join(cds, ",")},
-                 coin_rate: { StringUtils.isBlank(it as String) ? 0: it as Double}, coin_min: Int, coin_max: Int,
-                 cash_rate: { StringUtils.isBlank(it as String) ? 0: it as Double}, cash_min: Int, cash_max: Int,
-                 exp_rate: { StringUtils.isBlank(it as String) ? 0: it as Double}, exp_min: Int, exp_max: Int,
-                 diamond_rate: { StringUtils.isBlank(it as String) ? 0: it as Double}, diamond_min: Int, diamond_max: Int,
-                 ack_rate: { StringUtils.isBlank(it as String) ? 0: it as Double}, ack_min: Int, ack_max: Int,
-                 def_rate: { StringUtils.isBlank(it as String) ? 0: it as Double}, def_min: Int, def_max: Int,
-                 steal_rate: { StringUtils.isBlank(it as String) ? 0: it as Double}, steal_min: Int, steal_max: Int
+                 coin_rate: { StringUtils.isBlank(it as String) ? 0: it as Double}, coin_min: IntWithDefault, coin_max: IntWithDefault,
+                 cash_rate: { StringUtils.isBlank(it as String) ? 0: it as Double}, cash_min: IntWithDefault, cash_max: IntWithDefault,
+                 exp_rate: { StringUtils.isBlank(it as String) ? 0: it as Double}, exp_min: IntWithDefault, exp_max: IntWithDefault,
+                 diamond_rate: { StringUtils.isBlank(it as String) ? 0: it as Double}, diamond_min: IntWithDefault, diamond_max: IntWithDefault,
+                 ack_rate: { StringUtils.isBlank(it as String) ? 0: it as Double}, ack_min: IntWithDefault, ack_max: IntWithDefault,
+                 def_rate: { StringUtils.isBlank(it as String) ? 0: it as Double}, def_min: IntWithDefault, def_max: IntWithDefault,
+                 steal_rate: { StringUtils.isBlank(it as String) ? 0: it as Double}, steal_min: IntWithDefault, steal_max: IntWithDefault
     ]
 
     DBCollection table() {adminMongo.getCollection('cards')}
@@ -132,10 +134,12 @@ class CardController extends BaseController{
         def category = ServletRequestUtils.getIntParameter(req, 'category')
         def level = ServletRequestUtils.getIntParameter(req, 'level')
 
-        if ('1'.equals(map.get('type'))) {
+        if ('1'.equals(map.get('type')) && category < cates.size()) {
             if (StringUtils.isBlank(map.get('cate_pic') as String)) {
                 map.put('cate_pic', cates[category])
             }
+        }
+        if ('1'.equals(map.get('type')) && level < level_pics.size()) {
             if (StringUtils.isBlank(map.get('pic') as String)) {
                 map.put('pic', level_pics.get(level))
             }
