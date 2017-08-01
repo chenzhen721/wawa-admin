@@ -9,6 +9,7 @@ public enum DiamondActionType {
     道具奖励("use_item", 0),
     寻宝奖励("family_event", 0),
     翻牌奖励("open_card", 0),
+    新手引导("user_guide", 0),
 
     钻石翻牌("open_card", 1),
     开通家族("apply_family", 1),
