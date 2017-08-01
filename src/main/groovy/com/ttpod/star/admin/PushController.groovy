@@ -97,7 +97,7 @@ class PushController extends BaseController {
             if (result.get("status") == 1) {
                 //推送信息
                 def message = buildMessage(result)
-                sendToUser(map, message)
+                sendToUser(result, message)
             }
         }
         return IMessageCode.OK
@@ -191,7 +191,7 @@ class PushController extends BaseController {
                             "expire_time": System.currentTimeMillis() + MESSAGE_EXPIRE
                     ]
                 ],
-                "user_ids": map.get("user_ids")
+                "user_ids": map.get("user_ids")?:[]
         ] as Map
         if (map.get("is_notify")) {
             result.putAll([
