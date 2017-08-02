@@ -54,7 +54,7 @@ class StatController extends BaseController {
      * @return
      */
     def family_event_log(HttpServletRequest req) {
-        super.list(req, Web.fillTimeBetween(req).and('type').is(UserAwardType.挖矿.ordinal()).get())
+        super.list(req, Web.fillTimeBetween(req).and('type').is(UserAwardType.挖矿.getId()).get())
     }
 
     /**
