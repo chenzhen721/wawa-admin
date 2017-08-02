@@ -9,6 +9,7 @@ import com.ttpod.star.common.util.ExportUtils
 import com.ttpod.star.model.CashActionType
 import com.ttpod.star.model.DiamondActionType
 import com.ttpod.star.model.PayType
+import com.ttpod.star.model.UserAwardType
 import org.apache.commons.lang.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -53,7 +54,7 @@ class StatController extends BaseController {
      * @return
      */
     def family_event_log(HttpServletRequest req) {
-        super.list(req, Web.fillTimeBetween(req).and('type').is('family_event').get())
+        super.list(req, Web.fillTimeBetween(req).and('type').is(UserAwardType.挖矿.ordinal()).get())
     }
 
     /**
