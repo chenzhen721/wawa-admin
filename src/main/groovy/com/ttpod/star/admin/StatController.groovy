@@ -39,6 +39,8 @@ class StatController extends BaseController {
 
     DBCollection finance_daily_log() { adminMongo.getCollection('finance_daily_log') }
 
+    DBCollection familys() { return familyMongo.getCollection('familys')}
+
     /**
      * 翻卡
      * @param req
@@ -74,6 +76,45 @@ class StatController extends BaseController {
     def mic_log(HttpServletRequest req) {
         def query = Web.fillTimeBetween(req).and('type').is('on_mic').get()
         Crud.list(req, adminMongo.getCollection('stat_mic'), query, ALL_FIELD, SJ_DESC)
+    }
+
+    /**
+     * 用户每日在家族房上麦时长统计
+     * @param req
+     * @return
+     */
+    def user_mic_log(HttpServletRequest req) {
+        def userId = req['user_id'] as Integer
+        def familyId = req['family_id'] as Integer
+        def query = Web.fillTimeBetween(req).and('type').is('on_mic_user').get()
+        if (userId != null) {
+            query.put('user_id', userId)
+        }
+        if (familyId != null) {
+            query.put('family_id', familyId)
+        }
+        Crud.list(req, adminMongo.getCollection('stat_mic'), query, ALL_FIELD, SJ_DESC) { List<BasicDBObject> list ->
+            for(BasicDBObject obj : list) {
+                obj.put('nick_name', getNickName(obj.get('user_id') as Integer))
+                obj.put('family_name', getFamilyName(obj.get('family_id') as Integer))
+            }
+        }
+    }
+
+    private String getNickName(Integer uid) {
+        if (uid != null) {
+            def nick_name = users().findOne($$(_id: uid), $$(nick_name: 1))?.get('nick_name')
+            return nick_name
+        }
+        return null
+    }
+
+    private String getFamilyName(Integer fid) {
+        if (fid != null) {
+            def nick_name = familys().findOne($$(_id: fid), $$(name: 1))?.get('name')
+            return nick_name
+        }
+        return null
     }
 
     /**
@@ -228,5 +269,7 @@ class StatController extends BaseController {
         query.put('type').is('allreport')
         Crud.list(req, adminMongo.getCollection('stat_report'), query.get(), ALL_FIELD, SJ_DESC)
     }
+
+    def user_mic_log
 
 }

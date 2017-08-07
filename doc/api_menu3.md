@@ -141,6 +141,41 @@ etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
 }
 ```
 
+### 用户上麦统计
+
+* API {GET|POST} http://test-aiadmin.memeyule.com/stat/user_mic_log.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+user_id|int|false||用户ID
+family_id|int|false||家族ID
+stime|String|false|yyyy-MM-dd HH: mm:ss|开始时间
+etime|String|false|yyyy-MM-dd HH: mm:ss|结束时间
+
+* 返回
+
+```json
+{
+    "count": 68,
+    "data": [{
+        "_id": "20170804_mic_1201284_1201350",
+        "type": "on_mic_user",
+        "user_id": 1201284,
+        "family_id": 1201350,
+        "timestamp": 1501776000000, //统计日期
+        "room_count": 1,
+        "user_count": 1,
+        "duration": 1544551,   //总上麦时长（millisecond）
+        "total_count": 4,  //总上麦次数
+        "nick_name": "K",  //用户昵称
+        "family_name": "咯ha" //家族房名称
+    }],
+    "code": 1,
+    "all_page": 12
+}
+```
+
 ## 登录日统计 （同线上）
 
 ## 钻石日报表
