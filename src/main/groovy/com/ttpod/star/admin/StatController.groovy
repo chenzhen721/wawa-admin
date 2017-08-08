@@ -137,7 +137,7 @@ class StatController extends BaseController {
                     desc.put(diamondActionType.actionName, diamondActionType.name())
                 }
         }
-        data.putAll([title: [inc: inc, desc: desc]])
+        data.putAll([title: [inc: inc, dec: desc]])
         data
     }
 
@@ -156,7 +156,7 @@ class StatController extends BaseController {
                     desc.put(diamondActionType.actionName, diamondActionType.name())
                 }
         }
-        data.putAll([title: [inc: inc, desc: desc, cash_pay: cash_pay]])
+        data.putAll([title: [inc: inc, cash_dec: desc, cash_pay: cash_pay]])
         data
     }
 
@@ -166,7 +166,11 @@ class StatController extends BaseController {
         super.list(req, Web.fillTimeBetween(req).and('type').is('login').get())
     }
 
-    //保留
+    /**
+     * 运营数据-数据月报
+     * @param req
+     * @return
+     */
     def login_month_log(HttpServletRequest req) {
         def query = Web.fillTimeBetween(req).and('type').is('login').get()
         Crud.list(req, adminMongo.getCollection('stat_month'), query, ALL_FIELD, SJ_DESC) { List<BasicDBObject> data ->

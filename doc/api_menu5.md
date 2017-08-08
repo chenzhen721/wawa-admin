@@ -82,8 +82,8 @@ etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
             },
 			"cash_pay": {
 				"total_cash": 10000, 
-				"total_expand": 8000,
-			}
+				"total_expand": 8000
+			},
             "cash_begin_surplus": 0, //昨日结余
             "cash_end_surplus": 317, //当日结余
             "cash_today_balance": 317, //合计

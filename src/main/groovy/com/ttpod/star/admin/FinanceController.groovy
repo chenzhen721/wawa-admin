@@ -528,11 +528,11 @@ class FinanceController extends BaseController {
     private pay_all_delta_service(QueryBuilder query) {
         def coll = table()
         Map<String, Number> old_ids = new HashMap<String, Number>()
-        coll.aggregate(
+        coll.aggregate([
                 new BasicDBObject('$match', new BasicDBObject('via', [$ne: 'Admin'])),
                 new BasicDBObject('$project', [_id: '$user_id', timestamp: '$' + timestamp]),
                 new BasicDBObject('$group', [_id: '$_id', timestamp: [$min: '$' + timestamp]])
-        ).results().each {
+        ]).results().each {
             def obj = new BasicDBObject(it as Map)
             old_ids.put(obj.get('_id') as String, obj.get(timestamp) as Number)
         }

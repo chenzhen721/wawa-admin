@@ -203,7 +203,7 @@ etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
             "family_event": "寻宝奖励",
             "open_card": "翻牌奖励"
         },
-        "desc": { //减钻石
+        "dec": { //减钻石
             "open_card": "钻石翻牌",
             "apply_family": "开通家族",
             "hand_cut_diamond": "后台减钻"
