@@ -178,3 +178,40 @@ etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
     "count": 443
 }
 ```
+
+
+### 用户上麦流水
+
+* API {GET|POST} http://test-aiadmin.memeyule.com/user/on_mic_list.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+user_id|int|false||用户ID
+family_id|int|false||家族ID
+stime|String|false|yyyy-MM-dd HH: mm:ss|开始时间
+etime|String|false|yyyy-MM-dd HH: mm:ss|结束时间
+
+* 返回
+
+```json
+{
+    "all_page": 2,
+    "code": 1,
+    "data": [
+        {
+            "_id": "20170804_mic_1201284_1201350_1501827186833",
+            "type": "on_mic_user_log",
+            "user_id": 1201284,
+            "family_id": 1201350,
+            "timestamp": 1501776000000, //用于查询
+            "start_mic": 1501827186833, //开始时间
+            "end_mic": 1501827238354, //结束时间
+            "duration": 51521,  //上麦时间（单位：毫秒）
+            "nick_name": "K",   //用户昵称
+            "family_name": "咯ha" //家族房名称
+        }
+    ],
+    "count": 8
+}
+```

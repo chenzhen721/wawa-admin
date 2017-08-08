@@ -39,6 +39,8 @@ class StatController extends BaseController {
 
     DBCollection finance_daily_log() { adminMongo.getCollection('finance_daily_log') }
 
+    DBCollection familys() { return familyMongo.getCollection('familys')}
+
     /**
      * 翻卡
      * @param req
@@ -77,6 +79,45 @@ class StatController extends BaseController {
     }
 
     /**
+     * 用户每日在家族房上麦时长统计
+     * @param req
+     * @return
+     */
+    def user_mic_log(HttpServletRequest req) {
+        def userId = req['user_id'] as Integer
+        def familyId = req['family_id'] as Integer
+        def query = Web.fillTimeBetween(req).and('type').is('on_mic_user').get()
+        if (userId != null) {
+            query.put('user_id', userId)
+        }
+        if (familyId != null) {
+            query.put('family_id', familyId)
+        }
+        Crud.list(req, adminMongo.getCollection('stat_mic'), query, ALL_FIELD, SJ_DESC) { List<BasicDBObject> list ->
+            for(BasicDBObject obj : list) {
+                obj.put('nick_name', getNickName(obj.get('user_id') as Integer))
+                obj.put('family_name', getFamilyName(obj.get('family_id') as Integer))
+            }
+        }
+    }
+
+    private String getNickName(Integer uid) {
+        if (uid != null) {
+            def nick_name = users().findOne($$(_id: uid), $$(nick_name: 1))?.get('nick_name')
+            return nick_name
+        }
+        return null
+    }
+
+    private String getFamilyName(Integer fid) {
+        if (fid != null) {
+            def nick_name = familys().findOne($$(_id: fid), $$(name: 1))?.get('name')
+            return nick_name
+        }
+        return null
+    }
+
+    /**
      * 钻石日报
      * @param req
      * @return
@@ -96,7 +137,7 @@ class StatController extends BaseController {
                     desc.put(diamondActionType.actionName, diamondActionType.name())
                 }
         }
-        data.putAll([title: [inc: inc, desc: desc]])
+        data.putAll([title: [inc: inc, dec: desc]])
         data
     }
 
@@ -115,7 +156,7 @@ class StatController extends BaseController {
                     desc.put(diamondActionType.actionName, diamondActionType.name())
                 }
         }
-        data.putAll([title: [inc: inc, desc: desc, cash_pay: cash_pay]])
+        data.putAll([title: [inc: inc, cash_dec: desc, cash_pay: cash_pay]])
         data
     }
 
@@ -125,7 +166,11 @@ class StatController extends BaseController {
         super.list(req, Web.fillTimeBetween(req).and('type').is('login').get())
     }
 
-    //保留
+    /**
+     * 运营数据-数据月报
+     * @param req
+     * @return
+     */
     def login_month_log(HttpServletRequest req) {
         def query = Web.fillTimeBetween(req).and('type').is('login').get()
         Crud.list(req, adminMongo.getCollection('stat_month'), query, ALL_FIELD, SJ_DESC) { List<BasicDBObject> data ->
@@ -228,5 +273,7 @@ class StatController extends BaseController {
         query.put('type').is('allreport')
         Crud.list(req, adminMongo.getCollection('stat_report'), query.get(), ALL_FIELD, SJ_DESC)
     }
+
+    def user_mic_log
 
 }

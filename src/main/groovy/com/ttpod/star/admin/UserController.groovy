@@ -58,6 +58,7 @@ class UserController extends BaseController {
     def family_event_logs() { return gameLogMongo.getCollection('family_event_logs') }
     DBCollection familys() { return familyMongo.getCollection('familys')}
     def member_contributions() { return familyMongo.getCollection('member_contributions')}
+    def stat_mic() { return adminMongo.getCollection('stat_mic')}
 
     DBCollection table() { users() }
 
@@ -900,6 +901,27 @@ class UserController extends BaseController {
             query.put('family_id', familyId)
         }
         Crud.list(req, member_contributions(), query, ALL_FIELD, SJ_DESC) { List<BasicDBObject> list ->
+            for(BasicDBObject obj : list) {
+                obj.put('nick_name', getNickName(obj.get('user_id') as Integer))
+                obj.put('family_name', getFamilyName(obj.get('family_id') as Integer))
+            }
+        }
+    }
+
+    /**
+     * 用户上麦流水
+     */
+    def on_mic_list(HttpServletRequest req) {
+        def userId = req.getParameter('user_id') as Integer
+        def familyId = req.getParameter('family_id') as Integer
+        def query = Web.fillTimeBetween(req).and('type').is('on_mic_user_log').get()
+        if (userId != null) {
+            query.put('user_id', userId)
+        }
+        if (familyId != null) {
+            query.put('family_id', familyId)
+        }
+        Crud.list(req, stat_mic(), query, ALL_FIELD, SJ_DESC) { List<BasicDBObject> list ->
             for(BasicDBObject obj : list) {
                 obj.put('nick_name', getNickName(obj.get('user_id') as Integer))
                 obj.put('family_name', getFamilyName(obj.get('family_id') as Integer))
