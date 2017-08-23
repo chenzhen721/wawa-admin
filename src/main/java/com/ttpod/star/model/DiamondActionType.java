@@ -11,6 +11,8 @@ public enum DiamondActionType {
     翻牌奖励("open_card", 0),
     新手引导("user_guide", 0),
     新用户注册("new_user", 0),
+    家族争霸("family_rank", 0),
+    家族红包("active_family_redpack", 0),
 
     钻石翻牌("open_card_decrease", 1),
     开通家族("apply_family_decrease", 1),

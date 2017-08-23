@@ -125,6 +125,7 @@ class UserController extends BaseController {
                 String user_id = obj[_id].toString()
                 if (bannedUsers.contains(user_id))
                     obj.put("ban_status", 1)
+                obj.put("weixin_bind", obj['account'] != null && obj['account']['open_id'] != null ?: false)
 
             }
         }
@@ -707,6 +708,23 @@ class UserController extends BaseController {
         }
         users().update($$(_id: uid), $$($set: [mobile_bind: false]), false, false, writeConcern)
         Crud.opLog(OpType.unbind_mobile, [user_id: uid])
+
+        OK()
+    }
+
+    /**
+     * 解绑用户微信
+     * @param req
+     * @return
+     */
+    def unbind_weixin(HttpServletRequest req) {
+        //获得tuid
+        Integer uid = req.getInt(_id)
+        def user = table().findOne(uid, $$(tuid: 1))
+        /*String tuid = user['tuid'] as String
+        def sign = MD5.digest2HEX("${PRIV_KEY}&userId=${tuid}".toString())*/
+        users().update($$(_id: uid), $$($unset: ['account.open_id': true]), false, false, writeConcern)
+        Crud.opLog(OpType.unbind_weixin, [user_id: uid])
 
         OK()
     }
