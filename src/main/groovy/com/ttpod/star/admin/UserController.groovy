@@ -913,7 +913,7 @@ class UserController extends BaseController {
         def familyId = req.getParameter('family_id') as Integer
         def query = Web.fillTimeBetween(req).get()
         if (userId != null) {
-            query.put('users', userId)
+            query.put('user_id', userId)
         }
         if (familyId != null) {
             query.put('family_id', familyId)
