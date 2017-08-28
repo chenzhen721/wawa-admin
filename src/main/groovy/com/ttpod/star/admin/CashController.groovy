@@ -52,7 +52,7 @@ class CashController extends BaseController {
         if (userId != 0) {
             query.and('user_id').is(userId)
         }
-        def field = $$('match_condition': 0)
+        def field = $$('match_condition': 0, 'tongdun.device_info': 0)
         Crud.list(req, cash_apply_logs(), query.get(), field, SJ_DESC)
     }
 
