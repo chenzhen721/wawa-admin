@@ -298,7 +298,11 @@ size|int|false||每页记录数
         "user_id": 1201085, //用户ID
         "account": "ooUNZwajJWx-SCWyvu7rspNlAH0Q", //微信OPENID
         "timestamp": 1499852578140, //申请时间
-        "batch_id": 1499941995599 //批量ID
+        "batch_id": 1499941995599, //批量ID
+        "tongdun": {
+            "final_score":0,    //同盾得分
+            "final_decision":"Accept" //同盾决策
+        }
     }],
     "code": 1,
     "all_page": 1
