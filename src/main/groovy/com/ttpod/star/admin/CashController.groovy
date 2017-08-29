@@ -53,7 +53,11 @@ class CashController extends BaseController {
             query.and('user_id').is(userId)
         }
         def field = $$('match_condition': 0, 'tongdun.device_info': 0)
-        Crud.list(req, cash_apply_logs(), query.get(), field, SJ_DESC)
+        Crud.list(req, cash_apply_logs(), query.get(), field, SJ_DESC).each {List<BasicDBObject> list->
+            for(BasicDBObject obj : list) {
+                obj.put('level', users().findOne($$(_id: obj.get('user_id') as Integer), $$(level: 1))?.get('level'))
+            }
+        }
     }
 
     /**
