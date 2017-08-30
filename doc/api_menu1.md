@@ -340,3 +340,86 @@ _ids|string|true||记录ID，多个以逗号隔开
 ```json
 { "code": 1 }
 ```
+
+## 背景乐管理
+### 1.音乐列表
+
+* API {GET|POST} http://test-aiadmin.memeyule.com/audio/list.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+page|int|false||页码
+size|int|false||每页记录数
+
+* 返回
+```json
+{
+    "all_page": 1,
+    "code": 1,
+    "data": [
+        {
+            "_id": 12793,
+            "duration": 248,
+            "singer": "薛之谦",
+            "album": "丑八怪",
+            "name": "丑八怪",
+            "format": "mp3",
+            "url": "http://laihou-audio.b0.upaiyun.com/audio/20170830/4f772457d9a4e4feb493c16d483ee743.mp3",
+            "status": true,
+            "timestamp": 1504064136428
+        }
+    ],
+    "count": 1
+}
+```
+
+### 2.音乐增加/修改
+* API 添加 {GET|POST} http://test-aiadmin.memeyule.com/audio/add.json  
+      修改 {GET|POST} http://test-aiadmin.memeyule.com/audio/edit.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+_id|int|||添加时不需要
+name|str|true||歌曲名称
+status|bool|true|true,false|状态 true-上架， false-下架
+url|str|true||音乐地址
+singer|str|true||歌手
+album|str|true||专辑
+format|str|true||音乐文件格式
+duration|long|true||音乐播放时长，单位：秒
+
+
+* 返回
+```json
+{"code": 1}
+```
+
+### 3.卡牌删除
+* API 添加 {GET|POST} http://test-aiadmin.memeyule.com/audio/del.json  
+
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+_id|string|true||
+
+* 返回
+```json
+{"code": 1}
+```
+
+### 4.音乐上传接口
+* API {POST} http://test-aiadmin.memeyule.com/audio/upload.json
+
+* 参数 同文件上传
+
+* 返回
+```json
+{
+    "code":1,
+    "url":"http://laihou-audio.b0.upaiyun.com/audio/20170830/b0b1b438b94eb2a00157740f074c53e7.mp3",
+    "error":0
+}
+```
