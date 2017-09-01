@@ -59,21 +59,20 @@ class CashController extends BaseController {
             }
         }
         //查询聚合信息，提现总人次、总人数、总金额、已发放金额、到账金额、已退回
-        def total = [count: 0, users: 0, total: 0, amount: 0, income: 0, fallback: 0] as Map
+        def total = [users: 0, total: 0, amount: 0, income: 0, fallback: 0] as Map
         def users = [] as Set
         cash_apply_logs().aggregate(
                 $$($match: query.get()),
                 $$($project: [user_id: '$user_id', amount: '$amount', income: '$income']),
                 $$($group: [_id: '$status', count: [$sum: 1], user_id: [$addToSet: '$user_id'], amount: [$sum: '$amount'], income: [$sum: '$income']])
         ).results().each {BasicDBObject row ->
-            total.put('count', (total['count'] as Integer) + (row['count'] as Integer))
             users.addAll(row['user_id'] as Set)
             total.put('total', (total['total'] as Integer) + (row['amount'] as Integer))
-            if (row[_id] == 2) {
+            if ((row[_id] as Integer) == 2) {
                 total.put('amount', row['amount'])
                 total.put('income', row['income'])
             }
-            if (row[_id] == 3) {
+            if ((row[_id] as Integer) == 3) {
                 total.put('fallback', row['amount'])
             }
         }
