@@ -279,6 +279,8 @@ _id|string|true||
 
 字段名|类型|是否必须|取值|说明
 ---|---|---|---|---
+stime|String|false|yyyy-MM-dd HH: mm:ss|创建时间开始（由于涉及聚合所有数据，建议给个默认数据查询一周内数据）
+etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
 user_id|int|false||用户ID
 page|int|false||页码
 size|int|false||每页记录数
@@ -306,7 +308,12 @@ size|int|false||每页记录数
         }
     }],
     "code": 1,
-    "all_page": 1
+    "all_page": 1,
+    "total": 53600,  //提现总金额
+    "amount": 28300,  //已提现金额
+    "fallback": 22800,  //退回金额
+    "users": 28,  //提现总人数
+    "income": 23900 //到账金额
 }
 ```
 
