@@ -63,7 +63,7 @@ class CashController extends BaseController {
         def users = [] as Set
         cash_apply_logs().aggregate(
                 $$($match: query.get()),
-                $$($project: [user_id: '$user_id', amount: '$amount', income: '$income']),
+                $$($project: [status: '$status', user_id: '$user_id', amount: '$amount', income: '$income']),
                 $$($group: [_id: '$status', count: [$sum: 1], user_id: [$addToSet: '$user_id'], amount: [$sum: '$amount'], income: [$sum: '$income']])
         ).results().each {BasicDBObject row ->
             users.addAll(row['user_id'] as Set)
