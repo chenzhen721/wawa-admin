@@ -53,11 +53,32 @@ class CashController extends BaseController {
             query.and('user_id').is(userId)
         }
         def field = $$('match_condition': 0, 'tongdun.device_info': 0)
-        Crud.list(req, cash_apply_logs(), query.get(), field, SJ_DESC) {List<BasicDBObject> list->
+        def result = Crud.list(req, cash_apply_logs(), query.get(), field, SJ_DESC) {List<BasicDBObject> list->
             for(BasicDBObject obj : list) {
                 obj.put('level', users().findOne($$(_id: obj.get('user_id') as Integer), $$(level: 1))?.get('level'))
             }
         }
+        //查询聚合信息，提现总人次、总人数、总金额、已发放金额、到账金额、已退回
+        def total = [users: 0, total: 0, amount: 0, income: 0, fallback: 0] as Map
+        def users = [] as Set
+        cash_apply_logs().aggregate(
+                $$($match: query.get()),
+                $$($project: [status: '$status', user_id: '$user_id', amount: '$amount', income: '$income']),
+                $$($group: [_id: '$status', count: [$sum: 1], user_id: [$addToSet: '$user_id'], amount: [$sum: '$amount'], income: [$sum: '$income']])
+        ).results().each {BasicDBObject row ->
+            users.addAll(row['user_id'] as Set)
+            total.put('total', (total['total'] as Integer) + (row['amount'] as Integer))
+            if ((row[_id] as Integer) == 2) {
+                total.put('amount', row['amount'])
+                total.put('income', row['income'])
+            }
+            if ((row[_id] as Integer) == 3) {
+                total.put('fallback', row['amount'])
+            }
+        }
+        total.put('users', users.size())
+        result.putAll(total)
+        result
     }
 
     /**
