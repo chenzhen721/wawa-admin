@@ -37,9 +37,11 @@ class TagController extends BaseController
         }
         def tmp =   System.currentTimeMillis()
         def insert = $$(cat:cat,timestamp:tmp)
-        if(table().update($$(_id,seqKGS.nextId()),
-                $$($addToSet , $$("tags", $$('$each',tags?.split(','))))
-                        .append($set,insert), true, false).getN() == 1){
+        def update = $$($set, insert)
+        if (tags != null) {
+            update.append($addToSet , [tags: [$each:tags?.split(',')]])
+        }
+        if(table().update($$(_id,seqKGS.nextId()), update, true, false).getN() == 1){
             Crud.opLog(OpType.tag_add,insert)
             return [code:1]
         }
@@ -56,9 +58,11 @@ class TagController extends BaseController
         def tmp =   System.currentTimeMillis()
         def insert = $$(cat:cat,timestamp:tmp)
         if(table().update($$(_id:_id),$$($unset , $$("tags", 1)), false, false).getN() == 1){
-            if(table().update($$(_id:_id),
-                    $$($addToSet , $$("tags", $$('$each',tags?.split(','))))
-                            .append($set,insert), false, false).getN() == 1){
+            def update = $$($set, insert)
+            if (tags != null) {
+                update.append($addToSet , [tags: [$each:tags?.split(',')]])
+            }
+            if(table().update($$(_id:_id), update, false, false).getN() == 1){
                 Crud.opLog(OpType.tag_edit,insert.append('_id',_id))
                 return [code:1]
             }
