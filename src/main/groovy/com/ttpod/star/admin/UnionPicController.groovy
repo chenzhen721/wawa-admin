@@ -153,9 +153,12 @@ class UnionPicController extends BaseController {
 
     def cover_list(HttpServletRequest req) {
         QueryBuilder query = QueryBuilder.start();
-        String star_id = req[_id]
-        if (StringUtils.isNotBlank(star_id))
-            query.and("xy_star_id").is(Integer.parseInt(star_id))
+        String room_id = req[_id]
+        String leader_id = req['leader_id']
+        if (StringUtils.isNotBlank(room_id))
+            query.and("_id").is(Integer.parseInt(room_id))
+        if (StringUtils.isNotBlank(leader_id))
+            query.and("xy_star_id").is(Integer.parseInt(leader_id))
         Crud.list(req, rooms(), query.get(), ALL_FIELD, COVER_DESC)
     }
 
@@ -163,28 +166,29 @@ class UnionPicController extends BaseController {
     @Resource
     MessageController messageController
 
-    static final String PIC_AUDIT_AGREE_TITLE = "主播提交封面审核通过"
-    static final String PIC_AUDIT_AGREE_CONTENT = "您的封面已经通过审核，开播后会展示你新的封面哟"
-    static final String PIC_AUDIT_REFUSE_TITLE = "主播提交封面审核不通过"
+    static final String PIC_AUDIT_AGREE_TITLE = "您提交的封面审核通过"
+    static final String PIC_AUDIT_AGREE_CONTENT = "您的封面已经通过审核，刷新家族房列表后会展示你新的封面哟"
+    static final String PIC_AUDIT_REFUSE_TITLE = "您提交的封面审核不通过"
     static final String PIC_AUDIT_REFUSE_CONTENT = "您的封面没有通过审核，请检查封面清晰度，和封面相关规则，若有疑问请联系官方客服人员"
     //封面图审核
     def pic_audit(HttpServletRequest req) {
+        def familys = familyMongo.getCollection('familys')
         def status = req.getInt('status')
         def room_id = req[_id] as Integer
         if (status == ApplyType.通过.ordinal() || status == ApplyType.未通过.ordinal()) {
             Long time = System.currentTimeMillis()
             def record = rooms().findAndModify(new BasicDBObject(_id: room_id),
-                    new BasicDBObject('$set': [audit_pic_status: status, lastmodif: time]))
-            if (record) {
-                def star_id = record.get('xy_star_id') as Integer
+                    new BasicDBObject('$set': [audit_app_pic_status: status, lastmodif: time]))
+            def familyRecord = familys.findAndModify(new BasicDBObject(_id: room_id),
+                new BasicDBObject($set: [audit_app_pic_status: status, lastmodif: time]))
+            if (record && familyRecord) {
                 if (status == ApplyType.通过.ordinal()) {
                     def pic_modify = ((record?.get('pic_modify') ?: 0) as Integer) ^ 1;
-                    rooms().update($$(_id, room_id), $$($set, $$('app_pic_url': record['audit_pic_url'], 'pic_modify': pic_modify)))
-                    //生成渠道推广图片
-//                    generateUnionPic(room_id, record['audit_pic_url'] as String)
+                    rooms().update($$(_id, room_id), $$($set, $$('app_pic_url': record['audit_app_pic_url'], 'pic_modify': pic_modify)))
+                    familys.update($$(_id, room_id), $$($set, $$('app_pic_url': record['audit_app_pic_url'], 'pic_modify': pic_modify)))
                 }
 
-                def title, content
+                /*def title, content
                 if (status == ApplyType.通过.ordinal()) {
                     title = PIC_AUDIT_AGREE_TITLE
                     content = PIC_AUDIT_AGREE_CONTENT
@@ -192,7 +196,7 @@ class UnionPicController extends BaseController {
                     title = PIC_AUDIT_REFUSE_TITLE
                     content = PIC_AUDIT_REFUSE_CONTENT
                 }
-                messageController.sendSingleMsg(room_id, title, content, MsgType.系统消息);
+                messageController.sendSingleMsg(room_id, title, content, MsgType.系统消息)*/
                 Crud.opLog(OpType.pic_audit, [room_id: room_id, status: status])
             }
         }

@@ -215,3 +215,60 @@ etime|String|false|yyyy-MM-dd HH: mm:ss|结束时间
     "count": 8
 }
 ```
+
+## 用户标签管理
+### 1.标签列表
+
+* API {GET|POST} http://test-aiadmin.memeyule.com/tag/list.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+page|int|false||页码
+size|int|false||每页记录数
+
+* 返回
+```json
+{
+    "all_page": 1,
+    "code": 1,
+    "data": [
+        {
+            "_id": 12793,
+            "cat": "LYB",
+            "timestamp": 1504064136428
+        }
+    ],
+    "count": 1
+}
+```
+
+### 2.标签增加/修改
+* API 添加 {GET|POST} http://test-aiadmin.memeyule.com/tag/add.json  
+      修改 {GET|POST} http://test-aiadmin.memeyule.com/tag/edit.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+_id|int|||添加时不需要
+cat|str|true||标签名称
+
+
+* 返回
+```json
+{"code": 1}
+```
+
+### 3.标签删除
+* API 添加 {GET|POST} http://test-aiadmin.memeyule.com/tag/del.json  
+
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+_id|string|true||
+
+* 返回
+```json
+{"code": 1}
+```
