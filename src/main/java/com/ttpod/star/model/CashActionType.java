@@ -7,7 +7,8 @@ public enum CashActionType {
     寻宝奖励("family_event", 0),//
     翻牌奖励("open_card", 0),//
     新人奖励("new_user", 0),//
-    新手引导("user_guide", 0),
+    新手引导("user_guide", 0),//
+    攻打哥布林("goblin_ack", 0),
 
     申请提现("apply_cash", 1),//
     后台减钻("cash_exchange_decrease_cash", 1);//
