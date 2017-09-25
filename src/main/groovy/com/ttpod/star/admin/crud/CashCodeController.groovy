@@ -47,7 +47,7 @@ class CashCodeController extends BaseController{
                     return super.query(req)
                 }
                 public DBObject sortby(HttpServletRequest req) {
-                    return new BasicDBObject([status: 1, "stime":1, "etime": 1])
+                    return new BasicDBObject([status: 1, "stime":-1, "etime": 1])
                 }
             }
     )
