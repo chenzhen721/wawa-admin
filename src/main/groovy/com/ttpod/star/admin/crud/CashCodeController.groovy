@@ -42,7 +42,7 @@ class CashCodeController extends BaseController{
              new Crud.QueryCondition(){
                 public DBObject query(HttpServletRequest req) {
                     if (req['status']){
-                        return QueryBuilder.start().and('status').is(req['status'] as Boolean).get()
+                        return QueryBuilder.start().and('status').is(req['status'] as Integer).get()
                     }
                     return super.query(req)
                 }
