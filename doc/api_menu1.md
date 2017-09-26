@@ -348,6 +348,58 @@ _ids|string|true||记录ID，多个以逗号隔开
 { "code": 1 }
 ```
 
+## 提现码管理
+### 1.提现码列表
+
+* API {GET|POST} http://test-aiadmin.memeyule.com/cashcode/list.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+status|String|false|yyyy-MM-dd HH: mm:ss|0:未使用, 1:已绑定, 2:已完成
+page|int|false||页码
+size|int|false||每页记录数
+
+* 返回
+```json
+{
+    "all_page": 20,
+    "code": 1,
+    "data": [
+        {
+            "_id": 12796,
+            "code": "rz9efi", //提现码
+            "status": 0,  //0-未使用, 1-已绑定, 2-已完成
+            "user_id": 1231, // 锁定的用户ID
+            "stime": 1505923201000, // 提现码有效开始时间
+            "etime": 1505923201000, // 提现码有效结束时间
+            "timestamp": 1505999895583,  // 生成时间
+            "lastModif": 1505999895584   // 锁定时间
+        }
+    ],
+    "count": 117
+}
+```
+
+
+### 2.生成激活码
+
+* API {GET|POST} http://test-aiadmin.memeyule.com/cashcode/generate_code.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+n|int|true||生成激活码数
+stime|string|true||激活码有效期开始时间(yyyy-MM-dd HH: mm:ss)
+etime|string|true||激活码有效期结束时间(yyyy-MM-dd HH: mm:ss)
+
+* 返回
+```json
+{
+    "code": 1
+}
+```
+
 ## 背景乐管理
 ### 1.音乐列表
 
