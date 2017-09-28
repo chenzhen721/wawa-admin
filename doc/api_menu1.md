@@ -560,6 +560,7 @@ size|int|false||每页记录数
             "unit": "个月", //单位描述
             "name": "vip", //商品名称
             "limit": 10, //每日限额
+            "desc": "", //限额描述
             "tag": "90%OFF", //折扣标签
             "status": true, //是否上架
             "timestamp": 1506579704416 //添加时间
@@ -585,6 +586,7 @@ count|int|true||购买数量
 cost_diamond|int|true||花费钻石
 unit|int|true||单位描述
 limit|int|true||每日购买限额
+desc|str|true||描述
 tag|str|true||折扣标签
 stime|str|true||上架时间
 
