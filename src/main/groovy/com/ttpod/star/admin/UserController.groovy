@@ -880,7 +880,7 @@ class UserController extends BaseController {
         def query = Web.fillTimeBetween(req).get()
         query.putAll(['users.0': [$exists: true], status: 4])
         if (userId != null) {
-            query.put('users', userId)
+            query.put('$or', [['users': userId, 'join_time': [$exists: false]], ['users.user_id': userId, 'join_time': [$exists: true]]])
         }
         if (familyId != null) {
             query.put('family_id', familyId)
@@ -888,15 +888,32 @@ class UserController extends BaseController {
         Crud.list(req, family_event_logs(), query, ALL_FIELD, SJ_DESC) { List<BasicDBObject> list ->
             for(BasicDBObject obj : list) {
                 obj.put('family_name', getFamilyName(obj.get('family_id') as Integer))
-                def rewards = obj.removeField('rewards') as List
-                def reward = MapWithDefault.<String, Integer>newInstance(new HashMap<String, Integer>()) { 0 }
-                def keys = ['steal', 'defense', 'exp', 'coin', 'diamond', 'cash', 'attack']
-                for(String key: keys) {
-                    if (rewards != null) {
-                        for(int i = 0; i < rewards.size(); i++) {
-                            def it = rewards.get(i)
-                            reward[key] = (reward[key] as Integer) + ((it[key] ?: 0) as Integer)
+                def reward = MapWithDefault.<String, Integer> newInstance(new HashMap<String, Integer>()) { 0 }
+                def keys = ['steal', 'defense', 'exp', 'coin', 'diamond', 'cash', 'attack', 'def_steal', 'banana', 'primary', 'middle', 'high']
+                if (!obj.containsField('join_time')) {
+                    def rewards = obj.removeField('rewards') as List
+                    for (String key : keys) {
+                        if (rewards != null) {
+                            for (int i = 0; i < rewards.size(); i++) {
+                                def it = rewards.get(i)
+                                reward[key] = (reward[key] as Integer) + ((it[key] ?: 0) as Integer)
+                            }
                         }
+                    }
+                } else {
+                    def users = obj['users'] as List
+                    if (!(users.get(0) instanceof Integer)) {
+                        def lst = []
+                        users.each {BasicDBObject user->
+                            lst.add(user['user_id'])
+                            def it = user['total_reward']
+                            for (String key : keys) {
+                                if (it != null) {
+                                    reward[key] = (reward[key] as Integer) + ((it[key] ?: 0) as Integer)
+                                }
+                            }
+                        }
+                        users.addAll(lst)
                     }
                 }
                 obj.put('reward', reward)
