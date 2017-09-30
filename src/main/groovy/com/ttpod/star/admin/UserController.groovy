@@ -913,7 +913,7 @@ class UserController extends BaseController {
                                 }
                             }
                         }
-                        users.addAll(lst)
+                        obj['users'] = lst
                     }
                 }
                 obj.put('reward', reward)
