@@ -274,6 +274,5 @@ class StatController extends BaseController {
         Crud.list(req, adminMongo.getCollection('stat_report'), query.get(), ALL_FIELD, SJ_DESC)
     }
 
-    def user_mic_log
 
 }
