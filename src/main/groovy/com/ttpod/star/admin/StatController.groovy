@@ -1,28 +1,19 @@
 package com.ttpod.star.admin
 
-import com.mongodb.*
+import com.mongodb.BasicDBObject
+import com.mongodb.DBCollection
+import com.mongodb.QueryBuilder
 import com.ttpod.rest.anno.Rest
-import com.ttpod.rest.anno.RestWithSession
-import com.ttpod.rest.common.doc.MongoKey
 import com.ttpod.rest.web.Crud
-import com.ttpod.star.common.util.ExportUtils
-import com.ttpod.star.model.CashActionType
 import com.ttpod.star.model.DiamondActionType
-import com.ttpod.star.model.PayType
-import com.ttpod.star.model.UserAwardType
-import org.apache.commons.lang.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.web.bind.ServletRequestUtils
 
 import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
-import java.text.SimpleDateFormat
-import java.util.regex.Pattern
 
 import static com.ttpod.rest.common.doc.MongoKey.ALL_FIELD
 import static com.ttpod.rest.common.doc.MongoKey.SJ_DESC
-import static com.ttpod.rest.common.util.WebUtils.*
+import static com.ttpod.rest.common.util.WebUtils.$$
 
 /**
  * date: 13-3-28 下午2:31
@@ -39,79 +30,9 @@ class StatController extends BaseController {
 
     DBCollection finance_daily_log() { adminMongo.getCollection('finance_daily_log') }
 
-    DBCollection familys() { return familyMongo.getCollection('familys')}
-
-    /**
-     * 翻卡
-     * @param req
-     * @return
-     */
-    def open_card_log(HttpServletRequest req) {
-        super.list(req, Web.fillTimeBetween(req).and('type').is('open_card').get())
-    }
-
-    /**
-     * 寻宝
-     * @param req
-     * @return
-     */
-    def family_event_log(HttpServletRequest req) {
-        super.list(req, Web.fillTimeBetween(req).and('type').is(UserAwardType.挖矿.getId()).get())
-    }
-
-    /**
-     * 道具使用统计
-     * @param req
-     * @return
-     */
-    def use_item_log(HttpServletRequest req) {
-        super.list(req, Web.fillTimeBetween(req).and('type').is('use_item').get())
-    }
-
-    /**
-     * 上麦统计
-     * @param req
-     * @return
-     */
-    def mic_log(HttpServletRequest req) {
-        def query = Web.fillTimeBetween(req).and('type').is('on_mic').get()
-        Crud.list(req, adminMongo.getCollection('stat_mic'), query, ALL_FIELD, SJ_DESC)
-    }
-
-    /**
-     * 用户每日在家族房上麦时长统计
-     * @param req
-     * @return
-     */
-    def user_mic_log(HttpServletRequest req) {
-        def userId = req['user_id'] as Integer
-        def familyId = req['family_id'] as Integer
-        def query = Web.fillTimeBetween(req).and('type').is('on_mic_user').get()
-        if (userId != null) {
-            query.put('user_id', userId)
-        }
-        if (familyId != null) {
-            query.put('family_id', familyId)
-        }
-        Crud.list(req, adminMongo.getCollection('stat_mic'), query, ALL_FIELD, SJ_DESC) { List<BasicDBObject> list ->
-            for(BasicDBObject obj : list) {
-                obj.put('nick_name', getNickName(obj.get('user_id') as Integer))
-                obj.put('family_name', getFamilyName(obj.get('family_id') as Integer))
-            }
-        }
-    }
-
     private String getNickName(Integer uid) {
         if (uid != null) {
             def nick_name = users().findOne($$(_id: uid), $$(nick_name: 1))?.get('nick_name')
-            return nick_name
-        }
-        return null
-    }
-
-    private String getFamilyName(Integer fid) {
-        if (fid != null) {
-            def nick_name = familys().findOne($$(_id: fid), $$(name: 1))?.get('name')
             return nick_name
         }
         return null
@@ -141,24 +62,6 @@ class StatController extends BaseController {
         data
     }
 
-    def cash_log(HttpServletRequest req) {
-        def query = Web.fillTimeBetween(req)
-        def diamond_reports = adminMongo.getCollection('finance_daily_log')
-        def data = Crud.list(req, diamond_reports, query.get(), $$(cash_begin_surplus: 1, cash_end_surplus: 1, cash_inc: 1, cash_dec: 1, timestamp: 1, cash_today_balance: 1, cash_pay: 1), SJ_DESC)
-        def inc = [:]
-        def desc = [:]
-        def cash_pay = [total_cash: "发放金额", total_expand: "税后金额"]
-        CashActionType.values().each {
-            CashActionType diamondActionType ->
-                if (diamondActionType.getIsIncAction() == 0) {
-                    inc.put(diamondActionType.actionName, diamondActionType.name())
-                } else {
-                    desc.put(diamondActionType.actionName, diamondActionType.name())
-                }
-        }
-        data.putAll([title: [inc: inc, cash_dec: desc, cash_pay: cash_pay]])
-        data
-    }
 
 
     //保留
@@ -255,7 +158,7 @@ class StatController extends BaseController {
         [code: 1, data: table().find(queryBuilder.get(), ALL_FIELD).sort(SJ_DESC).limit(800).toArray()]
     }
 
-    //保留 充值柠檬币比例表
+    //充值柠檬币比例表
     def charge_coin_log(HttpServletRequest req) {
         QueryBuilder queryBuilder = Web.fillTimeBetween(req)
         def field = $$(charge_cny: 1, cut_charge_cny: 1, begin_surplus: 1, charge_coin: 1, inc_coin: 1, inc_total: 1, dec_total: 1, end_surplus: 1, date: 1, hand_cut_coin: 1)
@@ -264,7 +167,6 @@ class StatController extends BaseController {
     }
 
     /**
-     * 保留
      * 运营数据总表
      * @param req
      */

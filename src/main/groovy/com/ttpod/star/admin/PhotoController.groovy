@@ -1,6 +1,5 @@
 package com.ttpod.star.admin
 
-import com.mongodb.BasicDBObject
 import com.mongodb.DBCollection
 import com.mongodb.QueryBuilder
 import com.ttpod.rest.anno.RestWithSession

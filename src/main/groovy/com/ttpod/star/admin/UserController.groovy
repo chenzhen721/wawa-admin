@@ -52,11 +52,9 @@ class UserController extends BaseController {
     public StringRedisTemplate liveRedis;
     static final Logger logger = LoggerFactory.getLogger(UserController.class)
 
-    def rewards() { return activeMongo.getCollection('rewards') }
     def user_award_logs() { return logMongo.getCollection('user_award_logs') }
     def user_battle_logs() { return gameLogMongo.getCollection('user_battle_logs') }
     def family_event_logs() { return gameLogMongo.getCollection('family_event_logs') }
-    DBCollection familys() { return familyMongo.getCollection('familys')}
     def member_contributions() { return familyMongo.getCollection('member_contributions')}
     def stat_mic() { return adminMongo.getCollection('stat_mic')}
 
@@ -824,144 +822,6 @@ class UserController extends BaseController {
             return nick_name
         }
         return null
-    }
-
-    private String getFamilyName(Integer fid) {
-        if (fid != null) {
-            def nick_name = familys().findOne($$(_id: fid), $$(name: 1))?.get('name')
-            return nick_name
-        }
-        return null
-    }
-
-    /**
-     * 查询用户翻卡流水
-     * @param req
-     */
-    def open_card_list(HttpServletRequest req) {
-        def userId = req.getParameter('user_id') as Integer
-        def query = Web.fillTimeBetween(req)
-        query.put('type').is("open_card")
-        if (userId != null) {
-            query.put('user_id').is(userId)
-        }
-        Crud.list(req, user_award_logs(), query.get(), ALL_FIELD, SJ_DESC) { List<BasicDBObject> list ->
-            for(BasicDBObject obj : list) {
-                obj.put('nick_name', getNickName(obj.get('user_id') as Integer))
-            }
-        }
-    }
-
-    /**
-     * 道具使用流水
-     */
-    def use_item_list(HttpServletRequest req) {
-        def userId = req.getParameter('user_id') as Integer
-        def query = Web.fillTimeBetween(req)
-        if (userId != null) {
-            query.put('user_id').is(userId)
-        }
-        Crud.list(req, user_battle_logs(), query.get(), ALL_FIELD, SJ_DESC) { List<BasicDBObject> list ->
-            for(BasicDBObject obj : list) {
-                obj.put('nick_name', getNickName(obj.get('user_id') as Integer))
-                obj.put('target_nick_name', getNickName(obj.get('target_uid') as Integer))
-                obj.put('type', UserItemType.values()[obj.get('type') as Integer ?: 0])
-            }
-        }
-    }
-
-    /**
-     * 挖矿流水
-     * @param req
-     */
-    def family_event_list(HttpServletRequest req) {
-        def userId = req.getParameter('user_id') as Integer
-        def familyId = req.getParameter('family_id') as Integer
-        def query = Web.fillTimeBetween(req).get()
-        query.putAll(['users.0': [$exists: true], status: 4])
-        if (userId != null) {
-            query.put('$or', [['users': userId, 'join_time': [$exists: false]], ['users.user_id': userId, 'join_time': [$exists: true]]])
-        }
-        if (familyId != null) {
-            query.put('family_id', familyId)
-        }
-        Crud.list(req, family_event_logs(), query, ALL_FIELD, SJ_DESC) { List<BasicDBObject> list ->
-            for(BasicDBObject obj : list) {
-                obj.put('family_name', getFamilyName(obj.get('family_id') as Integer))
-                def reward = MapWithDefault.<String, Integer> newInstance(new HashMap<String, Integer>()) { 0 }
-                def keys = ['steal', 'defense', 'exp', 'coin', 'diamond', 'cash', 'attack', 'def_steal', 'banana', 'primary', 'middle', 'high']
-                if (!obj.containsField('join_time')) {
-                    def rewards = obj.removeField('rewards') as List
-                    for (String key : keys) {
-                        if (rewards != null) {
-                            for (int i = 0; i < rewards.size(); i++) {
-                                def it = rewards.get(i)
-                                reward[key] = (reward[key] as Integer) + ((it[key] ?: 0) as Integer)
-                            }
-                        }
-                    }
-                } else {
-                    def users = obj['users'] as List
-                    if (!(users.get(0) instanceof Integer)) {
-                        def lst = []
-                        users.each {BasicDBObject user->
-                            lst.add(user['user_id'])
-                            def it = user['total_reward']
-                            for (String key : keys) {
-                                if (it != null) {
-                                    reward[key] = (reward[key] as Integer) + ((it[key] ?: 0) as Integer)
-                                }
-                            }
-                        }
-                        obj['users'] = lst
-                    }
-                }
-                obj.put('reward', reward)
-            }
-        }
-    }
-
-    /**
-     * 家族贡献流水
-     * @param req
-     */
-    def family_contribution_list(HttpServletRequest req) {
-        def userId = req.getParameter('user_id') as Integer
-        def familyId = req.getParameter('family_id') as Integer
-        def query = Web.fillTimeBetween(req).get()
-        if (userId != null) {
-            query.put('user_id', userId)
-        }
-        if (familyId != null) {
-            query.put('family_id', familyId)
-        }
-        Crud.list(req, member_contributions(), query, ALL_FIELD, SJ_DESC) { List<BasicDBObject> list ->
-            for(BasicDBObject obj : list) {
-                obj.put('nick_name', getNickName(obj.get('user_id') as Integer))
-                obj.put('family_name', getFamilyName(obj.get('family_id') as Integer))
-            }
-        }
-    }
-
-    /**
-     * 用户上麦流水
-     */
-    def on_mic_list(HttpServletRequest req) {
-        def userId = req.getParameter('user_id') as Integer
-        def familyId = req.getParameter('family_id') as Integer
-        def query = Web.fillTimeBetween(req).and('type').is('on_mic_user_log').get()
-        if (userId != null) {
-            query.put('user_id', userId)
-        }
-        if (familyId != null) {
-            query.put('family_id', familyId)
-        }
-        Crud.list(req, stat_mic(), query, ALL_FIELD, SJ_DESC) { List<BasicDBObject> list ->
-            for(BasicDBObject obj : list) {
-                obj.put('nick_name', getNickName(obj.get('user_id') as Integer))
-                obj.put('family_name', getFamilyName(obj.get('family_id') as Integer))
-            }
-        }
     }
 
 }
