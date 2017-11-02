@@ -4,7 +4,6 @@ import com.mongodb.BasicDBObject
 import com.mongodb.DBCollection
 import com.ttpod.rest.anno.RestWithSession
 import com.ttpod.rest.common.doc.IMessageCode
-import com.ttpod.rest.common.util.WebUtils
 import com.ttpod.rest.common.util.http.HttpStatusException
 import com.ttpod.rest.persistent.KGS
 import com.ttpod.rest.web.Crud
@@ -83,7 +82,7 @@ class CatchuController extends BaseController {
         def query = Web.fillTimeBetween(req)
         intQuery(query, req, "_id")//房间ID
         intQuery(query, req, "fid")//对应娃娃机ID
-        Crud.list(req, table(), query.get(), ALL_FIELD, WebUtils.$$(type: -1, timestamp: -1))
+        Crud.list(req, table(), query.get(), ALL_FIELD, $$(type: -1, timestamp: -1))
     }
 
     /**
@@ -95,7 +94,7 @@ class CatchuController extends BaseController {
         def _id = ServletRequestUtils.getIntParameter(req, '_id')
         def fid = ServletRequestUtils.getIntParameter(req, 'fid')
         //一个远程房间只能创建一次
-        def room = table().findOne(WebUtils.$$(fid: fid))
+        def room = table().findOne($$(fid: fid))
         if (room != null) {
             return [code: 0]
         }
@@ -122,7 +121,7 @@ class CatchuController extends BaseController {
             return [code: 0]
         }
         def map = [_id: _id, fid: fid, toy_id: toy_id, name: name, type: type, online: online, pic: pic, price: price, desc: desc, timestamp: timestamp]
-        if (table().count(WebUtils.$$(fid: fid)) > 0) {
+        if (table().count($$(fid: fid)) > 0) {
             return [code: 0]
         }
         if (bind_toy(fid, toyItem['tid'] as Integer) == null) {
@@ -184,7 +183,7 @@ class CatchuController extends BaseController {
                 return [code: 0]
             }
         }
-        if(table().update(WebUtils.$$(_id: _id), new BasicDBObject($set: map)).getN() == 1){
+        if(table().update($$(_id: _id), new BasicDBObject($set: map)).getN() == 1){
             Crud.opLog(table().getName() + "_edit", map)
         }
         return IMessageCode.OK
@@ -258,7 +257,7 @@ class CatchuController extends BaseController {
         if (edit_toy(toy['tid'] as Integer, props) == null) {
             return [code: 0]
         }
-        if(toys().update(WebUtils.$$(_id: _id), new BasicDBObject($set: map)).getN() == 1){
+        if(toys().update($$(_id: _id), new BasicDBObject($set: map)).getN() == 1){
             Crud.opLog(toys().getName() + "_edit", map)
             return [code: 1]
         }
@@ -502,10 +501,10 @@ class CatchuController extends BaseController {
             query.put('post_type', post_type)
         }
 
-        Crud.list(req, catch_records(), query, WebUtils.$$(coin_record: 0, play_record: 0), SJ_DESC) { List<BasicDBObject> list->
+        Crud.list(req, catch_records(), query, $$(coin_record: 0, play_record: 0), SJ_DESC) { List<BasicDBObject> list->
             if (type == 0) {
                 for (BasicDBObject obj: list) {
-                    obj['user'] = users().findOne(obj['user_id'] as Integer, WebUtils.$$(nick_name: 1, pic: 1))
+                    obj['user'] = users().findOne(obj['user_id'] as Integer, $$(nick_name: 1, pic: 1))
                 }
             }
         }
