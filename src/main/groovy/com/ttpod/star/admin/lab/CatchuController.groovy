@@ -520,7 +520,7 @@ class CatchuController extends BaseController {
         if (StringUtils.isBlank(ids)) {
             return Web.missParam()
         }
-        def packIdList = ids.split('\\|')?.collect{Integer.parseInt(it as String)}
+        def packIdList = ids.split('\\|')?.collect{it as String}
         if (packIdList == null || packIdList.size() <= 0) {
             return Web.missParam()
         }
