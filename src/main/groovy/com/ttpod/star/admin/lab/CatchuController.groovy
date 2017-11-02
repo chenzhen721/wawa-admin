@@ -26,6 +26,7 @@ import java.nio.charset.Charset
 
 import static com.ttpod.rest.common.doc.MongoKey.ALL_FIELD
 import static com.ttpod.rest.common.doc.MongoKey.SJ_DESC
+import static com.ttpod.rest.common.util.WebUtils.$$
 
 /**
  *
@@ -525,8 +526,8 @@ class CatchuController extends BaseController {
             return Web.missParam()
         }
         //更新成功
-        if (1 <= catch_records().update(WebUtils.$$(pack_id: [$in: packIdList], post_type: 1), WebUtils.$$($set: [post_type: 2]), false, true, writeConcern).getN()) {
-            def list = catch_records().find(WebUtils.$$(pack_id: [$in: packIdList]), WebUtils.$$(toy: 1, address: 1)).sort(WebUtils.$$(pack_id: 1, timestamp: -1))
+        if (1 <= catch_records().update($$(pack_id: [$in: packIdList], post_type: 1), $$($set: [post_type: 2]), false, true, writeConcern).getN()) {
+            def list = catch_records().find($$(pack_id: [$in: packIdList]), $$(toy: 1, address: 1)).sort($$(pack_id: 1, timestamp: -1))
             return [code: 1, data: list]
         }
         //有不符合条件的记录
