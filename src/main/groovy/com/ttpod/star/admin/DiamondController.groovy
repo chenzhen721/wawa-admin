@@ -35,7 +35,7 @@ class DiamondController extends BaseController {
         if (userId != 0) {
             query.and('user_id').is(userId)
         }
-        def diamond_logs = adminMongo.getCollection("diamond_logs")
+        def diamond_logs = logMongo.getCollection("diamond_logs")
         def map = Crud.list(req, diamond_logs, query.get(), null, SJ_DESC)
         DiamondActionType[] das = DiamondActionType.values()
         def types = [:]
@@ -154,7 +154,7 @@ class DiamondController extends BaseController {
                 logWithId.append("qd", qd);
             }
         }
-        DBCollection logColl = adminMongo.getCollection('diamond_logs');
+        DBCollection logColl = logMongo.getCollection('diamond_logs');
         if (logColl.count(new BasicDBObject(_id, log_id)) == 0 &&
                 users.update(new BasicDBObject('_id', userId).append('diamond_logs._id', new BasicDBObject($ne, log_id)),
                         new BasicDBObject($inc, obj)
