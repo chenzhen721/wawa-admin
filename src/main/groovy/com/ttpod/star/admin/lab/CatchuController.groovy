@@ -482,6 +482,7 @@ class CatchuController extends BaseController {
         def room_id = ServletRequestUtils.getIntParameter(req, 'room_id')
         def status = ServletRequestUtils.getBooleanParameter(req, 'status')
         def type = ServletRequestUtils.getIntParameter(req, 'type')
+        def post_type = ServletRequestUtils.getIntParameter(req, 'post_type')
         def query = new BasicDBObject()
 
         if (user_id != null) {
@@ -495,6 +496,9 @@ class CatchuController extends BaseController {
         }
         if (type) {
             query.put('type', type)
+        }
+        if (post_type) {
+            query.put('post_type', post_type)
         }
 
         Crud.list(req, catch_records(), query, WebUtils.$$(coin_record: 0, play_record: 0), SJ_DESC) { List<BasicDBObject> list->
