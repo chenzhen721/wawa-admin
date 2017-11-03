@@ -530,3 +530,96 @@ status|int|false||1-未通过;2-通过
 ```json
 { "code": 1 }
 ```
+
+## 商城管理
+### 1.商城列表
+
+* API {GET|POST} http://test-aiadmin.memeyule.com/shop/list.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+status|bool|false|true;false|是否上架
+page|int|false||页码
+size|int|false||每页记录数
+
+* 返回
+```json
+{
+    "all_page": 1,
+    "code": 1,
+    "data": [
+        {
+            "_id": 12936,
+            "item_id": "vip", //商品ID
+            "count": 1, //购买数量
+            "lastModif": 1506579704416,
+            "stime": 1506441600000, //商品生效时间
+            "pic": "", //图片
+            "cost_diamond": 50, //花费钻石
+            "unit": "个月", //单位描述
+            "name": "vip", //商品名称
+            "limit": 10, //每日限额
+            "desc": "", //限额描述
+            "tag": "90%OFF", //折扣标签
+            "status": true, //是否上架
+            "timestamp": 1506579704416 //添加时间
+        }
+    ],
+    "count": 1
+}
+```
+
+### 2.商城增加/修改
+* API 添加 {GET|POST} http://test-aiadmin.memeyule.com/shop/add.json  
+      修改 {GET|POST} http://test-aiadmin.memeyule.com/shop/edit.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+_id|int|||添加时不需要
+name|str|true||歌曲名称
+status|bool|true|true,false|状态 true-上架， false-下架
+item_id|str|true||商品ID
+pic|str|true||商品icon
+count|int|true||购买数量
+cost_diamond|int|true||花费钻石
+unit|int|true||单位描述
+limit|int|true||每日购买限额
+desc|str|true||描述
+tag|str|true||折扣标签
+stime|str|true||上架时间
+
+* 返回
+```json
+{"code": 1}
+```
+
+### 3.可选上架商品
+
+### 3.卡牌删除
+* API 添加 {GET|POST} http://test-aiadmin.memeyule.com/shop/items.json  
+
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+_id|string|true||
+
+* 返回
+```json
+{
+    "all_page": 2,
+    "code": 1,
+    "data": [
+        {
+            "_id": 1, //对应item_id
+            "type": 1, 
+            "name": "弓箭", //对应name
+            "pic": "https://aiimg.sumeme.com/35/3/1501235655267.png", //对应pic
+            "desc": "无坚不摧的利剑，攻击有几率获得金币和钻石"
+        }
+    ],
+    "count": 8
+}
+```

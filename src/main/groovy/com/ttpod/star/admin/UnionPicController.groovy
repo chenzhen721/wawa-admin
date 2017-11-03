@@ -9,9 +9,6 @@ import com.ttpod.rest.common.doc.IMessageCode
 import com.ttpod.rest.common.util.MsgDigestUtil
 import com.ttpod.rest.web.Crud
 import com.ttpod.star.admin.crud.MessageController
-import com.ttpod.star.model.ApplyType
-import com.ttpod.star.model.MsgType
-import com.ttpod.star.model.OpType
 import com.ttpod.star.model.PhotoStatusType
 import net.coobird.thumbnailator.Thumbnails
 import org.apache.commons.codec.binary.Base64
@@ -21,13 +18,15 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.redis.core.StringRedisTemplate
 
+import javax.annotation.Resource
 import javax.imageio.ImageIO
+import javax.servlet.http.HttpServletRequest
 import java.awt.image.BufferedImage
 import java.util.regex.Pattern
-import javax.annotation.Resource
-import javax.servlet.http.HttpServletRequest
 
-import static com.ttpod.rest.common.doc.MongoKey.*
+import static com.ttpod.rest.common.doc.MongoKey.$set
+import static com.ttpod.rest.common.doc.MongoKey.ALL_FIELD
+import static com.ttpod.rest.common.doc.MongoKey.SJ_DESC
 import static com.ttpod.rest.common.util.WebUtils.$$
 
 /**
@@ -172,8 +171,8 @@ class UnionPicController extends BaseController {
     static final String PIC_AUDIT_REFUSE_CONTENT = "您的封面没有通过审核，请检查封面清晰度，和封面相关规则，若有疑问请联系官方客服人员"
     //封面图审核
     def pic_audit(HttpServletRequest req) {
-        def familys = familyMongo.getCollection('familys')
-        def status = req.getInt('status')
+        //def familys = familyMongo.getCollection('familys')
+        /*def status = req.getInt('status')
         def room_id = req[_id] as Integer
         if (status == ApplyType.通过.ordinal() || status == ApplyType.未通过.ordinal()) {
             Long time = System.currentTimeMillis()
@@ -188,7 +187,7 @@ class UnionPicController extends BaseController {
                     familys.update($$(_id, room_id), $$($set, $$('app_pic_url': record['audit_app_pic_url'], 'pic_modify': pic_modify)))
                 }
 
-                /*def title, content
+                *//*def title, content
                 if (status == ApplyType.通过.ordinal()) {
                     title = PIC_AUDIT_AGREE_TITLE
                     content = PIC_AUDIT_AGREE_CONTENT
@@ -196,10 +195,10 @@ class UnionPicController extends BaseController {
                     title = PIC_AUDIT_REFUSE_TITLE
                     content = PIC_AUDIT_REFUSE_CONTENT
                 }
-                messageController.sendSingleMsg(room_id, title, content, MsgType.系统消息)*/
+                messageController.sendSingleMsg(room_id, title, content, MsgType.系统消息)*//*
                 Crud.opLog(OpType.pic_audit, [room_id: room_id, status: status])
             }
-        }
+        }*/
 
         OK()
     }
