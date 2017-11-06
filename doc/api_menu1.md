@@ -158,13 +158,33 @@ size|int|false||每页记录数
 字段名|类型|是否必须|取值|说明
 ---|---|---|---|---
 _ids|string|true||记录ID，多个以逗号隔开
-_type|bool|true||true通过审批， false拒绝
+type|bool|true||true通过审批， false拒绝
 
 * 返回
 ```json
 {
     "code": 1,
-    "data": "123" //生成微信红包同步文件内容  
+    "data": [
+        {
+            "_id": "1310933_10000017_1508840526134",
+            "toy": {
+                "_id": 12871,
+                "name": "wawa1",
+                "pic": "http://img-album.b0.upaiyun.com/20059349/0724/bdf3bf1da3405725be763540d6601144.jpg",
+                "desc": "娃娃1的说明"
+            },
+            "address": {
+                "_id": "1209384_1509535729288",
+                "province": "北京",
+                "city": "东城区",
+                "region": "",
+                "address": "啊哈哈哈啊哈哈",
+                "name": "哈哈哈",
+                "tel": "185163474838",
+                "is_default": true
+            }
+        }
+    ]
 }
 ```
 
