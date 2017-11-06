@@ -23,6 +23,7 @@ import javax.annotation.Resource
 import javax.servlet.http.HttpServletRequest
 import java.nio.charset.Charset
 
+import static com.ttpod.rest.common.doc.MongoKey.$exists
 import static com.ttpod.rest.common.doc.MongoKey.ALL_FIELD
 import static com.ttpod.rest.common.doc.MongoKey.SJ_DESC
 import static com.ttpod.rest.common.util.WebUtils.$$
@@ -511,13 +512,35 @@ class CatchuController extends BaseController {
     }
 
     /**
+     * 发货清单
+     * @param req
+     * @return
+     */
+    def post_list(HttpServletRequest req) {
+        def query = $$('pack_id', [$exists: true])
+        query.putAll(Web.fillTimeBetween(req).get())
+        def user_id = ServletRequestUtils.getIntParameter(req, 'user_id')
+        if (user_id != null) {
+            query.put('user_id', user_id)
+        }
+        def room_id = ServletRequestUtils.getIntParameter(req, 'room_id')
+        if (room_id != null) {
+            query.put('room_id', room_id)
+        }
+        def sort = $$(post_type: 1, pack_id: -1, 'timestamp': -1)
+        def field = $$(_id: 1, user_id: 1, room_id: 1, toy: 1, timestamp: 1, pack_id: 1, post_type: 1, address: 1)
+        Crud.list(req, catch_records(), query, field, sort)
+    }
+
+    /**
      * 批量通过发货
      * @param req
      * @return
      */
     def batch_post(HttpServletRequest req) {
         def ids = ServletRequestUtils.getStringParameter(req, 'ids')
-        if (StringUtils.isBlank(ids)) {
+        def type = ServletRequestUtils.getBooleanParameter(req, 'type')
+        if (StringUtils.isBlank(ids) || type == null) {
             return Web.missParam()
         }
         def packIdList = ids.split('\\|')?.collect{it as String}
@@ -525,8 +548,8 @@ class CatchuController extends BaseController {
             return Web.missParam()
         }
         //更新成功
-        if (1 <= catch_records().update($$(pack_id: [$in: packIdList], post_type: 1), $$($set: [post_type: 2]), false, true, writeConcern).getN()) {
-            def list = catch_records().find($$(pack_id: [$in: packIdList]), $$(toy: 1, address: 1)).sort($$(pack_id: 1, timestamp: -1))
+        if (1 <= catch_records().update($$(pack_id: [$in: packIdList], post_type: 1), $$($set: [post_type: type ? 2 : 4]), false, true, writeConcern).getN()) {
+            def list = catch_records().find($$(pack_id: [$in: packIdList]), $$(toy: 1, address: 1)).sort($$(pack_id: 1, timestamp: -1)).toArray()
             return [code: 1, data: list]
         }
         //有不符合条件的记录
