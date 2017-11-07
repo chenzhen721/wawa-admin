@@ -527,8 +527,8 @@ class CatchuController extends BaseController {
         if (room_id != null) {
             query.put('room_id', room_id)
         }
-        def sort = $$(post_type: 1, pack_id: -1, 'timestamp': -1)
-        def field = $$(_id: 1, user_id: 1, room_id: 1, toy: 1, timestamp: 1, pack_id: 1, post_type: 1, address: 1)
+        def sort = $$(apply_time: 1, post_type: 1, 'timestamp': -1)
+        def field = $$(_id: 1, user_id: 1, room_id: 1, toy: 1, timestamp: 1, pack_id: 1, post_type: 1, address: 1, apply_time: 1)
         Crud.list(req, catch_records(), query, field, sort)
     }
 

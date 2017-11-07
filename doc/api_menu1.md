@@ -152,7 +152,7 @@ size|int|false||每页记录数
 
 ### 2.批量审批
 
-* API {GET|POST} http://test-aiadmin.memeyule.com/cash/batch_pass.json
+* API {GET|POST} http://test-aiadmin.memeyule.com/catchu/batch_pass.json
 * 参数
 
 字段名|类型|是否必须|取值|说明
