@@ -527,8 +527,8 @@ class CatchuController extends BaseController {
         if (room_id != null) {
             query.put('room_id', room_id)
         }
-        def sort = $$(post_type: 1, pack_id: -1, 'timestamp': -1)
-        def field = $$(_id: 1, user_id: 1, room_id: 1, toy: 1, timestamp: 1, pack_id: 1, post_type: 1, address: 1)
+        def sort = $$(apply_time: 1, post_type: 1, 'timestamp': -1)
+        def field = $$(_id: 1, user_id: 1, room_id: 1, toy: 1, timestamp: 1, pack_id: 1, post_type: 1, address: 1, apply_time: 1)
         Crud.list(req, catch_records(), query, field, sort)
     }
 
@@ -550,6 +550,7 @@ class CatchuController extends BaseController {
         //更新成功
         if (1 <= catch_records().update($$(pack_id: [$in: packIdList], post_type: 1), $$($set: [post_type: type ? 2 : 4]), false, true, writeConcern).getN()) {
             def list = catch_records().find($$(pack_id: [$in: packIdList]), $$(toy: 1, address: 1)).sort($$(pack_id: 1, timestamp: -1)).toArray()
+            Crud.opLog(catch_records().getName() + '_batch_post', [post_type: type ? 2 : 4])
             return [code: 1, data: list]
         }
         //有不符合条件的记录
