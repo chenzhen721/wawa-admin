@@ -114,8 +114,10 @@ class CatchuController extends BaseController {
         if (StringUtils.isBlank(name) || fid == null || type == null || StringUtils.isBlank(pic) || price == null || toy_id == null) {
             return [code: 0]
         }
-        if (toy(toy_id) == null) {
-            return [code: 0]
+        if (partner == 0) {
+            if (toy(toy_id) == null) {
+                return [code: 0]
+            }
         }
         def result = room_detail(fid)
         if (!result) {
