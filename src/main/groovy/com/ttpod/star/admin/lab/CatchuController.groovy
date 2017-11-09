@@ -23,7 +23,6 @@ import javax.annotation.Resource
 import javax.servlet.http.HttpServletRequest
 import java.nio.charset.Charset
 
-import static com.ttpod.rest.common.doc.MongoKey.$exists
 import static com.ttpod.rest.common.doc.MongoKey.ALL_FIELD
 import static com.ttpod.rest.common.doc.MongoKey.SJ_DESC
 import static com.ttpod.rest.common.util.WebUtils.$$
@@ -82,7 +81,7 @@ class CatchuController extends BaseController {
     def list(HttpServletRequest req) {
         def query = Web.fillTimeBetween(req)
         intQuery(query, req, "_id")//房间ID
-        intQuery(query, req, "fid")//对应娃娃机ID
+        stringQuery(query, req, "fid")//对应娃娃机ID
         Crud.list(req, table(), query.get(), ALL_FIELD, $$(type: -1, timestamp: -1))
     }
 
@@ -93,7 +92,7 @@ class CatchuController extends BaseController {
      */
     def add(HttpServletRequest req) {
         def _id = ServletRequestUtils.getIntParameter(req, '_id')
-        def fid = ServletRequestUtils.getIntParameter(req, 'fid')
+        def fid = ServletRequestUtils.getStringParameter(req, 'fid')
         //一个远程房间只能创建一次
         def room = table().findOne($$(fid: fid))
         if (room != null) {
@@ -110,6 +109,7 @@ class CatchuController extends BaseController {
         def pic = ServletRequestUtils.getStringParameter(req, 'pic') //房间图片
         def price = ServletRequestUtils.getIntParameter(req, 'price')
         def desc = ServletRequestUtils.getStringParameter(req, 'desc', '')
+        def partner = ServletRequestUtils.getIntParameter(req, 'partner', 0) //合作商户 0 catchu 1 奇异果
         def timestamp = new Date().getTime()
         if (StringUtils.isBlank(name) || fid == null || type == null || StringUtils.isBlank(pic) || price == null || toy_id == null) {
             return [code: 0]
@@ -121,12 +121,14 @@ class CatchuController extends BaseController {
         if (!result) {
             return [code: 0]
         }
-        def map = [_id: _id, fid: fid, toy_id: toy_id, name: name, type: type, online: online, pic: pic, price: price, desc: desc, timestamp: timestamp]
+        def map = [_id: _id, fid: fid, toy_id: toy_id, name: name, type: type, partner: partner, online: online, pic: pic, price: price, desc: desc, timestamp: timestamp]
         if (table().count($$(fid: fid)) > 0) {
             return [code: 0]
         }
-        if (bind_toy(fid, toyItem['tid'] as Integer) == null) {
-            return [code: 0]
+        if (partner == 0) {
+            if (bind_toy(fid, toyItem['tid'] as Integer) == null) {
+                return [code: 0]
+            }
         }
         if(table().save(new BasicDBObject(map)).getN() == 1){
             Crud.opLog(table().getName() + "_add", map)
@@ -173,6 +175,10 @@ class CatchuController extends BaseController {
         if (StringUtils.isNotBlank(desc)) {
             map.put('desc', desc)
         }
+        def partner = ServletRequestUtils.getIntParameter(req, 'partner')
+        if (partner != null) {
+            map.put('partner', partner)
+        }
         def toyId = ServletRequestUtils.getIntParameter(req, 'toy_id')
         if (toyId != null && toyId != (room['toy_id'] as Integer)) {
             map.put('toy_id', toyId)
@@ -180,8 +186,10 @@ class CatchuController extends BaseController {
             if (toyItem == null) {
                 return [code: 0]
             }
-            if (bind_toy(room['fid'] as Integer, toyItem['tid'] as Integer) == null) {
-                return [code: 0]
+            if (partner == 0) {
+                if (bind_toy(room['fid'] as String, toyItem['tid'] as Integer) == null) {
+                    return [code: 0]
+                }
             }
         }
         if(table().update($$(_id: _id), new BasicDBObject($set: map)).getN() == 1){
@@ -272,7 +280,7 @@ class CatchuController extends BaseController {
      * @param roomId
      * @return
      */
-    static Map room_detail(Integer roomId) {
+    static Map room_detail(String roomId) {
         if (roomId == null) {
             return null
         }
@@ -429,7 +437,7 @@ class CatchuController extends BaseController {
      * @param req
      * @return
      */
-    def bind_toy(Integer roomId, Integer toyId) {
+    def bind_toy(String roomId, Integer toyId) {
         def url = "${HOST}/open_api/${VERSION}/rooms/${roomId}/bind/${toyId}".toString()
         def params = [app_id: APP_ID, room_id: roomId as String, toy_id: toyId as String] as Map
         String value = null
