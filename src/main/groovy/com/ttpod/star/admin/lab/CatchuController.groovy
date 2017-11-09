@@ -119,9 +119,11 @@ class CatchuController extends BaseController {
                 return [code: 0]
             }
         }
-        def result = room_detail(fid)
-        if (!result) {
-            return [code: 0]
+        if (partner == 0) {
+            def result = room_detail(fid)
+            if (!result) {
+                return [code: 0]
+            }
         }
         def map = [_id: _id, fid: fid, toy_id: toy_id, name: name, type: type, partner: partner, online: online, pic: pic, price: price, desc: desc, timestamp: timestamp]
         if (table().count($$(fid: fid)) > 0) {
