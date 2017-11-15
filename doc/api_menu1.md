@@ -238,15 +238,16 @@ size|int|false||每页记录数
 _id|int|||添加时不需要
 name|str|true||歌曲名称
 status|bool|true|true,false|状态 true-上架， false-下架
-item_id|str|true||商品ID
+item_id|str|true||商品ID（非必填参数，支持修改）
 pic|str|true||商品icon
 count|int|true||购买数量
-cost_diamond|int|true||花费钻石
+cost|int|true||花费
 unit|int|true||单位描述
 limit|int|true||每日购买限额
 desc|str|true||描述
 tag|str|true||折扣标签
 stime|str|true||上架时间
+group|str|diamond||聚类，eg: 钻石列表
 
 * 返回
 ```json
