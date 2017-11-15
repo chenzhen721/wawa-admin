@@ -247,7 +247,7 @@ limit|int|true||每日购买限额
 desc|str|true||描述
 tag|str|true||折扣标签
 stime|str|true||上架时间
-group|str|diamond||聚类，eg: 钻石列表
+group|str|true||聚类，eg: 钻石列表 diamond
 
 * 返回
 ```json
