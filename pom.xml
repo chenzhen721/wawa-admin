@@ -38,11 +38,11 @@
         <log.target>stdout</log.target>
         <log.web.level>DEBUG</log.web.level>
         <pic.domain>https://aiimg.sumeme.com/</pic.domain>
-        <api.domain>http://aiapi.memeyule.com/</api.domain>
-        <user.domain>http://aiuser.memeyule.com/</user.domain>
-        <im.domain>http://aiim.memeyule.com:6070</im.domain>
+        <api.domain>http://api.17laihou.com/</api.domain>
+        <user.domain>http://user.17laihou.com/</user.domain>
+        <im.domain>http://im.17laihou.com:6070</im.domain>
         <redis.port>6379</redis.port>
-        <mongo.port>10000</mongo.port>
+        <mongo.port>20000</mongo.port>
 
         <aspectj-scope>compile</aspectj-scope>
         <templateLoaderPath>file://data/website/www.2339.com/current/admin-view</templateLoaderPath>
@@ -123,7 +123,7 @@
         <profile>
             <id>product</id>
             <properties>
-                <redis.host>192.168.2.15</redis.host>
+                <redis.host>192.168.2.16</redis.host>
                 <redis.port>6379</redis.port>
                 <redis.mem.host>${redis.host}</redis.mem.host>
                 <redis.mem.port>6380</redis.mem.port>
@@ -140,12 +140,11 @@
                 <aspectj-scope>provided</aspectj-scope>
                 <api.domain>http://aiapi.memeyule.com/</api.domain>
                 <!-- replset-->
-                <mongo.uri>192.168.2.17:10000,192.168.2.18:10000,192.168.2.19:10000</mongo.uri>
+                <mongo.uri>192.168.2.17:20000,192.168.2.18:20000,192.168.2.19:20000</mongo.uri>
                 <mongo.cost.write>REPLICA_ACKNOWLEDGED</mongo.cost.write>
                 <mongo_history.uri>192.168.1.43:10000</mongo_history.uri>
-                <im.domain>http://aiim.memeyule.com:6070</im.domain>
-                <ws.domain>http://aiws.memeyule.com:6010</ws.domain>
-                <aigd.domain>http://aigd.memeyule.com:6050</aigd.domain>
+                <im.domain>http://im.17laihou.com:6070</im.domain>
+                <ws.domain>http://ws.17laihou.com:7010</ws.domain>
             </properties>
         </profile>
     </profiles>
