@@ -15,7 +15,7 @@ public class GameService {
 
     static final Logger logger = LoggerFactory.getLogger(GameService.class);
     // 游戏服务器服务器地址
-    static final String SERVER_DOMAIN = AppProperties.get("aigd.domain");
+    static final String SERVER_DOMAIN = AppProperties.get("api.domain");
 
     /**
      * 开始游戏
