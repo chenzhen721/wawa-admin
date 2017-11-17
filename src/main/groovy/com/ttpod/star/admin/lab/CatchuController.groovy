@@ -110,7 +110,7 @@ class CatchuController extends BaseController {
         def pic = ServletRequestUtils.getStringParameter(req, 'pic') //房间图片
         def price = ServletRequestUtils.getIntParameter(req, 'price')
         def desc = ServletRequestUtils.getStringParameter(req, 'desc', '')
-        def partner = ServletRequestUtils.getIntParameter(req, 'partner', 0) //合作商户 0 catchu 1 奇异果
+        def partner = ServletRequestUtils.getIntParameter(req, 'partner', 1) //合作商户 0 catchu 1 奇异果
         def order = ServletRequestUtils.getIntParameter(req, 'order', 0) //合作商户 0 catchu 1 奇异果
         def timestamp = new Date().getTime()
         if (StringUtils.isBlank(name) || type == null || StringUtils.isBlank(pic) || price == null || toy_id == null) {
