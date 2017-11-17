@@ -93,12 +93,12 @@ class CatchuController extends BaseController {
         def _id = ServletRequestUtils.getIntParameter(req, '_id')
         def fid = ServletRequestUtils.getStringParameter(req, 'fid', '')
         //一个远程房间只能创建一次
-        if (StringUtils.isNotBlank(fid)) {
-        def room = table().findOne($$(fid: fid))
+        /*if (StringUtils.isNotBlank(fid)) {
+            def room = table().findOne($$(fid: fid))
             if (room != null) {
                 return [code: 0]
             }
-        }
+        }*/
         def toy_id = ServletRequestUtils.getIntParameter(req, 'toy_id')
         def toyItem = toys().findOne(toy_id)
         if (toyItem == null) {
@@ -113,7 +113,7 @@ class CatchuController extends BaseController {
         def partner = ServletRequestUtils.getIntParameter(req, 'partner', 0) //合作商户 0 catchu 1 奇异果
         def order = ServletRequestUtils.getIntParameter(req, 'order', 0) //合作商户 0 catchu 1 奇异果
         def timestamp = new Date().getTime()
-        if (StringUtils.isBlank(name) || fid == null || type == null || StringUtils.isBlank(pic) || price == null || toy_id == null) {
+        if (StringUtils.isBlank(name) || type == null || StringUtils.isBlank(pic) || price == null || toy_id == null) {
             return [code: 0]
         }
         /*if (partner == 0) {
@@ -127,7 +127,10 @@ class CatchuController extends BaseController {
                 return [code: 0]
             }
         }*/
-        def map = [_id: _id, fid: fid, toy_id: toy_id, name: name, type: type, partner: partner, online: online, pic: pic, price: price, desc: desc, order: order, timestamp: timestamp]
+        def map = [_id: _id, toy_id: toy_id, name: name, type: type, partner: partner, online: online, pic: pic, price: price, desc: desc, order: order, timestamp: timestamp]
+        if (fid == null) {
+            map.put('fid', fid)
+        }
         if (table().count($$(fid: fid)) > 0) {
             return [code: 0]
         }
