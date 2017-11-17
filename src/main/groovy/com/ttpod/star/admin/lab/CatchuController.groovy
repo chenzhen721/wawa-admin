@@ -128,12 +128,12 @@ class CatchuController extends BaseController {
             }
         }*/
         def map = [_id: _id, toy_id: toy_id, name: name, type: type, partner: partner, online: online, pic: pic, price: price, desc: desc, order: order, timestamp: timestamp]
-        if (fid == null) {
+        if (fid != null) {
             map.put('fid', fid)
         }
-        if (table().count($$(fid: fid)) > 0) {
+        /*if (table().count($$(fid: fid)) > 0) {
             return [code: 0]
-        }
+        }*/
         /*if (partner == 0) {
             if (bind_toy(fid, toyItem['tid'] as Integer) == null) {
                 return [code: 0]
