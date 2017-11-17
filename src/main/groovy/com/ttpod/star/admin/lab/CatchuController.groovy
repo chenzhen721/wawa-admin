@@ -10,6 +10,7 @@ import com.ttpod.rest.web.Crud
 import com.ttpod.star.admin.BaseController
 import com.ttpod.star.admin.Web
 import com.ttpod.star.common.util.HttpClientUtils
+import com.ttpod.star.web.api.play.Qiyiguo
 import groovy.json.JsonSlurper
 import org.apache.commons.lang.StringUtils
 import org.apache.http.HttpResponse
@@ -24,6 +25,7 @@ import java.nio.charset.Charset
 
 import static com.ttpod.rest.common.doc.MongoKey.ALL_FIELD
 import static com.ttpod.rest.common.doc.MongoKey.SJ_DESC
+import static com.ttpod.rest.common.doc.MongoKey._id
 import static com.ttpod.rest.common.util.WebUtils.$$
 
 /**
@@ -67,6 +69,10 @@ class CatchuController extends BaseController {
 
     DBCollection catch_records() {
         return labMongo.getCollection('catch_record')
+    }
+
+    DBCollection apply_post_logs() {
+        return labMongo.getCollection('apply_post_logs')
     }
 
     @Resource
@@ -163,6 +169,10 @@ class CatchuController extends BaseController {
         def name = ServletRequestUtils.getStringParameter(req, 'name')
         if (StringUtils.isNotBlank(name)) {
             map.put('name', name)
+        }
+        def fid = ServletRequestUtils.getStringParameter(req, 'fid')
+        if (StringUtils.isNotBlank(fid)) {
+            map.put('fid', fid)
         }
         def type = ServletRequestUtils.getBooleanParameter(req, 'type') //是否备货中
         if (type != null) {
@@ -547,8 +557,7 @@ class CatchuController extends BaseController {
      * @return
      */
     def post_list(HttpServletRequest req) {
-        def query = $$('pack_id', [$exists: true])
-        query.putAll(Web.fillTimeBetween(req).get())
+        def query = Web.fillTimeBetween(req).get()
         def user_id = ServletRequestUtils.getIntParameter(req, 'user_id')
         if (user_id != null) {
             query.put('user_id', user_id)
@@ -557,9 +566,8 @@ class CatchuController extends BaseController {
         if (room_id != null) {
             query.put('room_id', room_id)
         }
-        def sort = $$(apply_time: 1, post_type: 1, 'timestamp': -1)
-        def field = $$(_id: 1, user_id: 1, room_id: 1, toy: 1, timestamp: 1, pack_id: 1, post_type: 1, address: 1, apply_time: 1)
-        Crud.list(req, catch_records(), query, field, sort)
+        def sort = $$(post_type: 1, 'timestamp': -1)
+        Crud.list(req, apply_post_logs(), query, ALL_FIELD, sort)
     }
 
     /**
@@ -578,6 +586,10 @@ class CatchuController extends BaseController {
             return Web.missParam()
         }
         // todo 需要调用奇异果下单接口
+        /*packIdList.each {String _id ->
+            apply_post_logs().findOne($$(_id: _id))
+        }*/
+
         //更新成功
         if (1 <= catch_records().update($$(pack_id: [$in: packIdList], post_type: 1), $$($set: [post_type: type ? 2 : 4]), false, true, writeConcern).getN()) {
             def list = catch_records().find($$(pack_id: [$in: packIdList]), $$(toy: 1, address: 1)).sort($$(pack_id: 1, timestamp: -1)).toArray()
