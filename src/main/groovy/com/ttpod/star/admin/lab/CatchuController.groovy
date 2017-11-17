@@ -90,7 +90,7 @@ class CatchuController extends BaseController {
      * @return
      */
     def add(HttpServletRequest req) {
-        def _id = ServletRequestUtils.getIntParameter(req, '_id')
+        def _id = seqKGS.nextId()
         def fid = ServletRequestUtils.getStringParameter(req, 'fid', '')
         //一个远程房间只能创建一次
         /*if (StringUtils.isNotBlank(fid)) {
@@ -226,7 +226,7 @@ class CatchuController extends BaseController {
      * @param req
      */
     def toy_add(HttpServletRequest req) {
-        def _id = seqKGS.nextId()
+        def _id = ServletRequestUtils.getIntParameter(req, '_id')
         def name = ServletRequestUtils.getStringParameter(req, 'name')
         def type = ServletRequestUtils.getBooleanParameter(req, 'type', true) //是否可用
         def pic = ServletRequestUtils.getStringParameter(req, 'pic') //图片
@@ -235,6 +235,9 @@ class CatchuController extends BaseController {
         def timestamp = new Date().getTime()
         //def props = [name: name, url: pic, head_pic: head_pic, price: '1', desc: desc]
         //def toy = add_toy(props)
+        if (toys().count($$(_id: _id)) > 0) {
+            return [code: 0]
+        }
         def map = [_id: _id, name: name, type: type, pic: pic, head_pic: head_pic, desc: desc, timestamp: timestamp]
         if(toys().save(new BasicDBObject(map)).getN() == 1){
             Crud.opLog(toys().getName() + "_add", map)
