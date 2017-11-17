@@ -91,11 +91,13 @@ class CatchuController extends BaseController {
      */
     def add(HttpServletRequest req) {
         def _id = ServletRequestUtils.getIntParameter(req, '_id')
-        def fid = ServletRequestUtils.getStringParameter(req, 'fid')
+        def fid = ServletRequestUtils.getStringParameter(req, 'fid', '')
         //一个远程房间只能创建一次
+        if (StringUtils.isNotBlank(fid)) {
         def room = table().findOne($$(fid: fid))
-        if (room != null) {
-            return [code: 0]
+            if (room != null) {
+                return [code: 0]
+            }
         }
         def toy_id = ServletRequestUtils.getIntParameter(req, 'toy_id')
         def toyItem = toys().findOne(toy_id)
