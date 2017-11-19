@@ -214,7 +214,7 @@ class CatchuController extends BaseController {
             }
         }
         def rec = table().findOne($$(_id: _id))
-        if (rec['online'] == Boolean.TRUE && online) {
+        if (rec['online'] == Boolean.TRUE && (online == null || online == Boolean.TRUE)) {
             def winrate = ServletRequestUtils.getIntParameter(req, 'winrate', 25) //25中1
             def playtime = ServletRequestUtils.getIntParameter(req, 'playtime', 40) //40s
 
@@ -231,7 +231,7 @@ class CatchuController extends BaseController {
                     logger.error('change winning rate fail.' + device_id + ' to: ' + winrate)
                     return [code: 30404]
                 }
-
+                map.put('winrate', winrate)
             }
             if (rec['fid'] != null && playtime != null && playtime != rec['playtime']) {
                 def device_id = rec['fid'] as String
@@ -243,6 +243,7 @@ class CatchuController extends BaseController {
                     logger.error('change playtime fail.' + device_id + ' to: ' + playtime)
                     return [code: 30405]
                 }
+                map.put('playtime', playtime)
             }
         }
         if(table().update($$(_id: _id), $$($set: map)).getN() == 1) {
