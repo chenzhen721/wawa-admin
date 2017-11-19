@@ -163,6 +163,7 @@ class CatchuController extends BaseController {
      * @return
      */
     def edit(HttpServletRequest req) {
+        logger.info('=========' + req.getParameterMap())
         def _id = ServletRequestUtils.getIntParameter(req, '_id')
         if (_id == null) {
             return [code: 0]
