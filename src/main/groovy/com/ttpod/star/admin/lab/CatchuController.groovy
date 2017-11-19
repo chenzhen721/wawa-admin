@@ -231,7 +231,7 @@ class CatchuController extends BaseController {
             logger.info('fid result: ' + (rec['fid'] != null))
             logger.info('winrate: ' + winrate)
             logger.info('rec result: ' + (winrate != rec['winrate']))
-            if (rec['fid'] != null && winrate != null && winrate != rec['winrate']) {
+            if (rec['fid'] != null && winrate != rec['winrate']) {
                 def device_id = rec['fid'] as String
                 if (winrate < 1 || winrate > 888) {
                     return [code: 30406]
@@ -244,7 +244,7 @@ class CatchuController extends BaseController {
                 }
                 map.put('winrate', winrate)
             }
-            if (rec['fid'] != null && playtime != null && playtime != rec['playtime']) {
+            if (rec['fid'] != null && playtime != rec['playtime']) {
                 def device_id = rec['fid'] as String
                 if (playtime < 5 || playtime > 60) {
                     return [code: 30407]
