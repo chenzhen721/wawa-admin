@@ -217,7 +217,6 @@ class CatchuController extends BaseController {
             }
         }
         def rec = table().findOne($$(_id: _id))
-        logger.info('result: ' + (rec['online'] == Boolean.TRUE && (online == null || online == Boolean.TRUE)))
         if (rec['online'] == Boolean.TRUE && (online == null || online == Boolean.TRUE)) {
             def winrate = ServletRequestUtils.getIntParameter(req, 'winrate', 25) //25中1
             def playtime = ServletRequestUtils.getIntParameter(req, 'playtime', 40) //40s
@@ -225,12 +224,14 @@ class CatchuController extends BaseController {
             if (rec == null) {
                 return [code: 30400]
             }
+            logger.info('winrate result: ' + (rec['fid'] != null && winrate != null && winrate != rec['winrate']))
             if (rec['fid'] != null && winrate != null && winrate != rec['winrate']) {
                 def device_id = rec['fid'] as String
                 if (winrate < 1 || winrate > 888) {
                     return [code: 30406]
                 }
                 QiygRespDTO respDTO = Qiyiguo.winning_rate(device_id, winrate)
+                logger.info('respdto: ' + respDTO)
                 if (respDTO == null || !respDTO.getDone()) {
                     logger.error('change winning rate fail.' + device_id + ' to: ' + winrate)
                     return [code: 30404]
