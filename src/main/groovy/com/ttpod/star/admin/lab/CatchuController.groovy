@@ -217,6 +217,7 @@ class CatchuController extends BaseController {
             }
         }
         def rec = table().findOne($$(_id: _id))
+        logger.info(rec.toString() + ':' + online)
         if (rec['online'] == Boolean.TRUE && (online == null || online == Boolean.TRUE)) {
             def winrate = ServletRequestUtils.getIntParameter(req, 'winrate', 25) //25中1
             def playtime = ServletRequestUtils.getIntParameter(req, 'playtime', 40) //40s
