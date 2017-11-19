@@ -164,7 +164,7 @@ public abstract class Qiyiguo {
     }
 
     /**
-     * 7.	创建订单接口
+     * 7.	创建订单接口 //todo resp
      */
     public static QiygOperateResultDTO createOrder(String device_id, Integer user_id, String username, String consignee, String address, String mobile) {
         if (device_id == null) {
@@ -187,7 +187,7 @@ public abstract class Qiyiguo {
     }
 
     /**
-     * 9.订单列表 //TODO
+     * 9.订单列表 //TODO resp
      */
     public static QiygOperateResultDTO orderList(Integer userId, Integer page) {
         if (userId == null) {
@@ -203,6 +203,44 @@ public abstract class Qiyiguo {
         params.put("ts", System.currentTimeMillis());
         String value = doGet(url, params);
         return toBean(value, QiygOperateResultDTO.class);
+    }
+
+    /**
+     * 概率调整， 范围1-888
+     * @param device_id
+     * @param winning_probability
+     * @return
+     */
+    public static QiygRespDTO winning_rate(String device_id, Integer winning_probability) {
+        String url = HOST + "/api/index.php";
+        SortedMap<String, Object> params = new TreeMap<>();
+        params.put("app", "doll");
+        params.put("act", "set_winning_probability");
+        params.put("platform", PLATFORM);
+        params.put("device_id", device_id);
+        params.put("winning_probability", winning_probability);
+        params.put("ts", System.currentTimeMillis());
+        String value = doGet(url, params);
+        return toBean(value, QiygRespDTO.class);
+    }
+
+    /**
+     * 游戏时间调整
+     * @param device_id 设备ID
+     * @param playtime 游戏时间 5~60
+     * @return
+     */
+    public static QiygRespDTO playtime(String device_id, Integer playtime) {
+        String url = HOST + "/api/index.php";
+        SortedMap<String, Object> params = new TreeMap<>();
+        params.put("app", "doll");
+        params.put("act", "set_playtime");
+        params.put("platform", PLATFORM);
+        params.put("device_id", device_id);
+        params.put("playtime", playtime);
+        params.put("ts", System.currentTimeMillis());
+        String value = doGet(url, params);
+        return toBean(value, QiygRespDTO.class);
     }
 
     private static <T> T respBean(String value, Class<T> parametrized) {

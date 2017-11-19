@@ -11,6 +11,7 @@ import com.ttpod.star.admin.BaseController
 import com.ttpod.star.admin.Web
 import com.ttpod.star.common.util.HttpClientUtils
 import com.ttpod.star.web.api.play.Qiyiguo
+import com.ttpod.star.web.api.play.dto.QiygRespDTO
 import groovy.json.JsonSlurper
 import org.apache.commons.lang.StringUtils
 import org.apache.http.HttpResponse
@@ -118,33 +119,35 @@ class CatchuController extends BaseController {
         def desc = ServletRequestUtils.getStringParameter(req, 'desc', '')
         def partner = ServletRequestUtils.getIntParameter(req, 'partner', 1) //合作商户 0 catchu 1 奇异果
         def order = ServletRequestUtils.getIntParameter(req, 'order', 0) //合作商户 0 catchu 1 奇异果
+        def winrate = ServletRequestUtils.getIntParameter(req, 'winrate', 25) //25中1
+        def playtime = ServletRequestUtils.getIntParameter(req, 'playtime', 40) //40s
         def timestamp = new Date().getTime()
+
         if (StringUtils.isBlank(name) || type == null || StringUtils.isBlank(pic) || price == null || toy_id == null) {
             return [code: 0]
         }
-        /*if (partner == 0) {
-            if (toy(toy_id) == null) {
-                return [code: 0]
-            }
-        }*/
-        /*if (partner == 0) {
-            def result = room_detail(fid)
-            if (!result) {
-                return [code: 0]
-            }
-        }*/
         def map = [_id: _id, toy_id: toy_id, name: name, type: type, partner: partner, online: online, pic: pic, price: price, desc: desc, order: order, timestamp: timestamp]
         if (fid != null) {
             map.put('fid', fid)
         }
-        /*if (table().count($$(fid: fid)) > 0) {
-            return [code: 0]
-        }*/
-        /*if (partner == 0) {
-            if (bind_toy(fid, toyItem['tid'] as Integer) == null) {
-                return [code: 0]
+        if (StringUtils.isNotBlank(fid)) {
+            if (winrate < 1|| winrate > 888) {
+                return [code: 30406]
             }
-        }*/
+            QiygRespDTO respDTO = Qiyiguo.winning_rate(fid, winrate)
+            if (respDTO == null || !respDTO.getDone()) {
+                logger.error('change winning rate fail.' + fid + ' to: ' + winrate)
+                return [code: 30404]
+            }
+            if (playtime < 5|| playtime > 60) {
+                return [code: 30407]
+            }
+            respDTO = Qiyiguo.playtime(fid, playtime)
+            if (respDTO == null || !respDTO.getDone()) {
+                logger.error('change playtime fail.' + fid + ' to: ' + playtime)
+                return [code: 30405]
+            }
+        }
         if(table().save(new BasicDBObject(map)).getN() == 1){
             Crud.opLog(table().getName() + "_add", map)
         }
@@ -163,7 +166,7 @@ class CatchuController extends BaseController {
         }
         def room = table().findOne(_id)
         if (room == null) {
-            return [code: 0]
+            return [code: 30402]
         }
         def map = [:]
         def name = ServletRequestUtils.getStringParameter(req, 'name')
@@ -207,15 +210,35 @@ class CatchuController extends BaseController {
             map.put('toy_id', toyId)
             def toyItem = toys().findOne(toyId)
             if (toyItem == null) {
-                return [code: 0]
+                return [code: 30401]
             }
-            /*if (partner == 0) {
-                if (bind_toy(room['fid'] as String, toyItem['tid'] as Integer) == null) {
-                    return [code: 0]
-                }
-            }*/
         }
-        if(table().update($$(_id: _id), new BasicDBObject($set: map)).getN() == 1){
+        def winrate = ServletRequestUtils.getIntParameter(req, 'winrate', 25) //25中1
+        def playtime = ServletRequestUtils.getIntParameter(req, 'playtime', 40) //40s
+        def rec = table().findOne($$(_id: _id))
+        if (rec == null) {
+            return [code: 30400]
+        }
+        if (rec['fid'] != null) {
+            def device_id = rec['fid'] as String
+            if (winrate < 1|| winrate > 888) {
+                return [code: 30406]
+            }
+            QiygRespDTO respDTO = Qiyiguo.winning_rate(device_id, winrate)
+            if (respDTO == null || !respDTO.getDone()) {
+                logger.error('change winning rate fail.' + device_id + ' to: ' + winrate)
+                return [code: 30404]
+            }
+            if (playtime < 5|| playtime > 60) {
+                return [code: 30407]
+            }
+            respDTO = Qiyiguo.playtime(device_id, playtime)
+            if (respDTO == null || !respDTO.getDone()) {
+                logger.error('change playtime fail.' + device_id + ' to: ' + playtime)
+                return [code: 30405]
+            }
+        }
+        if(table().update($$(_id: _id), $$($set: map)).getN() == 1) {
             Crud.opLog(table().getName() + "_edit", map)
         }
         return IMessageCode.OK
