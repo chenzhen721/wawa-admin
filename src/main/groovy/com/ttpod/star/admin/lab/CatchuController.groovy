@@ -224,7 +224,12 @@ class CatchuController extends BaseController {
             if (rec == null) {
                 return [code: 30400]
             }
+
+            logger.info('rec result: ' + rec.toString())
             logger.info('winrate result: ' + (rec['fid'] != null && winrate != null && winrate != rec['winrate']))
+            logger.info('fid result: ' + (rec['fid'] != null))
+            logger.info('winrate result: ' + (winrate != null))
+            logger.info('rec result: ' + (winrate != rec['winrate']))
             if (rec['fid'] != null && winrate != null && winrate != rec['winrate']) {
                 def device_id = rec['fid'] as String
                 if (winrate < 1 || winrate > 888) {
