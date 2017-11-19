@@ -221,7 +221,7 @@ public abstract class Qiyiguo {
         params.put("winning_probability", winning_probability);
         params.put("ts", System.currentTimeMillis());
         String value = doGet(url, params);
-        return toBean(value, QiygRespDTO.class);
+        return respBean(value, QiygRespDTO.class);
     }
 
     /**
@@ -240,7 +240,7 @@ public abstract class Qiyiguo {
         params.put("playtime", playtime);
         params.put("ts", System.currentTimeMillis());
         String value = doGet(url, params);
-        return toBean(value, QiygRespDTO.class);
+        return respBean(value, QiygRespDTO.class);
     }
 
     private static <T> T respBean(String value, Class<T> parametrized) {

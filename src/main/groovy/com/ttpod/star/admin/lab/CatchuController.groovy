@@ -213,29 +213,36 @@ class CatchuController extends BaseController {
                 return [code: 30401]
             }
         }
-        def winrate = ServletRequestUtils.getIntParameter(req, 'winrate', 25) //25中1
-        def playtime = ServletRequestUtils.getIntParameter(req, 'playtime', 40) //40s
         def rec = table().findOne($$(_id: _id))
-        if (rec == null) {
-            return [code: 30400]
-        }
-        if (rec['fid'] != null) {
-            def device_id = rec['fid'] as String
-            if (winrate < 1|| winrate > 888) {
-                return [code: 30406]
+        if (rec['online'] == Boolean.TRUE && online) {
+            def winrate = ServletRequestUtils.getIntParameter(req, 'winrate', 25) //25中1
+            def playtime = ServletRequestUtils.getIntParameter(req, 'playtime', 40) //40s
+
+            if (rec == null) {
+                return [code: 30400]
             }
-            QiygRespDTO respDTO = Qiyiguo.winning_rate(device_id, winrate)
-            if (respDTO == null || !respDTO.getDone()) {
-                logger.error('change winning rate fail.' + device_id + ' to: ' + winrate)
-                return [code: 30404]
+            if (rec['fid'] != null && winrate != null && winrate != rec['winrate']) {
+                def device_id = rec['fid'] as String
+                if (winrate < 1 || winrate > 888) {
+                    return [code: 30406]
+                }
+                QiygRespDTO respDTO = Qiyiguo.winning_rate(device_id, winrate)
+                if (respDTO == null || !respDTO.getDone()) {
+                    logger.error('change winning rate fail.' + device_id + ' to: ' + winrate)
+                    return [code: 30404]
+                }
+
             }
-            if (playtime < 5|| playtime > 60) {
-                return [code: 30407]
-            }
-            respDTO = Qiyiguo.playtime(device_id, playtime)
-            if (respDTO == null || !respDTO.getDone()) {
-                logger.error('change playtime fail.' + device_id + ' to: ' + playtime)
-                return [code: 30405]
+            if (rec['fid'] != null && playtime != null && playtime != rec['playtime']) {
+                def device_id = rec['fid'] as String
+                if (playtime < 5 || playtime > 60) {
+                    return [code: 30407]
+                }
+                def respDTO = Qiyiguo.playtime(device_id, playtime)
+                if (respDTO == null || !respDTO.getDone()) {
+                    logger.error('change playtime fail.' + device_id + ' to: ' + playtime)
+                    return [code: 30405]
+                }
             }
         }
         if(table().update($$(_id: _id), $$($set: map)).getN() == 1) {
