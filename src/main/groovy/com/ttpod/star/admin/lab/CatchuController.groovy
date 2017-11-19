@@ -139,6 +139,7 @@ class CatchuController extends BaseController {
                 logger.error('change winning rate fail.' + fid + ' to: ' + winrate)
                 return [code: 30404]
             }
+            map.put('winrate', winrate)
             if (playtime < 5|| playtime > 60) {
                 return [code: 30407]
             }
@@ -147,7 +148,9 @@ class CatchuController extends BaseController {
                 logger.error('change playtime fail.' + fid + ' to: ' + playtime)
                 return [code: 30405]
             }
+            map.put('playtime', playtime)
         }
+        logger.info('================Recv map:' + map)
         if(table().save(new BasicDBObject(map)).getN() == 1){
             Crud.opLog(table().getName() + "_add", map)
         }
@@ -246,6 +249,7 @@ class CatchuController extends BaseController {
                 map.put('playtime', playtime)
             }
         }
+        logger.info('================Recv map:' + map)
         if(table().update($$(_id: _id), $$($set: map)).getN() == 1) {
             Crud.opLog(table().getName() + "_edit", map)
         }
