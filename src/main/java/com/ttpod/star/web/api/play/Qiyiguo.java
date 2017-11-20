@@ -153,7 +153,7 @@ public abstract class Qiyiguo {
         }
         String url = HOST + "/api/index.php";
         SortedMap<String, Object> params = new TreeMap<>();
-        params.put("app", "buyer_order");
+        params.put("app", "doll");
         params.put("act", "operate_result");
         params.put("platform", PLATFORM);
         params.put("log_id", logId);
@@ -297,7 +297,7 @@ public abstract class Qiyiguo {
                 value = HttpsClientUtils.get(url, null);
             }
         } catch (Exception e) {
-            logger.error("Get ${url} error.", e);
+            logger.error("Get " + url + " error.", e);
         }
         return value;
     }

@@ -257,7 +257,6 @@ class CatchuController extends BaseController {
                 map.put('playtime', playtime)
             }
         }
-        logger.info('================Recv map:' + map)
         if(table().update($$(_id: _id), $$($set: map)).getN() == 1) {
             Crud.opLog(table().getName() + "_edit", map)
         }
