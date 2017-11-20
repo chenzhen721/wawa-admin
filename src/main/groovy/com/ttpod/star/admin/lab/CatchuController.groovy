@@ -61,19 +61,19 @@ class CatchuController extends BaseController {
 
     @Override
     DBCollection table() {
-        return labMongo.getCollection('catch_room')
+        return catchMongo.getCollection('catch_room')
     }
 
     DBCollection toys() {
-        return labMongo.getCollection('catch_toy')
+        return catchMongo.getCollection('catch_toy')
     }
 
     DBCollection catch_records() {
-        return labMongo.getCollection('catch_record')
+        return catchMongo.getCollection('catch_record')
     }
 
     DBCollection apply_post_logs() {
-        return labMongo.getCollection('apply_post_logs')
+        return catchMongo.getCollection('apply_post_logs')
     }
 
     @Resource

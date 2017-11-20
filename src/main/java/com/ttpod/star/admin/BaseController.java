@@ -63,7 +63,7 @@ public abstract class BaseController extends FreemarkerSupport7 {
     public static final MongoTemplate familyMongo = (MongoTemplate) StaticSpring.get("familyMongo");
     public static final MongoTemplate shopMongo = (MongoTemplate) StaticSpring.get("shopMongo");
     public static final MongoTemplate gameLogMongo = (MongoTemplate) StaticSpring.get("gameLogMongo");
-    public static final MongoTemplate labMongo = (MongoTemplate) StaticSpring.get("labMongo");
+    public static final MongoTemplate catchMongo = (MongoTemplate) StaticSpring.get("catchMongo");
 
     //是否为测试服
     public static final boolean isTest  = AppProperties.get("api.domain").contains("test-");
