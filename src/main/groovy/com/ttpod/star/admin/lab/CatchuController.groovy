@@ -150,7 +150,6 @@ class CatchuController extends BaseController {
             }
             map.put('playtime', playtime)
         }
-        logger.info('================Recv map:' + map)
         if(table().save(new BasicDBObject(map)).getN() == 1){
             Crud.opLog(table().getName() + "_add", map)
         }
@@ -163,7 +162,6 @@ class CatchuController extends BaseController {
      * @return
      */
     def edit(HttpServletRequest req) {
-        logger.info('=========' + req.getParameterMap())
         def _id = ServletRequestUtils.getIntParameter(req, '_id')
         if (_id == null) {
             return [code: 0]
