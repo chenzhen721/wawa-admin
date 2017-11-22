@@ -9,6 +9,7 @@ import com.ttpod.rest.web.Crud
 import com.ttpod.star.admin.BaseController
 import com.ttpod.star.admin.Web
 import com.ttpod.star.admin.crud.ChannelController
+import com.ttpod.star.common.util.JSONUtil
 import com.ttpod.star.model.OpType
 import org.apache.commons.lang.StringUtils
 import org.slf4j.Logger
@@ -195,7 +196,7 @@ class UnionPermController extends BaseController {
                 return [code: 0, msg: "渠道号重复"]
             }
             ids.add(_id)
-            operation(OpType.channel_add_user.name(), prop,
+            operation(OpType.channel_add_user.name(), JSONUtil.beanToJson(prop),
                     [_id: user['_id'], nick_name: user['nick_name'], qd: user['qd']])
             [code: 1]
         }
@@ -237,7 +238,7 @@ class UnionPermController extends BaseController {
             if (newUser == null) {
                 return [code: 0, msg: "渠道号重复"]
             }
-            operation(OpType.channel_add_user.name(), prop,
+            operation(OpType.channel_add_user.name(), JSONUtil.beanToJson(prop),
                     [_id: user['_id'], nick_name: user['nick_name'], qd: user['qd']])
             [code: 1]
         }
@@ -272,7 +273,7 @@ class UnionPermController extends BaseController {
             if (newUser != null) {
                 return [code: 0, msg: "用户已存在"]
             }
-            operation(OpType.channel_add_user.name(), prop,
+            operation(OpType.channel_add_user.name(), JSONUtil.beanToJson(prop),
                     [_id: user['_id'], nick_name: user['nick_name'], qd: user['qd']])
             [code: 1]
         }
@@ -327,7 +328,7 @@ class UnionPermController extends BaseController {
 
     public DBCollection ops(){return adminMongo.getCollection("ops");}
 
-    private void operation(String type, Map data, Map session) {
+    private void operation(String type, Object data, Map session) {
 
         BasicDBObject obj = new BasicDBObject()
         Long tmp = System.currentTimeMillis()
