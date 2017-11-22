@@ -326,7 +326,7 @@ class UnionPermController extends BaseController {
 
     private static final String LOG_COLL_NAME = "ops"
 
-    private void operation(String type, Object data, Map session) {
+    private void operation(String type, Map data, Map session) {
 
         //BasicDBObject obj = new BasicDBObject();
         Long tmp = System.currentTimeMillis()
