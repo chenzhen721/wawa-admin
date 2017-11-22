@@ -325,17 +325,19 @@ class UnionPermController extends BaseController {
 
     private static final String LOG_COLL_NAME = "ops"
 
-    private static void operation(String type, Object data, Map session) {
+    public DBCollection ops(){return adminMongo.getCollection("ops");}
+
+    private void operation(String type, Map data, Map session) {
 
         BasicDBObject obj = new BasicDBObject()
         Long tmp = System.currentTimeMillis()
-        obj.put(_id, tmp)
+        obj.put('_id', tmp)
         obj.put("type", type)
         obj.put("session", session)
         obj.put("data", data)
-        obj.put(timestamp, tmp)
+        obj.put('timestamp', tmp)
         logger.info('==============>:' + obj)
-        adminMongo.getCollection(LOG_COLL_NAME).save(obj)
+        ops().save(obj)
     }
 
 }
