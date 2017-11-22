@@ -28,7 +28,7 @@
             <MaxFileSize>4096KB</MaxFileSize>
         </triggeringPolicy>
     </appender>
-    <logger name="com.ttpod.star.admin" level="${log.web.level}}"/>
+    <logger name="com.ttpod.star.admin" level="${log.web.level}"/>
     <root level="INFO">
         <appender-ref ref="${log.target}"/>
     </root>
