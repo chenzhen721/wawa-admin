@@ -29,6 +29,7 @@
         </triggeringPolicy>
     </appender>
     <logger name="com.ttpod.star.web" level="${log.web.level}"/>
+    <logger name="com.ttpod.star" level="${log.web.level}"/>
     <root level="INFO">
         <appender-ref ref="${log.target}"/>
     </root>
