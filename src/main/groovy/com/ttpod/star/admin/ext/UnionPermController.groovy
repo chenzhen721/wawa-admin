@@ -336,7 +336,6 @@ class UnionPermController extends BaseController {
         obj.put("session", session)
         obj.put("data", data)
         obj.put('timestamp', tmp)
-        logger.info('==============>:' + obj)
         ops().save(obj)
     }
 
