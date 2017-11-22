@@ -23,6 +23,7 @@ import static com.ttpod.rest.common.doc.MongoKey.ALL_FIELD
 import static com.ttpod.rest.common.doc.MongoKey.SJ_DESC
 import static com.ttpod.rest.common.doc.MongoKey._id
 import static com.ttpod.rest.common.doc.MongoKey._id
+import static com.ttpod.rest.common.doc.MongoKey.timestamp
 import static com.ttpod.rest.common.util.WebUtils.$$
 
 @Rest
@@ -327,14 +328,15 @@ class UnionPermController extends BaseController {
 
     private void operation(String type, Object data, Map session) {
 
-        BasicDBObject obj = new BasicDBObject();
-        Long tmp = System.currentTimeMillis();
-        obj.put(_id, tmp);
+        //BasicDBObject obj = new BasicDBObject();
+        Long tmp = System.currentTimeMillis()
+        def obj = $$(_id: tmp, type: type, session: session, data: data, timestamp: tmp)
+        /*obj.put(_id, tmp);
         obj.put("type", type);
         obj.put("session", session);
         obj.put("data", data);
-        obj.put(timestamp, tmp);
-        adminMongo.getCollection(LOG_COLL_NAME).save(obj);
+        obj.put(timestamp, tmp);*/
+        adminMongo.getCollection(LOG_COLL_NAME).save(obj)
     }
 
 }
