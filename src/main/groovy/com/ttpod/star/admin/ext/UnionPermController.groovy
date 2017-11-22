@@ -23,7 +23,6 @@ import static com.ttpod.rest.common.doc.MongoKey.ALL_FIELD
 import static com.ttpod.rest.common.doc.MongoKey.SJ_DESC
 import static com.ttpod.rest.common.doc.MongoKey._id
 import static com.ttpod.rest.common.doc.MongoKey._id
-import static com.ttpod.rest.common.doc.MongoKey.timestamp
 import static com.ttpod.rest.common.util.WebUtils.$$
 
 @Rest
@@ -326,16 +325,16 @@ class UnionPermController extends BaseController {
 
     private static final String LOG_COLL_NAME = "ops"
 
-    private void operation(String type, Map data, Map session) {
+    private void operation(String type, Object data, Map session) {
 
-        //BasicDBObject obj = new BasicDBObject();
+        BasicDBObject obj = new BasicDBObject()
         Long tmp = System.currentTimeMillis()
-        def obj = $$(_id: tmp, type: type, session: session, data: data, timestamp: tmp)
-        /*obj.put(_id, tmp);
-        obj.put("type", type);
-        obj.put("session", session);
-        obj.put("data", data);
-        obj.put(timestamp, tmp);*/
+        obj.put(_id, tmp)
+        obj.put("type", type)
+        obj.put("session", session)
+        obj.put("data", data)
+        obj.put(timestamp, tmp)
+        logger.info('==============>:' + obj)
         adminMongo.getCollection(LOG_COLL_NAME).save(obj)
     }
 
