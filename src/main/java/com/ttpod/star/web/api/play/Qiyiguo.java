@@ -1,0 +1,317 @@
+package com.ttpod.star.web.api.play;
+
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.ttpod.rest.AppProperties;
+import com.ttpod.rest.common.util.MsgDigestUtil;
+import com.ttpod.star.common.util.HttpClientUtils;
+import com.ttpod.star.common.util.HttpsClientUtils;
+import com.ttpod.star.common.util.JSONUtil;
+import com.ttpod.star.web.api.play.dto.QiygAssignDTO;
+import com.ttpod.star.web.api.play.dto.QiygOperateResultDTO;
+import com.ttpod.star.web.api.play.dto.QiygRespDTO;
+import com.ttpod.star.web.api.play.dto.QiygResultDTO;
+import com.ttpod.star.web.api.play.dto.QiygRoomDTO;
+import com.ttpod.star.web.api.play.model.OperateType;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
+
+/**
+ * 奇异果 抓娃娃
+ * Created by Administrator on 2017/11/10.
+ */
+public abstract class Qiyiguo {
+
+    static final Logger logger = LoggerFactory.getLogger(Qiyiguo.class);
+
+    public static final boolean isTest  = AppProperties.get("api.domain").contains("test-");
+
+    public static final String HOST = isTest ? "http://testdoll.artqiyi.com" : "http://doll.artqiyi.com";
+    public static final String PLATFORM = "meme";
+    public static final String APP_ID = isTest ? "984069e5f8edd8ca4411e81863371f16" : "984069e5f8edd8ca4411e81863371f16";
+    public static final List<String> KEY_WITHOUT_SIGN = new ArrayList<String>(){{this.add("sign"); this.add("app"); this.add("act");}};
+    public static final MsgDigestUtil md5 = MsgDigestUtil.MD5;
+    public static final TypeFactory typeFactory = TypeFactory.defaultInstance();
+
+    public static String creatSign(SortedMap<String, Object> params) {
+        StringBuffer sb = new StringBuffer();
+        for (Map.Entry<String, Object> entry : params.entrySet()) {
+            String k = entry.getKey();
+            if (KEY_WITHOUT_SIGN.contains(k) || entry.getValue() == null) {
+                continue;
+            }
+            String v = String.valueOf(entry.getValue());
+            sb.append(k).append(v);
+        }
+        return md5.digest2HEX(md5.digest2HEX(sb.toString()) + APP_ID);
+    }
+
+    /**
+     * 1.娃娃机列表
+     */
+    public static List<QiygRoomDTO> room_list() {
+        String url = HOST + "/api/index.php";
+        SortedMap<String, Object> params = new TreeMap<>();
+        params.put("app", "doll");
+        params.put("act", "doll_list");
+        params.put("platform", PLATFORM);
+        params.put("ts", System.currentTimeMillis());
+        String value = doGet(url, params);
+        return toBean(value, List.class, QiygRoomDTO.class);
+    }
+
+    /**
+     *  2.娃娃机详情
+     */
+    public static QiygRoomDTO room_detail(String roomId) {
+        if (roomId == null) {
+            return null;
+        }
+        String url = HOST + "/api/index.php";
+        SortedMap<String, Object> params = new TreeMap<>();
+        params.put("app", "doll");
+        params.put("act", "get_device_status");
+        params.put("platform", PLATFORM);
+        params.put("device_id", roomId);
+        params.put("ts", System.currentTimeMillis());
+        String value = doGet(url, params);
+        return toBean(value, QiygRoomDTO.class);
+    }
+
+    /**
+     * 3.申请分配娃娃机
+     */
+    public static QiygAssignDTO assign(String roomId, Integer userId) {
+        if (roomId == null || userId == null) {
+            return null;
+        }
+        String url = HOST + "/api/index.php";
+        SortedMap<String, Object> params = new TreeMap<>();
+        params.put("app", "doll");
+        params.put("act", "assign");
+        params.put("platform", PLATFORM);
+        params.put("device_id", roomId);
+        params.put("user_id", userId);
+        params.put("ts", System.currentTimeMillis());
+        String value = doGet(url, params);
+        return toBean(value, QiygAssignDTO.class);
+    }
+
+    /**
+     * 4.娃娃机操控接口
+     */
+    public static QiygRespDTO operate(OperateType type, String roomId, Integer userId) {
+        if (roomId == null || userId == null) {
+            return null;
+        }
+        String url = HOST + "/api/index.php";
+        SortedMap<String, Object> params = new TreeMap<>();
+        params.put("app", "doll");
+        params.put("act", "operate");
+        params.put("platform", PLATFORM);
+        params.put("device_id", roomId);
+        params.put("user_id", userId);
+        params.put("action", type.ordinal());
+        params.put("ts", System.currentTimeMillis());
+        String value = doGet(url, params);
+        return respBean(value, QiygRespDTO.class);
+    }
+
+    /**
+     * 5.最新用户抓取结果
+     */
+    public static QiygResultDTO recentResult(String roomId, Integer userId) {
+        if (roomId == null || userId == null) {
+            return null;
+        }
+        String url = HOST + "/api/index.php";
+        SortedMap<String, Object> params = new TreeMap<>();
+        params.put("app", "buyer_order");
+        params.put("act", "get_doll_result");
+        params.put("platform", PLATFORM);
+        params.put("device_id", roomId);
+        params.put("user_id", userId);
+        params.put("ts", System.currentTimeMillis());
+        String value = doGet(url, params);
+        return toBean(value, QiygResultDTO.class);
+    }
+
+    /**
+     * 6.查询操作结果
+     */
+    public static QiygOperateResultDTO operateResult(String logId) {
+        if (logId == null) {
+            return null;
+        }
+        String url = HOST + "/api/index.php";
+        SortedMap<String, Object> params = new TreeMap<>();
+        params.put("app", "doll");
+        params.put("act", "operate_result");
+        params.put("platform", PLATFORM);
+        params.put("log_id", logId);
+        params.put("ts", System.currentTimeMillis());
+        String value = doGet(url, params);
+        return toBean(value, QiygOperateResultDTO.class);
+    }
+
+    /**
+     * 7.	创建订单接口 //todo resp
+     */
+    public static QiygOperateResultDTO createOrder(String device_id, Integer user_id, String username, String consignee, String address, String mobile) {
+        if (device_id == null) {
+            return null;
+        }
+        String url = HOST + "/api/index.php";
+        SortedMap<String, Object> params = new TreeMap<>();
+        params.put("app", "buyer_order");
+        params.put("act", "create_order");
+        params.put("platform", PLATFORM);
+        params.put("user_id", user_id);
+        params.put("username", username);
+        params.put("consignee", consignee);
+        params.put("address", address);
+        params.put("mobile", mobile);
+        params.put("device_id", device_id);
+        params.put("ts", System.currentTimeMillis());
+        String value = doGet(url, params);
+        return toBean(value, QiygOperateResultDTO.class);
+    }
+
+    /**
+     * 9.订单列表 //TODO resp
+     */
+    public static QiygOperateResultDTO orderList(Integer userId, Integer page) {
+        if (userId == null) {
+            return null;
+        }
+        String url = HOST + "/api/index.php";
+        SortedMap<String, Object> params = new TreeMap<>();
+        params.put("app", "buyer_order");
+        params.put("act", "order_list");
+        params.put("platform", PLATFORM);
+        params.put("user_id", userId);
+        params.put("page", page);
+        params.put("ts", System.currentTimeMillis());
+        String value = doGet(url, params);
+        return toBean(value, QiygOperateResultDTO.class);
+    }
+
+    /**
+     * 概率调整， 范围1-888
+     * @param device_id
+     * @param winning_probability
+     * @return
+     */
+    public static QiygRespDTO winning_rate(String device_id, Integer winning_probability) {
+        String url = HOST + "/api/index.php";
+        SortedMap<String, Object> params = new TreeMap<>();
+        params.put("app", "doll");
+        params.put("act", "set_winning_probability");
+        params.put("platform", PLATFORM);
+        params.put("device_id", device_id);
+        params.put("winning_probability", winning_probability);
+        params.put("ts", System.currentTimeMillis());
+        String value = doGet(url, params);
+        return respBean(value, QiygRespDTO.class);
+    }
+
+    /**
+     * 游戏时间调整
+     * @param device_id 设备ID
+     * @param playtime 游戏时间 5~60
+     * @return
+     */
+    public static QiygRespDTO playtime(String device_id, Integer playtime) {
+        String url = HOST + "/api/index.php";
+        SortedMap<String, Object> params = new TreeMap<>();
+        params.put("app", "doll");
+        params.put("act", "set_playtime");
+        params.put("platform", PLATFORM);
+        params.put("device_id", device_id);
+        params.put("playtime", playtime);
+        params.put("ts", System.currentTimeMillis());
+        String value = doGet(url, params);
+        return respBean(value, QiygRespDTO.class);
+    }
+
+    private static <T> T respBean(String value, Class<T> parametrized) {
+        if (StringUtils.isBlank(value) ) {
+            return null;
+        }
+        try {
+            return JSONUtil.jsonToBean(value, parametrized);
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("translate json to bean error: " + value);
+        }
+        return null;
+    }
+
+    private static <T> T toBean(String value, Class<?>... parameterClasses) {
+        if (StringUtils.isBlank(value) || parameterClasses == null || parameterClasses.length <= 0) {
+            return null;
+        }
+        try {
+            JavaType paramType = createJavaType(parameterClasses);
+            JavaType javaType = typeFactory.constructParametricType(QiygRespDTO.class, paramType);
+            QiygRespDTO<T> result = JSONUtil.jsonToBean(value, javaType);
+            if (result != null && result.getDone() && result.getRetval() != null) {
+                return result.getRetval();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("translate json to bean error: " + value);
+        }
+        return null;
+    }
+
+    private static JavaType createJavaType(Class<?>... param) {
+        if (param.length == 1) {
+            return typeFactory.uncheckedSimpleType(param[0]);
+        }else if (param.length == 2) {
+            if (param[0].equals(List.class)) {
+                return typeFactory.constructCollectionType(List.class, param[1]);
+            } else {
+                logger.error("unknown param type");
+                return null;
+            }
+        }
+        return null;
+    }
+
+    private static String doGet(String url, SortedMap<String, Object> params) {
+        String value = null;
+        url = url + "?" +buildParam(params);
+        try {
+            if (url.startsWith("http://")) {
+                value = HttpClientUtils.get(url, null);
+            } else if (url.startsWith("https://")) {
+                value = HttpsClientUtils.get(url, null);
+            }
+        } catch (Exception e) {
+            logger.error("Get " + url + " error.", e);
+        }
+        return value;
+    }
+
+    private static String buildParam(SortedMap<String, Object> params) {
+        String sign = creatSign(params);
+        StringBuffer sb = new StringBuffer();
+        for (Map.Entry<String, Object> entry : params.entrySet()) {
+            String k = entry.getKey();
+            String v = String.valueOf(entry.getValue());
+            sb.append(k).append("=").append(v).append("&");
+        }
+        sb.append("sign=").append(sign);
+        return sb.toString();
+    }
+
+}

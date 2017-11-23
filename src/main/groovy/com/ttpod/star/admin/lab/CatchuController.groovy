@@ -10,7 +10,8 @@ import com.ttpod.rest.web.Crud
 import com.ttpod.star.admin.BaseController
 import com.ttpod.star.admin.Web
 import com.ttpod.star.common.util.HttpClientUtils
-import com.ttpod.star.common.util.HttpsClientUtils
+import com.ttpod.star.web.api.play.Qiyiguo
+import com.ttpod.star.web.api.play.dto.QiygRespDTO
 import groovy.json.JsonSlurper
 import org.apache.commons.lang.StringUtils
 import org.apache.http.HttpResponse
@@ -25,6 +26,7 @@ import java.nio.charset.Charset
 
 import static com.ttpod.rest.common.doc.MongoKey.ALL_FIELD
 import static com.ttpod.rest.common.doc.MongoKey.SJ_DESC
+import static com.ttpod.rest.common.doc.MongoKey._id
 import static com.ttpod.rest.common.util.WebUtils.$$
 
 /**
@@ -59,15 +61,19 @@ class CatchuController extends BaseController {
 
     @Override
     DBCollection table() {
-        return labMongo.getCollection('catch_room')
+        return catchMongo.getCollection('catch_room')
     }
 
     DBCollection toys() {
-        return labMongo.getCollection('catch_toy')
+        return catchMongo.getCollection('catch_toy')
     }
 
     DBCollection catch_records() {
-        return labMongo.getCollection('catch_record')
+        return catchMongo.getCollection('catch_record')
+    }
+
+    DBCollection apply_post_logs() {
+        return catchMongo.getCollection('apply_post_logs')
     }
 
     @Resource
@@ -82,7 +88,7 @@ class CatchuController extends BaseController {
         def query = Web.fillTimeBetween(req)
         intQuery(query, req, "_id")//房间ID
         stringQuery(query, req, "fid")//对应娃娃机ID
-        Crud.list(req, table(), query.get(), ALL_FIELD, $$(type: -1, timestamp: -1))
+        Crud.list(req, table(), query.get(), ALL_FIELD, $$(order: 1, type: -1, timestamp: -1))
     }
 
     /**
@@ -91,13 +97,15 @@ class CatchuController extends BaseController {
      * @return
      */
     def add(HttpServletRequest req) {
-        def _id = ServletRequestUtils.getIntParameter(req, '_id')
-        def fid = ServletRequestUtils.getStringParameter(req, 'fid')
+        def _id = seqKGS.nextId()
+        def fid = ServletRequestUtils.getStringParameter(req, 'fid', '')
         //一个远程房间只能创建一次
-        def room = table().findOne($$(fid: fid))
-        if (room != null) {
-            return [code: 0]
-        }
+        /*if (StringUtils.isNotBlank(fid)) {
+            def room = table().findOne($$(fid: fid))
+            if (room != null) {
+                return [code: 0]
+            }
+        }*/
         def toy_id = ServletRequestUtils.getIntParameter(req, 'toy_id')
         def toyItem = toys().findOne(toy_id)
         if (toyItem == null) {
@@ -109,30 +117,38 @@ class CatchuController extends BaseController {
         def pic = ServletRequestUtils.getStringParameter(req, 'pic') //房间图片
         def price = ServletRequestUtils.getIntParameter(req, 'price')
         def desc = ServletRequestUtils.getStringParameter(req, 'desc', '')
-        def partner = ServletRequestUtils.getIntParameter(req, 'partner', 0) //合作商户 0 catchu 1 奇异果
+        def partner = ServletRequestUtils.getIntParameter(req, 'partner', 1) //合作商户 0 catchu 1 奇异果
+        def order = ServletRequestUtils.getIntParameter(req, 'order', 0) //合作商户 0 catchu 1 奇异果
+        def winrate = ServletRequestUtils.getIntParameter(req, 'winrate', 25) //25中1
+        def playtime = ServletRequestUtils.getIntParameter(req, 'playtime', 40) //40s
         def timestamp = new Date().getTime()
-        if (StringUtils.isBlank(name) || fid == null || type == null || StringUtils.isBlank(pic) || price == null || toy_id == null) {
+
+        if (StringUtils.isBlank(name) || type == null || StringUtils.isBlank(pic) || price == null || toy_id == null) {
             return [code: 0]
         }
-        if (partner == 0) {
-            if (toy(toy_id) == null) {
-                return [code: 0]
-            }
+        def map = [_id: _id, toy_id: toy_id, name: name, type: type, partner: partner, online: online, pic: pic, price: price, desc: desc, order: order, timestamp: timestamp]
+        if (fid != null) {
+            map.put('fid', fid)
         }
-        if (partner == 0) {
-            def result = room_detail(fid)
-            if (!result) {
-                return [code: 0]
+        if (StringUtils.isNotBlank(fid)) {
+            if (winrate < 1|| winrate > 888) {
+                return [code: 30406]
             }
-        }
-        def map = [_id: _id, fid: fid, toy_id: toy_id, name: name, type: type, partner: partner, online: online, pic: pic, price: price, desc: desc, timestamp: timestamp]
-        if (table().count($$(fid: fid)) > 0) {
-            return [code: 0]
-        }
-        if (partner == 0) {
-            if (bind_toy(fid, toyItem['tid'] as Integer) == null) {
-                return [code: 0]
+            QiygRespDTO respDTO = Qiyiguo.winning_rate(fid, winrate)
+            if (respDTO == null || !respDTO.getDone()) {
+                logger.error('change winning rate fail.' + fid + ' to: ' + winrate)
+                return [code: 30404]
             }
+            map.put('winrate', winrate)
+            if (playtime < 5|| playtime > 60) {
+                return [code: 30407]
+            }
+            respDTO = Qiyiguo.playtime(fid, playtime)
+            if (respDTO == null || !respDTO.getDone()) {
+                logger.error('change playtime fail.' + fid + ' to: ' + playtime)
+                return [code: 30405]
+            }
+            map.put('playtime', playtime)
         }
         if(table().save(new BasicDBObject(map)).getN() == 1){
             Crud.opLog(table().getName() + "_add", map)
@@ -152,12 +168,16 @@ class CatchuController extends BaseController {
         }
         def room = table().findOne(_id)
         if (room == null) {
-            return [code: 0]
+            return [code: 30402]
         }
         def map = [:]
         def name = ServletRequestUtils.getStringParameter(req, 'name')
         if (StringUtils.isNotBlank(name)) {
             map.put('name', name)
+        }
+        def fid = ServletRequestUtils.getStringParameter(req, 'fid')
+        if (StringUtils.isNotBlank(fid)) {
+            map.put('fid', fid)
         }
         def type = ServletRequestUtils.getBooleanParameter(req, 'type') //是否备货中
         if (type != null) {
@@ -184,19 +204,58 @@ class CatchuController extends BaseController {
             map.put('partner', partner)
         }
         def toyId = ServletRequestUtils.getIntParameter(req, 'toy_id')
+        def order = ServletRequestUtils.getIntParameter(req, 'order')
+        if (order != null) {
+            map.put('order', order)
+        }
         if (toyId != null && toyId != (room['toy_id'] as Integer)) {
             map.put('toy_id', toyId)
             def toyItem = toys().findOne(toyId)
             if (toyItem == null) {
-                return [code: 0]
-            }
-            if (partner == 0) {
-                if (bind_toy(room['fid'] as String, toyItem['tid'] as Integer) == null) {
-                    return [code: 0]
-                }
+                return [code: 30401]
             }
         }
-        if(table().update($$(_id: _id), new BasicDBObject($set: map)).getN() == 1){
+        def rec = table().findOne($$(_id: _id))
+        if (rec['online'] == Boolean.TRUE && (online == null || online == Boolean.TRUE)) {
+            def winrate = ServletRequestUtils.getIntParameter(req, 'winrate', 25) //25中1
+            def playtime = ServletRequestUtils.getIntParameter(req, 'playtime', 40) //40s
+
+            if (rec == null) {
+                return [code: 30400]
+            }
+
+            logger.info('rec result: ' + rec.toString())
+            logger.info('winrate result: ' + (rec['fid'] != null && winrate != null && winrate != rec['winrate']))
+            logger.info('fid result: ' + (rec['fid'] != null))
+            logger.info('winrate: ' + winrate)
+            logger.info('rec result: ' + (winrate != rec['winrate']))
+            if (rec['fid'] != null && winrate != rec['winrate']) {
+                def device_id = rec['fid'] as String
+                if (winrate < 1 || winrate > 888) {
+                    return [code: 30406]
+                }
+                QiygRespDTO respDTO = Qiyiguo.winning_rate(device_id, winrate)
+                logger.info('respdto: ' + respDTO)
+                if (respDTO == null || !respDTO.getDone()) {
+                    logger.error('change winning rate fail.' + device_id + ' to: ' + winrate)
+                    return [code: 30404]
+                }
+                map.put('winrate', winrate)
+            }
+            if (rec['fid'] != null && playtime != rec['playtime']) {
+                def device_id = rec['fid'] as String
+                if (playtime < 5 || playtime > 60) {
+                    return [code: 30407]
+                }
+                def respDTO = Qiyiguo.playtime(device_id, playtime)
+                if (respDTO == null || !respDTO.getDone()) {
+                    logger.error('change playtime fail.' + device_id + ' to: ' + playtime)
+                    return [code: 30405]
+                }
+                map.put('playtime', playtime)
+            }
+        }
+        if(table().update($$(_id: _id), $$($set: map)).getN() == 1) {
             Crud.opLog(table().getName() + "_edit", map)
         }
         return IMessageCode.OK
@@ -221,11 +280,14 @@ class CatchuController extends BaseController {
         def name = ServletRequestUtils.getStringParameter(req, 'name')
         def type = ServletRequestUtils.getBooleanParameter(req, 'type', true) //是否可用
         def pic = ServletRequestUtils.getStringParameter(req, 'pic') //图片
+        def head_pic = ServletRequestUtils.getStringParameter(req, 'head_pic') //缩略图
         def desc = ServletRequestUtils.getStringParameter(req, 'desc', '') //描述
+        def tid = ServletRequestUtils.getStringParameter(req, 'tid') //绑定游戏
         def timestamp = new Date().getTime()
-        def props = [name: name, url: pic, price: '1', desc: desc]
-        def toy = add_toy(props)
-        def map = [_id: _id, tid: toy['toy']['id'], name: name, type: type, pic: pic, desc: desc, timestamp: timestamp]
+        if (toys().count($$(_id: _id)) > 0) {
+            return [code: 0]
+        }
+        def map = [_id: _id, name: name, type: type, tid: tid, pic: pic, head_pic: head_pic, desc: desc, timestamp: timestamp]
         if(toys().save(new BasicDBObject(map)).getN() == 1){
             Crud.opLog(toys().getName() + "_add", map)
             return [code: 1]
@@ -247,28 +309,29 @@ class CatchuController extends BaseController {
             return toy
         }
         def map = [:]
-        def props = [price:'1']
         def name = ServletRequestUtils.getStringParameter(req, 'name')
         if (StringUtils.isNotBlank(name)) {
             map.put('name', name)
-            props.put('name', name)
         }
         def type = ServletRequestUtils.getBooleanParameter(req, 'type') //是否开放
         if (type != null) {
             map.put('type', type as String)
         }
         def pic = ServletRequestUtils.getStringParameter(req, 'pic') //房间图片
+        def head_pic = ServletRequestUtils.getStringParameter(req, 'head_pic') //缩略图
         if (StringUtils.isNotBlank(pic)) {
             map.put('pic', pic)
-            props.put('url', pic)
+        }
+        if (StringUtils.isNotBlank(head_pic)) {
+            map.put('head_pic', head_pic)
         }
         def desc = ServletRequestUtils.getStringParameter(req, 'desc')
         if (StringUtils.isNotBlank(desc)) {
             map.put('desc', desc)
-            props.put('desc', desc)
         }
-        if (edit_toy(toy['tid'] as Integer, props) == null) {
-            return [code: 0]
+        def tid = ServletRequestUtils.getStringParameter(req, 'tid')
+        if (StringUtils.isNotBlank(tid)) {
+            map.put('tid', tid)
         }
         if(toys().update($$(_id: _id), new BasicDBObject($set: map)).getN() == 1){
             Crud.opLog(toys().getName() + "_edit", map)
@@ -284,7 +347,7 @@ class CatchuController extends BaseController {
      * @param roomId
      * @return
      */
-    static Map room_detail(String roomId) {
+    /*static Map room_detail(String roomId) {
         if (roomId == null) {
             return null
         }
@@ -304,14 +367,14 @@ class CatchuController extends BaseController {
             logger.error("Get ${url} error.", e)
         }
         return null
-    }
+    }*/
 
     /**
      * 商品列表
      * @param req
      * @return
      */
-    def toys_list(HttpServletRequest req) {
+    /*def toys_list(HttpServletRequest req) {
         def page = Web.getPage(req)
         def size = Web.getPageSize(req)
         def url = "${HOST}/open_api/${VERSION}/toys?app_id=${APP_ID}&limit=${size}&page=${page}".toString()
@@ -326,14 +389,14 @@ class CatchuController extends BaseController {
         }
         def result = jsonSlurper.parseText(value)
         return [code: 1, data: result]
-    }
+    }*/
 
     /**
      * 商品详情
      * @param req
      * @return
      */
-    Map toy(Integer toyId) {
+    /*Map toy(Integer toyId) {
         def url = "${HOST}/open_api/${VERSION}/toys/${toyId}?app_id=${APP_ID}&toy_id=${toyId}".toString()
         String value = null
         if (url.startsWith('http://')) {
@@ -345,7 +408,7 @@ class CatchuController extends BaseController {
             return null
         }
         return jsonSlurper.parseText(value) as Map
-    }
+    }*/
 
     /**
      * 修改房间信息
@@ -378,7 +441,7 @@ class CatchuController extends BaseController {
      * 创建商品
      * @param req
      */
-    def add_toy(Map props) {
+    /*def add_toy(Map props) {
         def url = "${HOST}/open_api/${VERSION}/toys".toString()
         def params = [app_id: APP_ID] as Map
         if (props['name'] != null) {
@@ -403,13 +466,13 @@ class CatchuController extends BaseController {
             return null
         }
         return jsonSlurper.parseText(value) as Map
-    }
+    }*/
 
     /**
      * 修改商品
      * @param req
      */
-    def edit_toy(Integer toyId, Map props) {
+    /*def edit_toy(Integer toyId, Map props) {
         def url = "${HOST}/open_api/${VERSION}/toys/${toyId}".toString()
         def params = [app_id: APP_ID] as Map
         if (props['name'] != null) {
@@ -434,14 +497,14 @@ class CatchuController extends BaseController {
             return null
         }
         return jsonSlurper.parseText(value) as Map
-    }
+    }*/
 
     /**
      * 绑定商品
      * @param req
      * @return
      */
-    def bind_toy(String roomId, Integer toyId) {
+    /*def bind_toy(String roomId, Integer toyId) {
         def url = "${HOST}/open_api/${VERSION}/rooms/${roomId}/bind/${toyId}".toString()
         def params = [app_id: APP_ID, room_id: roomId as String, toy_id: toyId as String] as Map
         String value = null
@@ -454,7 +517,7 @@ class CatchuController extends BaseController {
             return null
         }
         return jsonSlurper.parseText(value) as Map
-    }
+    }*/
 
     /**
      * 关闭服务器
@@ -529,8 +592,7 @@ class CatchuController extends BaseController {
      * @return
      */
     def post_list(HttpServletRequest req) {
-        def query = $$('pack_id', [$exists: true])
-        query.putAll(Web.fillTimeBetween(req).get())
+        def query = Web.fillTimeBetween(req).get()
         def user_id = ServletRequestUtils.getIntParameter(req, 'user_id')
         if (user_id != null) {
             query.put('user_id', user_id)
@@ -539,9 +601,8 @@ class CatchuController extends BaseController {
         if (room_id != null) {
             query.put('room_id', room_id)
         }
-        def sort = $$(apply_time: 1, post_type: 1, 'timestamp': -1)
-        def field = $$(_id: 1, user_id: 1, room_id: 1, toy: 1, timestamp: 1, pack_id: 1, post_type: 1, address: 1, apply_time: 1)
-        Crud.list(req, catch_records(), query, field, sort)
+        def sort = $$(post_type: 1, 'timestamp': -1)
+        Crud.list(req, apply_post_logs(), query, ALL_FIELD, sort)
     }
 
     /**
@@ -559,6 +620,11 @@ class CatchuController extends BaseController {
         if (packIdList == null || packIdList.size() <= 0) {
             return Web.missParam()
         }
+        // todo 需要调用奇异果下单接口
+        /*packIdList.each {String _id ->
+            apply_post_logs().findOne($$(_id: _id))
+        }*/
+
         //更新成功
         if (1 <= catch_records().update($$(pack_id: [$in: packIdList], post_type: 1), $$($set: [post_type: type ? 2 : 4]), false, true, writeConcern).getN()) {
             def list = catch_records().find($$(pack_id: [$in: packIdList]), $$(toy: 1, address: 1)).sort($$(pack_id: 1, timestamp: -1)).toArray()

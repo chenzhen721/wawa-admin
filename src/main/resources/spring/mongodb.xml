@@ -50,7 +50,7 @@
     <mongo:db-factory dbname="game_log" id="gameLogFactory" mongo-ref="mongo"/>
     <mongo:db-factory dbname="shop" id="shopFactory" mongo-ref="mongo"/>
     <mongo:db-factory dbname="xy_user" id="userFactory" mongo-ref="mongo"/>
-    <mongo:db-factory dbname="xy_lab" id="labFactory" mongo-ref="mongo"/>
+    <mongo:db-factory dbname="xy_catch" id="catchFactory" mongo-ref="mongo"/>
 
     <!--<mongo:db-factory dbname="xy" id="userFactory" mongo-ref="mongo" write-concern="REPLICA_ACKNOWLEDGED" />-->
 
@@ -103,8 +103,8 @@
     <bean id="userMongo" class="org.springframework.data.mongodb.core.MongoTemplate">
         <constructor-arg ref="userFactory"/>
     </bean>
-    <bean id="labMongo" class="org.springframework.data.mongodb.core.MongoTemplate">
-        <constructor-arg ref="labFactory"/>
+    <bean id="catchMongo" class="org.springframework.data.mongodb.core.MongoTemplate">
+        <constructor-arg ref="catchFactory"/>
     </bean>
 
 </beans>
