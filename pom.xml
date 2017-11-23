@@ -42,7 +42,6 @@
         <user.domain>http://user.17laihou.com/</user.domain>
         <im.domain>http://im.17laihou.com:6070</im.domain>
         <redis.port>6379</redis.port>
-        <mongo.port>20000</mongo.port>
 
         <aspectj-scope>compile</aspectj-scope>
         <templateLoaderPath>file://data/website/www.2339.com/current/admin-view</templateLoaderPath>
@@ -56,23 +55,22 @@
             <id>testLocal</id>
             <properties>
 
-                <redis.host>192.168.31.246</redis.host>
+                <redis.host>192.168.2.27</redis.host>
                 <redis.mem.host>${redis.host}</redis.mem.host>
                 <redis.mem.port>6379</redis.mem.port>
                 <redis.chat.host>${redis.host}</redis.chat.host>
                 <redis.chat.port>6379</redis.chat.port>
                 <redis.user.host>${redis.host}</redis.user.host>
                 <redis.user.port>6379</redis.user.port>
-                <mongo.uri>192.168.31.231:20000,192.168.31.236:20000,192.168.31.231:20001</mongo.uri>
-                <mongo.cost.write>REPLICA_ACKNOWLEDGED</mongo.cost.write>
+                <mongo.uri>192.168.2.27:10000</mongo.uri>
+                <mongo.cost.write>ACKNOWLEDGED</mongo.cost.write>
                 <mongo_history.uri>${redis.host}:27017</mongo_history.uri>
                 <pic.folder>c:/upload/</pic.folder>
                 <static.folder>c:/upload/static/</static.folder>
                 <groovy-scope>provided</groovy-scope>
-                <!--<api.domain>http://test.api.ttxiu.com/</api.domain>-->
-                <api.domain>http://localhost:8080/</api.domain>
-                <user.domain>http://localhost:8082/</user.domain>
-                <im.domain>http://test-aiim.memeyule.com:6070</im.domain>
+                <api.domain>http://test-api.17laihou.com/</api.domain>
+                <user.domain>http://test-user.17laihou.com/</user.domain>
+                <im.domain>http://test-im.17laihou.com:6070</im.domain>
             </properties>
 
             <activation>
@@ -101,8 +99,8 @@
                 <redis.user.host>${redis.host}</redis.user.host>
                 <redis.user.port>6380</redis.user.port>
                 <!-- replset-->
-                <mongo.uri>192.168.31.231:20000,192.168.31.236:20000,192.168.31.231:20001</mongo.uri>
-                <mongo.cost.write>REPLICA_ACKNOWLEDGED</mongo.cost.write>
+                <mongo.uri>192.168.2.27:10000</mongo.uri>
+                <mongo.cost.write>ACKNOWLEDGED</mongo.cost.write>
                 <mongo_history.uri>${mongo.uri}</mongo_history.uri>
                 <pic.folder>/empty/upload/</pic.folder>
                 <static.folder>/empty/static/</static.folder>
@@ -111,11 +109,10 @@
                 <groovy-scope>provided</groovy-scope>
                 <aspectj-scope>provided</aspectj-scope>
                 <pic.domain>http://test-aiimg.sumeme.com/</pic.domain>
-                <api.domain>http://test-aiapi.memeyule.com/</api.domain>
-                <user.domain>http://test-aiuser.memeyule.com/</user.domain>
-                <im.domain>http://test-aiim.memeyule.com:6070</im.domain>
-                <ws.domain>http://test-aiws.memeyule.com:6010</ws.domain>
-                <aigd.domain>http://test-aigd.memeyule.com:6050</aigd.domain>
+                <api.domain>http://test-api.17laihou.com/</api.domain>
+                <user.domain>http://test-user.17laihou.com/</user.domain>
+                <im.domain>http://test-im.17laihou.com:6070</im.domain>
+                <ws.domain>http://test-ws.17laihou.com:7010</ws.domain>
                 <dev>test</dev>
             </properties>
         </profile>
