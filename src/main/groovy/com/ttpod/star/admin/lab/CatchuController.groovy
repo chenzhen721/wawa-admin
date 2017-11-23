@@ -276,19 +276,18 @@ class CatchuController extends BaseController {
      * @param req
      */
     def toy_add(HttpServletRequest req) {
-        def _id = ServletRequestUtils.getIntParameter(req, '_id')
+        def _id = seqKGS.nextId()
         def name = ServletRequestUtils.getStringParameter(req, 'name')
         def type = ServletRequestUtils.getBooleanParameter(req, 'type', true) //是否可用
         def pic = ServletRequestUtils.getStringParameter(req, 'pic') //图片
         def head_pic = ServletRequestUtils.getStringParameter(req, 'head_pic') //缩略图
         def desc = ServletRequestUtils.getStringParameter(req, 'desc', '') //描述
+        def tid = ServletRequestUtils.getStringParameter(req, 'tid') //绑定游戏
         def timestamp = new Date().getTime()
-        //def props = [name: name, url: pic, head_pic: head_pic, price: '1', desc: desc]
-        //def toy = add_toy(props)
         if (toys().count($$(_id: _id)) > 0) {
             return [code: 0]
         }
-        def map = [_id: _id, name: name, type: type, pic: pic, head_pic: head_pic, desc: desc, timestamp: timestamp]
+        def map = [_id: _id, name: name, type: type, tid: tid, pic: pic, head_pic: head_pic, desc: desc, timestamp: timestamp]
         if(toys().save(new BasicDBObject(map)).getN() == 1){
             Crud.opLog(toys().getName() + "_add", map)
             return [code: 1]
@@ -310,11 +309,9 @@ class CatchuController extends BaseController {
             return toy
         }
         def map = [:]
-        //def props = [price:'1']
         def name = ServletRequestUtils.getStringParameter(req, 'name')
         if (StringUtils.isNotBlank(name)) {
             map.put('name', name)
-            //props.put('name', name)
         }
         def type = ServletRequestUtils.getBooleanParameter(req, 'type') //是否开放
         if (type != null) {
@@ -324,20 +321,18 @@ class CatchuController extends BaseController {
         def head_pic = ServletRequestUtils.getStringParameter(req, 'head_pic') //缩略图
         if (StringUtils.isNotBlank(pic)) {
             map.put('pic', pic)
-            //props.put('url', pic)
         }
         if (StringUtils.isNotBlank(head_pic)) {
             map.put('head_pic', head_pic)
-            //props.put('url', pic)
         }
         def desc = ServletRequestUtils.getStringParameter(req, 'desc')
         if (StringUtils.isNotBlank(desc)) {
             map.put('desc', desc)
-            //props.put('desc', desc)
         }
-        /*if (edit_toy(toy['tid'] as Integer, props) == null) {
-            return [code: 0]
-        }*/
+        def tid = ServletRequestUtils.getStringParameter(req, 'tid')
+        if (StringUtils.isNotBlank(tid)) {
+            map.put('tid', tid)
+        }
         if(toys().update($$(_id: _id), new BasicDBObject($set: map)).getN() == 1){
             Crud.opLog(toys().getName() + "_edit", map)
             return [code: 1]
