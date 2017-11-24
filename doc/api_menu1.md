@@ -154,6 +154,7 @@ size|int|false||每页记录数
 字段名|类型|是否必须|取值|说明
 ---|---|---|---|---
 \_id|string|false||记录ID
+desc|string|false||说明
 
 * 返回
 ```json
@@ -240,6 +241,7 @@ size|int|false||每页记录数
 字段名|类型|是否必须|取值|说明
 ---|---|---|---|---
 ids|string|false||记录ID，多条记录以逗号分隔
+desc|string|false||描述信息
 
 * 返回
 ```json

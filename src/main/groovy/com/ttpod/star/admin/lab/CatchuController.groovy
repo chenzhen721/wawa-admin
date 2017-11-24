@@ -598,7 +598,7 @@ class CatchuController extends BaseController {
     def success_list(HttpServletRequest req) {
         def query = Web.fillTimeBetween(req).get()
         def _id = ServletRequestUtils.getStringParameter(req, '_id')
-        if (_id) {
+        if (_id != null) {
             query.put('_id', _id)
         }
         def user_id = ServletRequestUtils.getIntParameter(req, 'user_id')
@@ -610,7 +610,7 @@ class CatchuController extends BaseController {
             query.put('room_id', room_id)
         }
         def post_type = ServletRequestUtils.getIntParameter(req, 'post_type')
-        if (room_id != null) {
+        if (post_type != null) {
             query.put('post_type', post_type)
         }
         //客户端是否显示此记录，是否删除 true 删除 无字段或false正常
@@ -631,10 +631,11 @@ class CatchuController extends BaseController {
         if (_id == null) {
             return Web.missParam()
         }
+        def desc = ServletRequestUtils.getStringParameter(req, 'desc', '')//简述
         //如果逻辑删除这条记录，需要把对应的快递申请回退
         def post_log = apply_post_logs().findOne($$('toys.record_id': _id, is_delete: [$ne: true]))
         if (post_log != null) {
-            apply_post_logs().update($$(_id: post_log['_id']), $$($set: [is_delete: true, status: 2]))
+            apply_post_logs().update($$(_id: post_log['_id']), $$($set: [is_delete: true, status: 2, desc: desc]))
             def toys = post_log['toys'] as List
             if (toys != null && toys.size() > 0) {
                 toys.each { BasicDBObject toy ->
