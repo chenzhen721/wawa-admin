@@ -4,7 +4,7 @@
 ### 1.通知列表
 
 
-* API {GET|POST} http://test-aiadmin.memeyule.com/push/list.json
+* API {GET|POST} http://test-apiadmin.17laihou.com/push/list.json
 * 参数
 
 字段名|类型|是否必须|取值|说明
@@ -46,8 +46,8 @@ etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
 
 ### 2.通知添加/修改
 
-* API 添加 {GET|POST} http://test-aiadmin.memeyule.com/push/add.json  
-      修改 {GET|POST} http://test-aiadmin.memeyule.com/push/edit.json
+* API 添加 {GET|POST} http://test-apiadmin.17laihou.com/push/add.json  
+      修改 {GET|POST} http://test-apiadmin.17laihou.com/push/edit.json
 * 参数
 
 字段名|类型|是否必须|取值|说明
@@ -81,7 +81,7 @@ etime|String|false|yyyy-MM-dd HH: mm:ss|预期推送结束时间（暂不支持�
 
 ### 3.修改消息状态
 
-* API 修改 {GET|POST} http://test-aiadmin.memeyule.com/push/change_status.json
+* API 修改 {GET|POST} http://test-apiadmin.17laihou.com/push/change_status.json
 * 参数
 
 字段名|类型|是否必须|取值|说明
@@ -100,99 +100,174 @@ status|int|true||推送状态 1-已推送（立即推送） 2-已取消 不支�
 {"code": 0, "msg":"失败原因"}
 ```
 
-## 娃娃管理
-### 1.申请邮寄列表
+## 成功记录管理
+### 1.成功记录列表
 
-* API {GET|POST} http://test-aiadmin.memeyule.com/catchu/post_list.json
+* API {GET|POST} http://test-apiadmin.17laihou.com/catchu/success_list.json
 * 参数
 
 字段名|类型|是否必须|取值|说明
 ---|---|---|---|---
 stime|String|false|yyyy-MM-dd HH: mm:ss|创建时间开始
 etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
+\_id|string|false||记录ID
 user_id|int|false||用户ID
-room_id|int|false||用户ID
+room_id|int|false||房间ID
+post_type|int|false||正常情况下的邮寄状态：0,未处理, 1待发货
+is_delete|bool|false|true;false|是否删除 true 删除 无字段或false正常
+post_type|int|false||邮寄申请状态：0,未处理, 1待发货
 page|int|false||页码
 size|int|false||每页记录数
 
 * 返回
 ```json
 {
-    "all_page": 2,
+    "all_page": 138,
     "code": 1,
     "data": [
         {
-            "_id": "1310933_10000017_1508840521",
-            "user_id": 1209443, 
-            "room_id": 10000017,
-            "toy": {    //娃娃详情
-                "_id": 12871,
-                "name": "wawa1",
-                "pic": "http://img-album.b0.upaiyun.com/20059349/0724/bdf3bf1da3405725be763540d6601144.jpg",
-                "desc": "娃娃1的说明"
+            "_id": "test-play_1204425_1000110_1511525413864",
+            "room_id": 1000110,
+            "user_id": 1204425,
+            "toy": {
+                "_id": 12880,
+                "name": "穿衣Line",  //娃娃名称
+                "pic": "http://img.sumeme.com/55/7/1509072854647.jpg", //娃娃图片
+                "desc": "穿衣Line"
             },
-            "timestamp": 1508840526135,  //游戏开始时间
-            "pack_id": "1209443_1509593136599",
-            "post_type": 1, //申请类型  1 待发货 2 已发货 3 确认收货 4 已拒绝
-            "apply_time": 1508840526135, //申请时间
-            "address": {   //邮寄地址
-                "_id": "1209443_1509593108874",
-                "province": "北京",
-                "city": "东城区",
-                "region": "",
-                "address": "  bjhvbbh",
-                "name": "fcgvg",
-                "tel": "182585885",
-                "is_default": true
-            }
+            "post_type": 0, //0未申请, 1已申请
+            "coin": 2,  //投币数
+            "timestamp": 1511525413864, //申请时间
+            "replay_url": "${gif.domain}20171124/1000110/test-play_1204425_1000110_1511525413864.gif", //录像
+            "goods_id": 1711022117 //对方的商品id
         }
     ],
-    "count": 9
+    "count": 1
 }
 ```
 
-### 2.批量审批
+### 2.异常审核
 
-* API {GET|POST} http://test-aiadmin.memeyule.com/catchu/batch_pass.json
+* API {GET|POST} http://test-apiadmin.17laihou.com/catchu/success_record_refuse.json
 * 参数
 
 字段名|类型|是否必须|取值|说明
 ---|---|---|---|---
-_ids|string|true||记录ID，多个以逗号隔开
-type|bool|true||true通过审批， false拒绝
+\_id|string|false||记录ID
 
 * 返回
 ```json
 {
+    "code": 1
+}
+```
+
+## 订单管理
+### 1.订单列表
+
+* API {GET|POST} http://test-apiadmin.17laihou.com/catchu/post_list.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+stime|String|false|yyyy-MM-dd HH: mm:ss|创建时间开始
+etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
+\_id|string|false||记录ID
+user_id|int|false||用户ID
+room_id|int|false||房间ID
+status|int|false||发货通过这个状态来判断 审核状态：0, 未审核 1, 通过 2,未通过
+post_type|int|false||正常情况下的邮寄状态：0,未处理, 1待发货, 2已发货, 3已同步订单
+is_delete|bool|false|true;false|客户端是否显示此订单 是否删除 true 删除 无字段或false正常
+page|int|false||页码
+size|int|false||每页记录数
+
+* 返回
+```json
+{
+    "all_page": 11,
     "code": 1,
     "data": [
         {
-            "_id": "1310933_10000017_1508840526134",
-            "toy": {
-                "_id": 12871,
-                "name": "wawa1",
-                "pic": "http://img-album.b0.upaiyun.com/20059349/0724/bdf3bf1da3405725be763540d6601144.jpg",
-                "desc": "娃娃1的说明"
-            },
+            "_id": "1711232013251202883",
+            "user_id": 1202883,
+            "record_ids": [
+                "play_1202883_1000131_1511261574104"
+            ],
+            "toys": [
+                {
+                    "_id": 100021,
+                    "name": "假熊猫",
+                    "pic": "https://aiimg.sumeme.com/42/2/1510923819114.9寸假熊猫-详情.png",
+                    "head_pic": "https://aiimg.sumeme.com/16/0/1510989126928.9寸假熊猫-封面.png",
+                    "desc": "假熊猫",
+                    "goods_id": 1711207738,
+                    "room_id": 1000131,
+                    "record_id": "play_1202883_1000131_1511261574104"
+                }
+            ],
+            "timestamp": 1511439205038,
+            "post_type": 1,
             "address": {
-                "_id": "1209384_1509535729288",
+                "_id": "1202883_1511185941121",
                 "province": "北京",
-                "city": "东城区",
-                "region": "",
-                "address": "啊哈哈哈啊哈哈",
-                "name": "哈哈哈",
-                "tel": "185163474838",
+                "city": "崇文区",
+                "region": "陵川县",
+                "address": "哈哈",
+                "name": "周泽新",
+                "tel": "18516347584",
                 "is_default": true
+            },
+            "order_id": "7460",
+            "post_info": {
+                "shipping_no": "", //快递单号
+                "shipping_com": "", //快递公司号
+                "shipping_name": "", //快递公司名称
+                "shipping_memo": "", //说明
+                "shipping_time": "", //订单时间
+                "order_id": ""
             }
         }
-    ]
+    ],
+    "count": 1
+}
+```
+
+### 2.批量拒绝
+
+* API {GET|POST} http://test-apiadmin.17laihou.com/catchu/batch_refuse.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+ids|string|false||记录ID，多条记录以逗号分隔
+
+* 返回
+```json
+{
+    "code": 1
+}
+```
+
+### 2.批量通过
+
+* API {GET|POST} http://test-apiadmin.17laihou.com/catchu/batch_post.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+ids|string|false||记录ID，多条记录以逗号分隔
+
+* 返回
+```json
+{
+    "code": 1
 }
 ```
 
 ## 商城管理
 ### 1.商城列表
 
-* API {GET|POST} http://test-aiadmin.memeyule.com/shop/list.json
+* API {GET|POST} http://test-apiadmin.17laihou.com/shop/list.json
 * 参数
 
 字段名|类型|是否必须|取值|说明
@@ -229,8 +304,8 @@ size|int|false||每页记录数
 ```
 
 ### 2.商城增加/修改
-* API 添加 {GET|POST} http://test-aiadmin.memeyule.com/shop/add.json  
-      修改 {GET|POST} http://test-aiadmin.memeyule.com/shop/edit.json
+* API 添加 {GET|POST} http://test-apiadmin.17laihou.com/shop/add.json  
+      修改 {GET|POST} http://test-apiadmin.17laihou.com/shop/edit.json
 * 参数
 
 字段名|类型|是否必须|取值|说明
@@ -253,6 +328,3 @@ group|str|true||聚类，eg: 钻石列表 diamond
 ```json
 {"code": 1}
 ```
-
-### 3.可选上架商品
-

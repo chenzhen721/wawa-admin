@@ -10,6 +10,8 @@ import com.ttpod.rest.web.Crud
 import com.ttpod.star.admin.BaseController
 import com.ttpod.star.admin.Web
 import com.ttpod.star.common.util.HttpClientUtils
+import com.ttpod.star.model.CatchPostStatus
+import com.ttpod.star.model.CatchPostType
 import com.ttpod.star.web.api.play.Qiyiguo
 import com.ttpod.star.web.api.play.dto.QiygRespDTO
 import groovy.json.JsonSlurper
@@ -72,8 +74,12 @@ class CatchuController extends BaseController {
         return catchMongo.getCollection('catch_record')
     }
 
+    DBCollection catch_success_logs() {
+        return logMongo.getCollection('catch_success_logs')
+    }
+
     DBCollection apply_post_logs() {
-        return catchMongo.getCollection('apply_post_logs')
+        return logMongo.getCollection('apply_post_logs')
     }
 
     @Resource
@@ -556,10 +562,10 @@ class CatchuController extends BaseController {
     def record_list(HttpServletRequest req) {
         def user_id = ServletRequestUtils.getIntParameter(req, 'user_id')
         def room_id = ServletRequestUtils.getIntParameter(req, 'room_id')
-        def status = ServletRequestUtils.getBooleanParameter(req, 'status')
-        def type = ServletRequestUtils.getIntParameter(req, 'type')
-        def post_type = ServletRequestUtils.getIntParameter(req, 'post_type')
-        def query = new BasicDBObject()
+        def status = ServletRequestUtils.getBooleanParameter(req, 'status') //是否抓中
+        def type = ServletRequestUtils.getIntParameter(req, 'type') //是否结束
+        def _id = ServletRequestUtils.getStringParameter(req, '_id')
+        def query = Web.fillTimeBetween(req).get()
 
         if (user_id != null) {
             query.put('user_id', user_id)
@@ -573,8 +579,8 @@ class CatchuController extends BaseController {
         if (type) {
             query.put('type', type)
         }
-        if (post_type) {
-            query.put('post_type', post_type)
+        if (_id) {
+            query.put('_id', _id)
         }
 
         Crud.list(req, catch_records(), query, $$(coin_record: 0, play_record: 0), SJ_DESC) { List<BasicDBObject> list->
@@ -587,12 +593,14 @@ class CatchuController extends BaseController {
     }
 
     /**
-     * 发货清单
-     * @param req
-     * @return
+     * 成功记录
      */
-    def post_list(HttpServletRequest req) {
+    def success_list(HttpServletRequest req) {
         def query = Web.fillTimeBetween(req).get()
+        def _id = ServletRequestUtils.getStringParameter(req, '_id')
+        if (_id) {
+            query.put('_id', _id)
+        }
         def user_id = ServletRequestUtils.getIntParameter(req, 'user_id')
         if (user_id != null) {
             query.put('user_id', user_id)
@@ -601,52 +609,140 @@ class CatchuController extends BaseController {
         if (room_id != null) {
             query.put('room_id', room_id)
         }
-        def sort = $$(post_type: 1, 'timestamp': -1)
-        Crud.list(req, apply_post_logs(), query, ALL_FIELD, sort)
+        def post_type = ServletRequestUtils.getIntParameter(req, 'post_type')
+        if (room_id != null) {
+            query.put('post_type', post_type)
+        }
+        //客户端是否显示此记录，是否删除 true 删除 无字段或false正常
+        def is_delete = ServletRequestUtils.getBooleanParameter(req, 'is_delete')
+        if (is_delete == null || !is_delete) {
+            query.put('is_delete', [$ne: true])
+        } else {
+            query.put('is_delete', is_delete)
+        }
+        Crud.list(req, catch_success_logs(), query, ALL_FIELD, SJ_DESC)
     }
 
     /**
-     * 批量通过发货
+     * 异常回退
+     */
+    def success_record_refuse(HttpServletRequest req) {
+        def _id = ServletRequestUtils.getStringParameter(req, '_id')
+        if (_id == null) {
+            return Web.missParam()
+        }
+        //如果逻辑删除这条记录，需要把对应的快递申请回退
+        def post_log = apply_post_logs().findOne($$('toys.record_id': _id, is_delete: [$ne: true]))
+        if (post_log != null) {
+            apply_post_logs().update($$(_id: post_log['_id']), $$($set: [is_delete: true, status: 2]))
+            def toys = post_log['toys'] as List
+            if (toys != null && toys.size() > 0) {
+                toys.each { BasicDBObject toy ->
+                    def r_id = toy['record_id'] as String
+                    //正常抓取的记录还原
+                    if (r_id != _id) {
+                        catch_success_logs().update($$(_id: r_id), $$($set: [post_type: 0], $unset: [pack_id: 1, apply_time: 1]))
+                    }
+                }
+            }
+        }
+        if (1 == catch_success_logs().update($$(_id: _id, is_delete: [$ne: true]), $$($set: [is_delete: true]), false, false, writeConcern).getN()) {
+            return [code: 1]
+        }
+        return [code: 0]
+    }
+
+    /**
+     * 发货清单
      * @param req
      * @return
      */
-    def batch_post(HttpServletRequest req) {
-        def ids = ServletRequestUtils.getStringParameter(req, 'ids')
-        def type = ServletRequestUtils.getBooleanParameter(req, 'type')
-        if (StringUtils.isBlank(ids) || type == null) {
-            return Web.missParam()
+    def post_list(HttpServletRequest req) {
+        def query = Web.fillTimeBetween(req).get()
+        def _id = ServletRequestUtils.getIntParameter(req, '_id')
+        if (_id != null) {
+            query.put('_id', _id)
         }
-        def packIdList = ids.split('\\|')?.collect{it as String}
-        if (packIdList == null || packIdList.size() <= 0) {
-            return Web.missParam()
+        def user_id = ServletRequestUtils.getIntParameter(req, 'user_id')
+        if (user_id != null) {
+            query.put('user_id', user_id)
         }
-        // todo 需要调用奇异果下单接口
-        /*packIdList.each {String _id ->
-            apply_post_logs().findOne($$(_id: _id))
-        }*/
+        def room_id = ServletRequestUtils.getIntParameter(req, 'room_id')
+        if (room_id != null) {
+            query.put('room_id', room_id)
+        }
+        //发货通过这个状态来判断 审核状态：0, 未审核 1, 通过 2,未通过
+        def status = ServletRequestUtils.getIntParameter(req, 'status')
+        if (status != null) {
+            query.put('status', status)
+        }
+        //客户端是否显示此订单，是否删除 true 删除 无字段或false正常
+        def is_delete = ServletRequestUtils.getBooleanParameter(req, 'is_delete')
+        if (is_delete == null || !is_delete) {
+            query.put('is_delete', [$ne: true])
+        } else {
+            query.put('is_delete', is_delete)
+        }
+        //正常情况下的，邮寄状态 0,未处理, 1待发货, 2已发货, 3已同步订单
+        def post_type = ServletRequestUtils.getIntParameter(req, 'post_type')
+        if (post_type != null) {
+            query.put('post_type', post_type)
+        }
+        Crud.list(req, apply_post_logs(), query, ALL_FIELD, SJ_DESC)
+    }
 
+    /**
+     * 批量拒绝订单
+     * @param req
+     * @return
+     */
+    def batch_refuse(HttpServletRequest req) {
+        def ids = ServletRequestUtils.getStringParameter(req, 'ids')
+        if (StringUtils.isBlank(ids)) {
+            return Web.missParam()
+        }
+        def postIdList = ids.split('\\|')?.collect{it as String}
+        if (postIdList == null || postIdList.size() <= 0) {
+            return Web.missParam()
+        }
+        def is_delete = ServletRequestUtils.getBooleanParameter(req, 'is_delete', false)
+        def desc = ServletRequestUtils.getStringParameter(req, 'desc', '')//简述
         //更新成功
-        if (1 <= catch_records().update($$(pack_id: [$in: packIdList], post_type: 1), $$($set: [post_type: type ? 2 : 4]), false, true, writeConcern).getN()) {
-            def list = catch_records().find($$(pack_id: [$in: packIdList]), $$(toy: 1, address: 1)).sort($$(pack_id: 1, timestamp: -1)).toArray()
-            Crud.opLog(catch_records().getName() + '_batch_post', [post_type: type ? 2 : 4])
-            return [code: 1, data: list]
+        def query = $$(_id: [$in: ids], post_type: CatchPostType.待发货.ordinal(), status: CatchPostStatus.未审核.ordinal())
+        def set = [status: CatchPostStatus.审核失败.ordinal(), is_delete: is_delete, desc: desc]
+        if (1 <= apply_post_logs().update(query, $$($set: set), false, true, writeConcern).getN()) {
+            //def list = catch_records().find($$(pack_id: [$in: packIdList]), $$(toy: 1, address: 1)).sort($$(pack_id: 1, timestamp: -1)).toArray()
+            Crud.opLog(catch_records().getName() + '_batch_post', set)
+            return [code: 1]
         }
         //有不符合条件的记录
         return [code: 0]
     }
 
     /**
-     * 抓娃娃统计（简易版）
+     * 已发货
      * @param req
+     * @return
      */
-    def record_stat(HttpServletRequest req) {
-        //todo 时间分页
-        def stime = Web.getStime(req)
-        def etime = Web.getEtime(req)
+    def batch_post(HttpServletRequest req) {
+        def ids = ServletRequestUtils.getStringParameter(req, 'ids')
+        if (StringUtils.isBlank(ids)) {
+            return Web.missParam()
+        }
+        def postIdList = ids.split('\\|')?.collect{it as String}
+        if (postIdList == null || postIdList.size() <= 0) {
+            return Web.missParam()
+        }
+
+        //更新成功
+        def query = $$(_id: [$in: ids], post_type: CatchPostType.待发货.ordinal(), is_delete: [$ne: true], status: CatchPostStatus.未审核.ordinal())
+        def set = [post_type: CatchPostType.已发货.ordinal(), status: CatchPostStatus.审核通过.ordinal()]
+        if (1 <= apply_post_logs().update(query, $$($set: set), false, true, writeConcern).getN()) {
+            Crud.opLog(catch_records().getName() + '_batch_post', set)
+            return [code: 1]
+        }
+        //有不符合条件的记录
+        return [code: 0]
     }
-
-
-
-
 
 }
