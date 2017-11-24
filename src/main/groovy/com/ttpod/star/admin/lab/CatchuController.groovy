@@ -689,6 +689,10 @@ class CatchuController extends BaseController {
         if (post_type != null) {
             query.put('post_type', post_type)
         }
+        def record_id = ServletRequestUtils.getStringParameter(req, 'record_id')
+        if (record_id != null) {
+            query.put('toys.record_id', record_id)
+        }
         Crud.list(req, apply_post_logs(), query, ALL_FIELD, SJ_DESC)
     }
 
