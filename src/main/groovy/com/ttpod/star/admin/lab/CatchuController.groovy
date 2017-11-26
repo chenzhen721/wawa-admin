@@ -626,7 +626,16 @@ class CatchuController extends BaseController {
     }
 
     def success_record_add(HttpServletRequest req) {
-
+        def _id = ServletRequestUtils.getStringParameter(req, '_id')
+        def catch_log = catch_success_logs().findOne($$(_id: _id))
+        if (catch_log == null) {
+            return Web.missParam()
+        }
+        catch_log.put('_id', _id + '_supplement')
+        catch_log.put('record_type', 1)
+        catch_log.put('post_type', CatchPostType.未处理.ordinal())
+        catch_log.put('coin', 0)
+        catch_success_logs().save(catch_log)
     }
 
     /**

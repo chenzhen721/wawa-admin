@@ -162,6 +162,22 @@ desc|string|false||说明
 }
 ```
 
+### 2.补单
+
+* API {GET|POST} http://test-apiadmin.17laihou.com/catchu/success_record_add.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+\_id|string|false||需要补单的记录ID
+
+* 返回
+```json
+{
+    "code": 1
+}
+```
+
 ## 订单管理
 ### 1.订单列表
 
