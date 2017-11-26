@@ -265,7 +265,7 @@ ids|string|false||记录ID，多条记录以逗号分隔
 }
 ```
 
-### 2.同步订单
+### 3.同步订单
 
 * API {GET|POST} http://test-apiadmin.17laihou.com/catchu/push_order.json
 * 参数
