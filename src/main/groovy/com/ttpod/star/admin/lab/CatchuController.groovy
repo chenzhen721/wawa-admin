@@ -823,7 +823,7 @@ class CatchuController extends BaseController {
                     QiygOrderResultDTO order = Qiyiguo.createOrder(userId, (user?.get('nick_name') as String ?: ''), JSONUtil.beanToJson(goodsList), addressstr, tel, name)
                     //更新订单信息至apply_post_logs
                     if (order != null) {
-                        order_id = obj['_id'] + '_' + order.getOrder_id()
+                        order_id = (obj['_id'] as String) + '_' + order.getOrder_id()
                         set.put('order_id', order.getOrder_id())
                         set.put('push_time', System.currentTimeMillis())
                         set.put('post_type', CatchPostType.已发货.ordinal())
