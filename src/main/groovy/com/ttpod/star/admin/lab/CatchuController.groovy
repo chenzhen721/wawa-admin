@@ -779,6 +779,7 @@ class CatchuController extends BaseController {
             def order_id = null
             if (obj['address'] != null && obj['toys'] != null) {
                 def userId = obj['user_id'] as Integer
+                def user = users().findOne($$(_id: userId), $$(nick_name: 1))
                 def address = obj['address']
                 def addressstr = "${address['province'] ?: ''}${address['city'] ?: ''}${address['region'] ?: ''}${address['address']}".toString()
                 def tel = address['tel'] as String
@@ -805,7 +806,7 @@ class CatchuController extends BaseController {
                             goodsList.add(new QiygGoodsDTO(key, num))
                         }
                     }
-                    QiygOrderResultDTO order = Qiyiguo.createOrder(userId, Web.currentUserNick(), JSONUtil.beanToJson(goods), addressstr, tel, name)
+                    QiygOrderResultDTO order = Qiyiguo.createOrder(userId, (user?.get('nick_name') as String ?: ''), JSONUtil.beanToJson(goods), addressstr, tel, name)
                     //更新订单信息至apply_post_logs
                     if (order != null) {
                         order_id = order.getOrder_id()

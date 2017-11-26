@@ -37,7 +37,7 @@ public class IMUtil {
                 try {
                     String result = HttpClientUtils.postJson(IM_DOMAIN + path, JSONUtil.beanToJson(body));
                     logger.info("result: {}", result);
-                    if (result != null && JSONUtil.jsonToMap(result).get("code") != 1) {
+                    if (result != null && JSONUtil.jsonToMap(result).get("code").equals(1)) {
                         logger.error("push error" + result);
                     }
                     logger.debug("push result:" + result);
