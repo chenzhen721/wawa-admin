@@ -115,7 +115,6 @@ user_id|int|false||用户ID
 room_id|int|false||房间ID
 post_type|int|false||正常情况下的邮寄状态：0,未处理, 1待发货
 is_delete|bool|false|true;false|是否删除 true 删除 无字段或false正常
-post_type|int|false||邮寄申请状态：0,未处理, 1待发货
 page|int|false||页码
 size|int|false||每页记录数
 
