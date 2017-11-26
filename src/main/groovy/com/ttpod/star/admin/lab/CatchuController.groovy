@@ -782,7 +782,7 @@ class CatchuController extends BaseController {
         if (end != null) {
             timestamp.put('$lt', end)
         }
-        def query = $$(status: CatchPostStatus.审核通过.ordinal(), is_delete: [$ne: true], post_type: CatchPostType.待发货.ordinal())
+        def query = $$(status: CatchPostStatus.审核通过.ordinal(), is_delete: [$ne: true], post_type: CatchPostType.已发货.ordinal())
         if (timestamp.size() > 0) {
             query.put('timestamp', timestamp)
         }
