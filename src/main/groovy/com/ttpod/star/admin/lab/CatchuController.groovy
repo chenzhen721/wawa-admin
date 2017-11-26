@@ -818,7 +818,11 @@ class CatchuController extends BaseController {
                 }
             }
             def queryforupdate = $$(_id: obj['_id'])
-            if (1 == apply_post_logs().update(queryforupdate, $$($set: set, $inc: inc), false, false, writeConcern).getN()) {
+            def update = $$($inc: inc)
+            if (set.size() > 0) {
+                update.put('$set', set)
+            }
+            if (1 == apply_post_logs().update(queryforupdate, update, false, false, writeConcern).getN()) {
                 list.add(obj['_id'])
             } else {
                 missing.add(order_id)
