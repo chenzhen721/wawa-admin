@@ -162,6 +162,22 @@ desc|string|false||说明
 }
 ```
 
+### 3.补单
+
+* API {GET|POST} http://test-apiadmin.17laihou.com/catchu/success_record_add.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+\_id|string|false||需要补单的记录ID
+
+* 返回
+```json
+{
+    "code": 1
+}
+```
+
 ## 订单管理
 ### 1.订单列表
 
@@ -262,6 +278,30 @@ ids|string|false||记录ID，多条记录以逗号分隔
 ```json
 {
     "code": 1
+}
+```
+
+### 3.同步订单
+
+* API {GET|POST} http://test-apiadmin.17laihou.com/catchu/push_order.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+stime|String|false|yyyy-MM-dd HH: mm:ss|创建时间开始
+etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
+
+* 返回
+```json
+{
+    "code": 1,
+    "data": {
+        "succ": [
+            "1711242229171202904"
+        ],
+        "error": [],
+        "missing_order": []
+    }
 }
 ```
 

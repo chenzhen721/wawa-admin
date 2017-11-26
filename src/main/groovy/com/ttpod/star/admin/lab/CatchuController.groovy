@@ -625,6 +625,21 @@ class CatchuController extends BaseController {
         Crud.list(req, catch_success_logs(), query, ALL_FIELD, SJ_DESC)
     }
 
+    def success_record_add(HttpServletRequest req) {
+        def _id = ServletRequestUtils.getStringParameter(req, '_id')
+        def catch_log = catch_success_logs().findOne($$(_id: _id))
+        if (catch_log == null) {
+            return Web.missParam()
+        }
+        catch_log.put('_id', _id + '_supplement')
+        catch_log.put('record_type', 1)
+        catch_log.put('post_type', CatchPostType.未处理.ordinal())
+        catch_log.put('coin', 0)
+        catch_success_logs().save(catch_log)
+        Crud.opLog(catch_success_logs().getName() + '_success_record_add', catch_log)
+        return [code: 1]
+    }
+
     /**
      * 异常回退
      */
@@ -650,6 +665,7 @@ class CatchuController extends BaseController {
             }
         }
         if (1 == catch_success_logs().update($$(_id: _id, is_delete: [$ne: true]), $$($set: [is_delete: true]), false, false, writeConcern).getN()) {
+            Crud.opLog(catch_success_logs().getName() + '_success_record_refuse', [is_delete: true])
             return [code: 1]
         }
         return [code: 0]
@@ -757,8 +773,8 @@ class CatchuController extends BaseController {
      * @param req
      */
     def push_order(HttpServletRequest req) {
-        def start = ServletRequestUtils.getLongParameter(req, 'start')
-        def end = ServletRequestUtils.getLongParameter(req, 'end')
+        def start = Web.getStime(req)
+        def end = Web.getEtime(req)
         def timestamp = [:]
         if (start != null) {
             timestamp.put('$gte', start)
@@ -766,7 +782,7 @@ class CatchuController extends BaseController {
         if (end != null) {
             timestamp.put('$lt', end)
         }
-        def query = $$(status: CatchPostStatus.审核通过.ordinal(), is_delete: [$ne: true], post_type: CatchPostType.待发货.ordinal())
+        def query = $$(status: CatchPostStatus.审核通过.ordinal(), is_delete: [$ne: true], post_type: CatchPostType.已发货.ordinal())
         if (timestamp.size() > 0) {
             query.put('timestamp', timestamp)
         }
@@ -810,8 +826,8 @@ class CatchuController extends BaseController {
                     QiygOrderResultDTO order = Qiyiguo.createOrder(userId, (user?.get('nick_name') as String ?: ''), JSONUtil.beanToJson(goodsList), addressstr, tel, name)
                     //更新订单信息至apply_post_logs
                     if (order != null) {
-                        order_id = order.getOrder_id()
-                        set.put('order_id', order_id)
+                        order_id = (obj['_id'] as String) + '_' + order.getOrder_id()
+                        set.put('order_id', order.getOrder_id())
                         set.put('push_time', System.currentTimeMillis())
                         set.put('post_type', CatchPostType.已发货.ordinal())
                         succ = Boolean.TRUE
