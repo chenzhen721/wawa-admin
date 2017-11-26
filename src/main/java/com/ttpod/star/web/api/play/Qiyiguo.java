@@ -9,6 +9,7 @@ import com.ttpod.star.common.util.HttpsClientUtils;
 import com.ttpod.star.common.util.JSONUtil;
 import com.ttpod.star.web.api.play.dto.QiygAssignDTO;
 import com.ttpod.star.web.api.play.dto.QiygOperateResultDTO;
+import com.ttpod.star.web.api.play.dto.QiygOrderResultDTO;
 import com.ttpod.star.web.api.play.dto.QiygRespDTO;
 import com.ttpod.star.web.api.play.dto.QiygResultDTO;
 import com.ttpod.star.web.api.play.dto.QiygRoomDTO;
@@ -18,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -165,24 +167,22 @@ public abstract class Qiyiguo {
     /**
      * 7.	创建订单接口 //todo resp
      */
-    public static QiygOperateResultDTO createOrder(String device_id, Integer user_id, String username, String consignee, String address, String mobile) {
-        if (device_id == null) {
-            return null;
-        }
-        String url = HOST + "/api/index.php";
+    public static QiygOrderResultDTO createOrder(Integer user_id, String username, String goods_list, String address,
+                                                 String mobile, String consignee) {
+        Long ts = System.currentTimeMillis();
+        String url = HOST + "/api/index.php?app=buyer_order&act=create_order&ts="+ts+"&sign=";
         SortedMap<String, Object> params = new TreeMap<>();
-        params.put("app", "buyer_order");
-        params.put("act", "create_order");
         params.put("platform", PLATFORM);
         params.put("user_id", user_id);
         params.put("username", username);
-        params.put("consignee", consignee);
+        params.put("goods_list", goods_list);
         params.put("address", address);
         params.put("mobile", mobile);
-        params.put("device_id", device_id);
+        params.put("consignee", consignee);
         params.put("ts", System.currentTimeMillis());
-        String value = doGet(url, params);
-        return toBean(value, QiygOperateResultDTO.class);
+        url = url + creatSign(params);
+        String value = doPost(url, params);
+        return toBean(value, QiygOrderResultDTO.class);
     }
 
     /**
@@ -302,6 +302,21 @@ public abstract class Qiyiguo {
         return value;
     }
 
+    private static String doPost(String url, SortedMap<String, Object> params) {
+        String value = null;
+
+        try {
+            if (url.startsWith("http://")) {
+                value = HttpClientUtils.post(url, buildPostParam(params), null);
+            } else if (url.startsWith("https://")) {
+                value = HttpsClientUtils.post(url, buildPostParam(params),null);
+            }
+        } catch (Exception e) {
+            logger.error("Post " + url + " error.", e);
+        }
+        return value;
+    }
+
     private static String buildParam(SortedMap<String, Object> params) {
         String sign = creatSign(params);
         StringBuffer sb = new StringBuffer();
@@ -312,6 +327,16 @@ public abstract class Qiyiguo {
         }
         sb.append("sign=").append(sign);
         return sb.toString();
+    }
+
+    private static Map<String, String> buildPostParam(SortedMap<String, Object> params) {
+        Map<String, String> map = new HashMap<>();
+        for (Map.Entry<String, Object> entry : params.entrySet()) {
+            String k = entry.getKey();
+            String v = String.valueOf(entry.getValue());
+            map.put(k, v);
+        }
+        return map;
     }
 
 }

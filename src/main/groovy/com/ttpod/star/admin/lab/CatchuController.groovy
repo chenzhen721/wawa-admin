@@ -10,9 +10,12 @@ import com.ttpod.rest.web.Crud
 import com.ttpod.star.admin.BaseController
 import com.ttpod.star.admin.Web
 import com.ttpod.star.common.util.HttpClientUtils
+import com.ttpod.star.common.util.JSONUtil
 import com.ttpod.star.model.CatchPostStatus
 import com.ttpod.star.model.CatchPostType
 import com.ttpod.star.web.api.play.Qiyiguo
+import com.ttpod.star.web.api.play.dto.QiygGoodsDTO
+import com.ttpod.star.web.api.play.dto.QiygOrderResultDTO
 import com.ttpod.star.web.api.play.dto.QiygRespDTO
 import groovy.json.JsonSlurper
 import org.apache.commons.lang.StringUtils
@@ -28,7 +31,6 @@ import java.nio.charset.Charset
 
 import static com.ttpod.rest.common.doc.MongoKey.ALL_FIELD
 import static com.ttpod.rest.common.doc.MongoKey.SJ_DESC
-import static com.ttpod.rest.common.doc.MongoKey._id
 import static com.ttpod.rest.common.util.WebUtils.$$
 
 /**
@@ -748,6 +750,80 @@ class CatchuController extends BaseController {
         }
         //有不符合条件的记录
         return [code: 0]
+    }
+
+    /**
+     * 推送订单
+     * @param req
+     */
+    def push_order(HttpServletRequest req) {
+        def start = ServletRequestUtils.getLongParameter(req, 'start')
+        def end = ServletRequestUtils.getLongParameter(req, 'end')
+        def timestamp = [:]
+        if (start != null) {
+            timestamp.put('$gte', start)
+        }
+        if (end != null) {
+            timestamp.put('$lt', end)
+        }
+        def query = $$(status: CatchPostStatus.审核通过.ordinal(), is_delete: [$ne: true])
+        if (timestamp.size() > 0) {
+            query.put('timestamp', timestamp)
+        }
+        def list = []
+        def missing = []
+        def error = []
+        apply_post_logs().find(query).toArray().each {BasicDBObject obj ->
+            def set = new BasicDBObject()
+            def inc = [n: 1]
+            def order_id = null
+            if (obj['address'] != null && obj['toys'] != null) {
+                def userId = obj['user_id'] as Integer
+                def address = obj['address']
+                def addressstr = "${address['province'] ?: ''}${address['city'] ?: ''}${address['region'] ?: ''}${address['address']}".toString()
+                def tel = address['tel'] as String
+                def name = address['name'] as String
+
+                def toys = obj['toys']
+                def missing_goods = [] as List
+                def goods = MapWithDefault.<Integer, Integer>newInstance(new HashMap<Integer, Integer>()) {return 0}
+                toys.each { BasicDBObject toy ->
+                    if (toy['goods_id'] == null) {
+                        logger.error('========>goods_id witch relate to toy not found, in apply_post_log by id:' + toy['goods_id'])
+                        missing_goods.add(toy)
+                    }
+                    def goods_id = toy['goods_id'] as Integer
+                    goods.put(goods_id, goods.get(goods_id) + 1)
+                }
+                if (missing_goods.size() > 0) {
+                    set.put('missing_goods', missing_goods)
+                }
+                if (goods.size() > 0) {
+                    List<QiygGoodsDTO> goodsList = new ArrayList<>()
+                    goods.each { Integer key, Integer num ->
+                        if (key != null && num > 0) {
+                            goodsList.add(new QiygGoodsDTO(key, num))
+                        }
+                    }
+                    QiygOrderResultDTO order = Qiyiguo.createOrder(userId, Web.currentUserNick(), JSONUtil.beanToJson(goods), addressstr, tel, name)
+                    //更新订单信息至apply_post_logs
+                    if (order != null) {
+                        order_id = order.getOrder_id()
+                        set.put('order_id', order_id)
+                        set.put('push_time', System.currentTimeMillis())
+                    } else {
+                        error.add(obj['_id'])
+                    }
+                }
+            }
+            def queryforupdate = $$(_id: obj['_id'])
+            if (1 == apply_post_logs().update(queryforupdate, $$($set: set, $inc: inc), false, false, writeConcern).getN()) {
+                list.add(obj['_id'])
+            } else {
+                missing.add(order_id)
+            }
+        }
+        return [code: 1, data: [succ: list, error: error, missing_order: missing]]
     }
 
 }
