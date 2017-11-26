@@ -265,6 +265,30 @@ ids|string|false||记录ID，多条记录以逗号分隔
 }
 ```
 
+### 2.同步订单
+
+* API {GET|POST} http://test-apiadmin.17laihou.com/catchu/push_order.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+stime|String|false|yyyy-MM-dd HH: mm:ss|创建时间开始
+etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
+
+* 返回
+```json
+{
+    "code": 1,
+    "data": {
+        "succ": [
+            "1711242229171202904"
+        ],
+        "error": [],
+        "missing_order": []
+    }
+}
+```
+
 ## 商城管理
 ### 1.商城列表
 

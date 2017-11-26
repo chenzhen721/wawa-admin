@@ -757,8 +757,8 @@ class CatchuController extends BaseController {
      * @param req
      */
     def push_order(HttpServletRequest req) {
-        def start = ServletRequestUtils.getLongParameter(req, 'start')
-        def end = ServletRequestUtils.getLongParameter(req, 'end')
+        def start = Web.getStime(req)
+        def end = Web.getEtime(req)
         def timestamp = [:]
         if (start != null) {
             timestamp.put('$gte', start)
