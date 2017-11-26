@@ -766,7 +766,7 @@ class CatchuController extends BaseController {
         if (end != null) {
             timestamp.put('$lt', end)
         }
-        def query = $$(status: CatchPostStatus.审核通过.ordinal(), is_delete: [$ne: true])
+        def query = $$(status: CatchPostStatus.审核通过.ordinal(), is_delete: [$ne: true], post_type: CatchPostType.待发货.ordinal())
         if (timestamp.size() > 0) {
             query.put('timestamp', timestamp)
         }
@@ -777,6 +777,7 @@ class CatchuController extends BaseController {
             def set = new BasicDBObject()
             def inc = [n: 1]
             def order_id = null
+            def succ = Boolean.FALSE
             if (obj['address'] != null && obj['toys'] != null) {
                 def userId = obj['user_id'] as Integer
                 def user = users().findOne($$(_id: userId), $$(nick_name: 1))
@@ -806,12 +807,14 @@ class CatchuController extends BaseController {
                             goodsList.add(new QiygGoodsDTO(key, num))
                         }
                     }
-                    QiygOrderResultDTO order = Qiyiguo.createOrder(userId, (user?.get('nick_name') as String ?: ''), JSONUtil.beanToJson(goods), addressstr, tel, name)
+                    QiygOrderResultDTO order = Qiyiguo.createOrder(userId, (user?.get('nick_name') as String ?: ''), JSONUtil.beanToJson(goodsList), addressstr, tel, name)
                     //更新订单信息至apply_post_logs
                     if (order != null) {
                         order_id = order.getOrder_id()
                         set.put('order_id', order_id)
                         set.put('push_time', System.currentTimeMillis())
+                        set.put('post_type', CatchPostType.已发货.ordinal())
+                        succ = Boolean.TRUE
                     } else {
                         error.add(obj['_id'])
                     }
@@ -822,9 +825,10 @@ class CatchuController extends BaseController {
             if (set.size() > 0) {
                 update.put('$set', set)
             }
-            if (1 == apply_post_logs().update(queryforupdate, update, false, false, writeConcern).getN()) {
+            if (succ && 1 == apply_post_logs().update(queryforupdate, update, false, false, writeConcern).getN()) {
                 list.add(obj['_id'])
             } else {
+                if (order_id != null)
                 missing.add(order_id)
             }
         }
