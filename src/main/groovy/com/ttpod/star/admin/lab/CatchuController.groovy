@@ -636,6 +636,8 @@ class CatchuController extends BaseController {
         catch_log.put('post_type', CatchPostType.未处理.ordinal())
         catch_log.put('coin', 0)
         catch_success_logs().save(catch_log)
+        Crud.opLog(catch_success_logs().getName() + '_success_record_add', catch_log)
+        return [code: 1]
     }
 
     /**
@@ -663,6 +665,7 @@ class CatchuController extends BaseController {
             }
         }
         if (1 == catch_success_logs().update($$(_id: _id, is_delete: [$ne: true]), $$($set: [is_delete: true]), false, false, writeConcern).getN()) {
+            Crud.opLog(catch_success_logs().getName() + '_success_record_refuse', [is_delete: true])
             return [code: 1]
         }
         return [code: 0]
