@@ -794,7 +794,7 @@ class CatchuController extends BaseController {
         def list = []
         def missing = []
         def error = []
-        apply_post_logs().find(query).toArray().each {BasicDBObject obj ->
+        apply_post_logs().find(query).limit(1).toArray().each {BasicDBObject obj ->
             def set = new BasicDBObject()
             def inc = [n: 1]
             def queryforupdate = $$(_id: obj['_id'], push_time: [$exists: false])
