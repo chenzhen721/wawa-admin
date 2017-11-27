@@ -6,14 +6,11 @@ build_staging :
     script:
           - source /etc/profile
           - echo "java Build..."
-          #- cd projects/star-admin/
-          - mvn clean package -U -P product -Dmaven.test.skip=true
-          - rsync -av target/star-admin.war webserver@192.168.2.9:~/wa-admin/
-          - rsync -av target/star-admin.war webserver@192.168.2.10:~/wa-admin/
-          - ssh webserver@192.168.2.9  "source /etc/profile;cd ~/wa-admin;rm -rf bak.webapp && mv -f webapp bak.webapp;unzip star-admin.war -d webapp;./restart.sh"
-          - ssh webserver@192.168.2.9  "sleep 2m"
-          - ssh webserver@192.168.2.10  "source /etc/profile;cd ~/wa-admin;rm -rf bak.webapp && mv -f webapp bak.webapp;unzip star-admin.war -d webapp;./restart.sh"
+          #- cd projects/wa-admin/
+          - mvn clean package -U -P test -Dmaven.test.skip=true
+          - rsync -av target/star-admin.war webserver@192.168.2.27:~/wa-admin/
+          - ssh webserver@192.168.2.27  "source /etc/profile;cd ~/wa-admin;rm -rf bak.webapp && mv -f webapp bak.webapp;unzip star-admin.war -d webapp;./restart.sh"
     only :
-        - aliproduct
+        - dev
     tags :
         - java-shell
