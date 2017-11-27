@@ -787,7 +787,7 @@ class CatchuController extends BaseController {
         if (end != null) {
             timestamp.put('$lt', end)
         }
-        def query = $$(status: CatchPostStatus.审核通过.ordinal(), is_delete: [$ne: true], post_type: CatchPostType.已发货.ordinal())
+        def query = $$(push_time: [$exists: false], status: CatchPostStatus.审核通过.ordinal(), is_delete: [$ne: true], post_type: CatchPostType.已发货.ordinal())
         if (timestamp.size() > 0) {
             query.put('timestamp', timestamp)
         }
@@ -841,6 +841,8 @@ class CatchuController extends BaseController {
                             //更新订单号
                             if (1 != apply_post_logs().update($$(_id: obj['_id'], push_time: time), $$($set: set, $inc: inc), false, false, writeConcern).getN()) {
                                 missing.add(order_id)
+                            } else {
+                                list.add(obj['_id'])
                             }
                         } else {
                             //下单失败回退，如果回退失败记录单号
