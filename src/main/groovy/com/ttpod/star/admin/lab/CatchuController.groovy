@@ -29,6 +29,7 @@ import javax.annotation.Resource
 import javax.servlet.http.HttpServletRequest
 import java.nio.charset.Charset
 
+import static com.ttpod.rest.common.doc.MongoKey.$exists
 import static com.ttpod.rest.common.doc.MongoKey.ALL_FIELD
 import static com.ttpod.rest.common.doc.MongoKey.SJ_DESC
 import static com.ttpod.rest.common.util.WebUtils.$$
@@ -678,7 +679,7 @@ class CatchuController extends BaseController {
      */
     def post_list(HttpServletRequest req) {
         def query = Web.fillTimeBetween(req).get()
-        def _id = ServletRequestUtils.getIntParameter(req, '_id')
+        def _id = ServletRequestUtils.getStringParameter(req, '_id')
         if (_id != null) {
             query.put('_id', _id)
         }
@@ -706,6 +707,10 @@ class CatchuController extends BaseController {
         def post_type = ServletRequestUtils.getIntParameter(req, 'post_type')
         if (post_type != null) {
             query.put('post_type', post_type)
+        }
+        def order_id = ServletRequestUtils.getStringParameter(req, 'order_id')
+        if (order_id != null) {
+            query.put('order_id', order_id)
         }
         def record_id = ServletRequestUtils.getStringParameter(req, 'record_id')
         if (record_id != null) {
@@ -792,60 +797,61 @@ class CatchuController extends BaseController {
         apply_post_logs().find(query).toArray().each {BasicDBObject obj ->
             def set = new BasicDBObject()
             def inc = [n: 1]
-            def order_id = null
-            def succ = Boolean.FALSE
+            def queryforupdate = $$(_id: obj['_id'], push_time: [$exists: false])
             if (obj['address'] != null && obj['toys'] != null) {
-                def userId = obj['user_id'] as Integer
-                def user = users().findOne($$(_id: userId), $$(nick_name: 1))
-                def address = obj['address']
-                def addressstr = "${address['province'] ?: ''}${address['city'] ?: ''}${address['region'] ?: ''}${address['address']}".toString()
-                def tel = address['tel'] as String
-                def name = address['name'] as String
+                def time = System.currentTimeMillis()
+                //先更新后
+                if (1 == apply_post_logs().update(queryforupdate, $$($set: [push_time: time]), false, false, writeConcern).getN()) {
+                    //更新成功，下单
+                    def userId = obj['user_id'] as Integer
+                    def user = users().findOne($$(_id: userId), $$(nick_name: 1))
+                    def address = obj['address']
+                    def addressstr = "${address['province'] ?: ''}${address['city'] ?: ''}${address['region'] ?: ''}${address['address']}".toString()
+                    def tel = address['tel'] as String
+                    def name = address['name'] as String
 
-                def toys = obj['toys']
-                def missing_goods = [] as List
-                def goods = MapWithDefault.<Integer, Integer>newInstance(new HashMap<Integer, Integer>()) {return 0}
-                toys.each { BasicDBObject toy ->
-                    if (toy['goods_id'] == null) {
-                        logger.error('========>goods_id witch relate to toy not found, in apply_post_log by id:' + toy['goods_id'])
-                        missing_goods.add(toy)
+                    def toys = obj['toys']
+                    def missing_goods = [] as List
+                    def goods = MapWithDefault.<Integer, Integer> newInstance(new HashMap<Integer, Integer>()) {
+                        return 0
                     }
-                    def goods_id = toy['goods_id'] as Integer
-                    goods.put(goods_id, goods.get(goods_id) + 1)
-                }
-                if (missing_goods.size() > 0) {
-                    set.put('missing_goods', missing_goods)
-                }
-                if (goods.size() > 0) {
-                    List<QiygGoodsDTO> goodsList = new ArrayList<>()
-                    goods.each { Integer key, Integer num ->
-                        if (key != null && num > 0) {
-                            goodsList.add(new QiygGoodsDTO(key, num))
+                    toys.each { BasicDBObject toy ->
+                        if (toy['goods_id'] == null) {
+                            logger.error('========>goods_id witch relate to toy not found, in apply_post_log by id:' + toy['goods_id'])
+                            missing_goods.add(toy)
+                        }
+                        def goods_id = toy['goods_id'] as Integer
+                        goods.put(goods_id, goods.get(goods_id) + 1)
+                    }
+                    if (missing_goods.size() > 0) {
+                        set.put('missing_goods', missing_goods)
+                    }
+                    if (goods.size() > 0) {
+                        List<QiygGoodsDTO> goodsList = new ArrayList<>()
+                        goods.each { Integer key, Integer num ->
+                            if (key != null && num > 0) {
+                                goodsList.add(new QiygGoodsDTO(key, num))
+                            }
+                        }
+                        QiygOrderResultDTO order = Qiyiguo.createOrder(userId, (user?.get('nick_name') as String ?: ''), JSONUtil.beanToJson(goodsList), addressstr, tel, name)
+                        //更新订单信息至apply_post_logs
+                        if (order != null) {
+                            def order_id = (obj['_id'] as String) + '_' + order.getOrder_id()
+                            set.put('order_id', order.getOrder_id())
+                            //更新订单号
+                            if (1 != apply_post_logs().update($$(_id: obj['_id'], push_time: time), $$($set: set, $inc: inc), false, false, writeConcern).getN()) {
+                                missing.add(order_id)
+                            }
+                        } else {
+                            //下单失败回退，如果回退失败记录单号
+                            apply_post_logs().update($$(_id: obj['_id'], push_time: time), $$($unset: [push_time: time], $inc: inc), false, false, writeConcern).getN()
+                            error.add(obj['_id'])
                         }
                     }
-                    QiygOrderResultDTO order = Qiyiguo.createOrder(userId, (user?.get('nick_name') as String ?: ''), JSONUtil.beanToJson(goodsList), addressstr, tel, name)
-                    //更新订单信息至apply_post_logs
-                    if (order != null) {
-                        order_id = (obj['_id'] as String) + '_' + order.getOrder_id()
-                        set.put('order_id', order.getOrder_id())
-                        set.put('push_time', System.currentTimeMillis())
-                        set.put('post_type', CatchPostType.已发货.ordinal())
-                        succ = Boolean.TRUE
-                    } else {
-                        error.add(obj['_id'])
-                    }
+                } else {
+                    //更新失败，记录单号
+                    error.add(obj['_id'])
                 }
-            }
-            def queryforupdate = $$(_id: obj['_id'])
-            def update = $$($inc: inc)
-            if (set.size() > 0) {
-                update.put('$set', set)
-            }
-            if (succ && 1 == apply_post_logs().update(queryforupdate, update, false, false, writeConcern).getN()) {
-                list.add(obj['_id'])
-            } else {
-                if (order_id != null)
-                missing.add(order_id)
             }
         }
         return [code: 1, data: [succ: list, error: error, missing_order: missing]]
