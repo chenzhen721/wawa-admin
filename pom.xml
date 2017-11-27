@@ -54,7 +54,6 @@
         <profile>
             <id>testLocal</id>
             <properties>
-
                 <redis.host>192.168.2.27</redis.host>
                 <redis.mem.host>${redis.host}</redis.mem.host>
                 <redis.mem.port>6379</redis.mem.port>
