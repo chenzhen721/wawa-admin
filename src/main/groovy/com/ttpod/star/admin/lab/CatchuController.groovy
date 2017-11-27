@@ -628,16 +628,23 @@ class CatchuController extends BaseController {
 
     def success_record_add(HttpServletRequest req) {
         def _id = ServletRequestUtils.getStringParameter(req, '_id')
-        def catch_log = catch_success_logs().findOne($$(_id: _id))
-        if (catch_log == null) {
+        def records = catch_records().findOne($$(_id: _id))
+        if (records == null) {
             return Web.missParam()
         }
-        catch_log.put('_id', _id + '_supplement')
-        catch_log.put('record_type', 1)
-        catch_log.put('post_type', CatchPostType.未处理.ordinal())
-        catch_log.put('coin', 0)
-        catch_success_logs().save(catch_log)
-        Crud.opLog(catch_success_logs().getName() + '_success_record_add', catch_log)
+        def success_log = $$(_id: records['_id'] + '_supplement',
+                room_id: records['room_id'],
+                user_id: records['user_id'],
+                toy: records['toy'],
+                post_type: CatchPostType.未处理.ordinal(),
+                coin: 0,
+                timestamp: records['timestamp'],
+                replay_url: records['replay_url'],
+                goods_id: records['goods_id'],
+                relative_record: _id
+        )
+        catch_success_logs().save(success_log)
+        Crud.opLog(catch_success_logs().getName() + '_success_record_add', success_log)
         return [code: 1]
     }
 
