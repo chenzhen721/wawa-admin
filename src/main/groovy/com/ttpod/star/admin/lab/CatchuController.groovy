@@ -678,7 +678,7 @@ class CatchuController extends BaseController {
      */
     def post_list(HttpServletRequest req) {
         def query = Web.fillTimeBetween(req).get()
-        def _id = ServletRequestUtils.getIntParameter(req, '_id')
+        def _id = ServletRequestUtils.getStringParameter(req, '_id')
         if (_id != null) {
             query.put('_id', _id)
         }
