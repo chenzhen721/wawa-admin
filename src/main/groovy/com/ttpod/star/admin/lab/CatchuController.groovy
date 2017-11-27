@@ -724,7 +724,7 @@ class CatchuController extends BaseController {
         if (StringUtils.isBlank(ids)) {
             return Web.missParam()
         }
-        def postIdList = ids.split('\\|')?.collect{it as String}
+        def postIdList = ids.split(',')?.collect{it as String}
         if (postIdList == null || postIdList.size() <= 0) {
             return Web.missParam()
         }
@@ -752,7 +752,7 @@ class CatchuController extends BaseController {
         if (StringUtils.isBlank(ids)) {
             return Web.missParam()
         }
-        def postIdList = ids.split('\\|')?.collect{it as String}
+        def postIdList = ids.split(',')?.collect{it as String}
         if (postIdList == null || postIdList.size() <= 0) {
             return Web.missParam()
         }
