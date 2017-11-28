@@ -93,6 +93,7 @@ class CatchuController extends BaseController {
      * @return
      */
     def list(HttpServletRequest req) {
+        logger.debug('========================>this is a test!!!')
         def query = Web.fillTimeBetween(req)
         intQuery(query, req, "_id")//房间ID
         stringQuery(query, req, "fid")//对应娃娃机ID
