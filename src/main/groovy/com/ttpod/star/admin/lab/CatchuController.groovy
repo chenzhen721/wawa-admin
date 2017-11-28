@@ -632,7 +632,7 @@ class CatchuController extends BaseController {
         if (records == null) {
             return Web.missParam()
         }
-        def success_log = $$(_id: records['_id'] + '_supplement',
+        def success_log = $$(_id: '' + records['_id'] + '_supplement',
                 room_id: records['room_id'],
                 user_id: records['user_id'],
                 toy: records['toy'],
