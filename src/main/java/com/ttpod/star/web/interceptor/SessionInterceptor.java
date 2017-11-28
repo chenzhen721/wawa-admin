@@ -4,6 +4,8 @@ import com.ttpod.rest.common.doc.ParamKey;
 import com.ttpod.rest.web.data.SimpleJsonView;
 import groovy.transform.CompileStatic;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
@@ -22,6 +24,7 @@ import java.util.Map;
  */
 @CompileStatic
 public class SessionInterceptor extends HandlerInterceptorAdapter implements com.ttpod.rest.web.spring.SessionInterceptor{
+    public static final Logger logger = LoggerFactory.getLogger(SessionInterceptor.class);
 
 
     public void postHandle(
@@ -42,6 +45,7 @@ public class SessionInterceptor extends HandlerInterceptorAdapter implements com
 
     public final boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws ServletException, IOException {
+        logger.debug("=====================>where are you");
         String uri = request.getRequestURI();
 
         if(uri.endsWith("show.xhtml")){ // 读取允许
