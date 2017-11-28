@@ -29,7 +29,6 @@ import javax.annotation.Resource
 import javax.servlet.http.HttpServletRequest
 import java.nio.charset.Charset
 
-import static com.ttpod.rest.common.doc.MongoKey.$exists
 import static com.ttpod.rest.common.doc.MongoKey.ALL_FIELD
 import static com.ttpod.rest.common.doc.MongoKey.SJ_DESC
 import static com.ttpod.rest.common.util.WebUtils.$$
@@ -853,7 +852,7 @@ class CatchuController extends BaseController {
                             }
                         } else {
                             //下单失败回退，如果回退失败记录单号
-                            apply_post_logs().update($$(_id: obj['_id'], push_time: time), $$($unset: [push_time: time], $inc: inc), false, false, writeConcern).getN()
+                            apply_post_logs().update($$(_id: obj['_id'], push_time: time), $$($unset: [push_time: 1], $inc: inc), false, false, writeConcern).getN()
                             error.add(obj['_id'])
                         }
                     }
