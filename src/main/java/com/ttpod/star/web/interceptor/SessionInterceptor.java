@@ -24,7 +24,6 @@ import java.util.Map;
  */
 @CompileStatic
 public class SessionInterceptor extends HandlerInterceptorAdapter implements com.ttpod.rest.web.spring.SessionInterceptor{
-    public static final Logger logger = LoggerFactory.getLogger(SessionInterceptor.class);
 
 
     public void postHandle(
@@ -45,7 +44,6 @@ public class SessionInterceptor extends HandlerInterceptorAdapter implements com
 
     public final boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws ServletException, IOException {
-        logger.debug("=====================>where are you");
         String uri = request.getRequestURI();
 
         if(uri.endsWith("show.xhtml")){ // 读取允许
