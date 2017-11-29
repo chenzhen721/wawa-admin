@@ -582,7 +582,7 @@ class CatchuController extends BaseController {
         if (type) {
             query.put('type', type)
         }
-        if (_id) {
+        if (StringUtils.isNotBlank(_id)) {
             query.put('_id', _id)
         }
 
@@ -601,7 +601,7 @@ class CatchuController extends BaseController {
     def success_list(HttpServletRequest req) {
         def query = Web.fillTimeBetween(req).get()
         def _id = ServletRequestUtils.getStringParameter(req, '_id')
-        if (_id != null) {
+        if (StringUtils.isNotBlank(_id)) {
             query.put('_id', _id)
         }
         def user_id = ServletRequestUtils.getIntParameter(req, 'user_id')
@@ -653,7 +653,7 @@ class CatchuController extends BaseController {
      */
     def success_record_refuse(HttpServletRequest req) {
         def _id = ServletRequestUtils.getStringParameter(req, '_id')
-        if (_id == null) {
+        if (StringUtils.isBlank(_id)) {
             return Web.missParam()
         }
         def desc = ServletRequestUtils.getStringParameter(req, 'desc', '')//简述
@@ -687,7 +687,7 @@ class CatchuController extends BaseController {
     def post_list(HttpServletRequest req) {
         def query = Web.fillTimeBetween(req).get()
         def _id = ServletRequestUtils.getStringParameter(req, '_id')
-        if (_id != null) {
+        if (StringUtils.isNotBlank(_id)) {
             query.put('_id', _id)
         }
         def user_id = ServletRequestUtils.getIntParameter(req, 'user_id')
@@ -716,11 +716,11 @@ class CatchuController extends BaseController {
             query.put('post_type', post_type)
         }
         def order_id = ServletRequestUtils.getStringParameter(req, 'order_id')
-        if (order_id != null) {
+        if (StringUtils.isNotBlank(order_id)) {
             query.put('order_id', order_id)
         }
         def record_id = ServletRequestUtils.getStringParameter(req, 'record_id')
-        if (record_id != null) {
+        if (StringUtils.isNotBlank(record_id)) {
             query.put('toys.record_id', record_id)
         }
         Crud.list(req, apply_post_logs(), query, ALL_FIELD, SJ_DESC)
