@@ -3,25 +3,18 @@ package com.ttpod.star.admin.doll
 import com.mongodb.BasicDBObject
 import com.mongodb.DBCollection
 import com.ttpod.rest.anno.RestWithSession
-import com.ttpod.rest.common.util.http.HttpStatusException
 import com.ttpod.rest.persistent.KGS
 import com.ttpod.rest.web.Crud
 import com.ttpod.star.admin.BaseController
 import com.ttpod.star.admin.Web
-import com.ttpod.star.common.util.HttpClientUtils
-import com.ttpod.star.common.util.KeyUtils
 import com.ttpod.star.model.CatchObserveStatus
 import org.apache.commons.lang.StringUtils
-import org.apache.http.HttpResponse
-import org.apache.http.HttpStatus
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.ServletRequestUtils
 
 import javax.annotation.Resource
-import javax.servlet.ServletRequest
 import javax.servlet.http.HttpServletRequest
-import java.nio.charset.Charset
 
 import static com.ttpod.rest.common.doc.MongoKey.ALL_FIELD
 import static com.ttpod.rest.common.doc.MongoKey.SJ_DESC
@@ -46,6 +39,10 @@ class DollController extends BaseController {
 
     DBCollection catch_repair_logs() {
         return logMongo.getCollection('catch_repair_logs')
+    }
+
+    DBCollection catch_room() {
+        return catchMongo.getCollection('catch_room')
     }
 
     DBCollection toys() {
@@ -119,7 +116,13 @@ class DollController extends BaseController {
         if (status != null) {
             query.put('status', status)
         }
-        Crud.list(req, catch_repair_logs(), query, ALL_FIELD, $$(status: 1, timestamp: -1))
+        Crud.list(req, catch_repair_logs(), query, ALL_FIELD, $$(status: 1, timestamp: -1)) {List<BasicDBObject> list->
+            for(BasicDBObject obj: list) {
+                def room_id = obj['room_id'] as Integer
+                def room = catch_room().findOne($$(_id: room_id), $$(name: 1))
+                obj['room_name'] = room['name']
+            }
+        }
     }
 
     /**

@@ -291,12 +291,14 @@ class CatchuController extends BaseController {
         def pic = ServletRequestUtils.getStringParameter(req, 'pic') //图片
         def head_pic = ServletRequestUtils.getStringParameter(req, 'head_pic') //缩略图
         def desc = ServletRequestUtils.getStringParameter(req, 'desc', '') //描述
-        def tid = ServletRequestUtils.getStringParameter(req, 'tid') //绑定游戏
+        def tid = ServletRequestUtils.getStringParameter(req, 'tid') //
+        def total_stock = ServletRequestUtils.getIntParameter(req, 'total_stock', 0) //总库存， stock 发货库存
         def timestamp = new Date().getTime()
         if (toys().count($$(_id: _id)) > 0) {
             return [code: 0]
         }
-        def map = [_id: _id, name: name, type: type, tid: tid, pic: pic, head_pic: head_pic, desc: desc, timestamp: timestamp]
+        def stock = [stock: total_stock, count: 0, total: total_stock, timestamp: System.currentTimeMillis()]
+        def map = [_id: _id, name: name, type: type, tid: tid, stock: stock, pic: pic, head_pic: head_pic, desc: desc, timestamp: timestamp]
         if(toys().save(new BasicDBObject(map)).getN() == 1){
             Crud.opLog(toys().getName() + "_add", map)
             return [code: 1]
@@ -344,6 +346,24 @@ class CatchuController extends BaseController {
         }
         if(toys().update($$(_id: _id), new BasicDBObject($set: map)).getN() == 1){
             Crud.opLog(toys().getName() + "_edit", map)
+            return [code: 1]
+        }
+        return [code: 0]
+    }
+
+    /**
+     * 娃娃补库存
+     * [total_stock: total_stock, stock: total_stock, count: 0, total: total_stock]
+     */
+    def toy_stock_add(HttpServletRequest req) {
+        def _id = ServletRequestUtils.getIntParameter(req, '_id')
+        def total_stock = ServletRequestUtils.getIntParameter(req, 'stock')
+        if (_id == null || total_stock == null) {
+            return Web.missParam()
+        }
+        def inc = ['stock.stock': total_stock, 'stock.total': total_stock]
+        if (toys().update($$(_id: _id), $$($inc: inc, $set: ['stock.timestamp': System.currentTimeMillis()])).getN() == 1) {
+            Crud.opLog(toys().getName() + "_stock_add", inc)
             return [code: 1]
         }
         return [code: 0]

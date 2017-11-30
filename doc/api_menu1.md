@@ -1,5 +1,90 @@
 # 日常运营
 
+## 娃娃商品管理
+### 1.商品列表
+
+* API {GET|POST} http://test-apiadmin.17laihou.com/catchu/toy_list.json  
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+stime|String|false|yyyy-MM-dd HH: mm:ss|创建时间开始
+etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
+
+* 返回
+```json
+{
+    "count": 10, 
+    "data": [
+        {
+            "_id": 100060, 
+            "name": "眯眼熊", 
+            "type": "true", 
+            "pic": "https://aiimg.sumeme.com/15/7/1510991024079.png", 
+            "head_pic": "https://aiimg.sumeme.com/6/6/1510991028358.png", 
+            "desc": "眯眼熊", 
+            "stock": {
+                "stock": 123, //库存
+                "total": 123, //进货量
+                "count": 123, //已发货总数
+                "timestamp": 123123123 //末次更新时间
+            },
+            "timestamp": 1510925907864
+        }], 
+    "code": 1, 
+    "all_page": 2
+}
+```
+
+### 2.商品修改
+
+* API 添加 {GET|POST} http://test-apiadmin.17laihou.com/catchu/toy_add.json  
+      修改 {GET|POST} http://test-apiadmin.17laihou.com/catchu/toy_edit.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+\_id|int|false||edit必传
+name|String|true||商品名称
+type|bool|false|默认为true|是否可用
+pic|String|true||详情图
+head_pic|string|true||缩略图
+desc|String|false|false|描述
+tid|string|false||关联娃娃ID，没有不填
+stock|int|false||默认0
+
+* 返回
+
+    成功
+```json
+{"code": 1}
+```
+    失败
+```json
+{"code": 0, "msg":"失败原因"}
+```
+
+### 3.商品库存添加
+
+* API {GET|POST} http://test-apiadmin.17laihou.com/catchu/toy_stock_add.json  
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+\_id|int|true||对应商品ID
+stock|int|true||库存可以为负，填错的情况
+
+* 返回
+
+    成功
+```json
+{"code": 1}
+```
+    失败
+```json
+{"code": 0, "msg":"失败原因"}
+```
+
 ## 公告通知 - 消息通知
 ### 1.通知列表
 
@@ -417,8 +502,8 @@ size|int|false||每页记录数
 \_id|string|true||记录ID
 type|int|true||申述类型 0 卡顿延迟 1 抓到娃娃不算
 status|int|true||处理状态 0 未处理 1 已处理 2 忽略
-count|int|true||补货数量，填对应的钻石数，或补的娃娃数
-desc|string|true||补货说明，会提示给用户
+count|int|true||补货数量，填对应的钻石数，或补的娃娃数 status为1时必填
+desc|string|true||补货说明，会提示给用户 status为1时必填
 
 * 返回
 ```json
@@ -465,6 +550,7 @@ size|int|false||每页记录数
                 "1": 123,
                 "2": 123
             },
+            "room_name": "", //房间名称
             "timestamp": 123123123123
         }
     ],
