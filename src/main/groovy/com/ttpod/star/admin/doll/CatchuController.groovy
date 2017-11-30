@@ -1,4 +1,4 @@
-package com.ttpod.star.admin.lab
+package com.ttpod.star.admin.doll
 
 import com.mongodb.BasicDBObject
 import com.mongodb.DBCollection
@@ -637,11 +637,11 @@ class CatchuController extends BaseController {
                 user_id: records['user_id'],
                 toy: records['toy'],
                 post_type: CatchPostType.未处理.ordinal(),
-                coin: 0,
+                coin: records['coin'],
                 timestamp: records['timestamp'],
                 replay_url: records['replay_url'],
                 goods_id: records['goods_id'],
-                relative_record: _id
+                relative_record: _id //对应的补单记录
         )
         catch_success_logs().save(success_log)
         Crud.opLog(catch_success_logs().getName() + '_success_record_add', success_log)

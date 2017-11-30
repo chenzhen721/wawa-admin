@@ -369,3 +369,122 @@ group|str|true||聚类，eg: 钻石列表 diamond
 ```json
 {"code": 1}
 ```
+
+## 申述管理
+### 1.申述列表
+
+* API {GET|POST} http://test-apiadmin.17laihou.com/doll/observe_list.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+stime|String|false|yyyy-MM-dd HH: mm:ss|创建时间开始
+etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
+\_id|string|false||记录ID
+type|int|false||申述类型 0 卡顿延迟 1 抓到娃娃不算
+page|int|false||页码
+size|int|false||每页记录数
+
+* 返回
+```json
+{
+    "all_page": 11,
+    "code": 1,
+    "data": [
+        {
+            "_id": "1711232013251202883",
+            "user_id": 1202883,
+            "replay_url": "", //录像地址
+            "type": 12,//申述类型 0 卡顿延迟 1 抓到娃娃不算
+            "status": 0, //处理状态 0 未处理 1 已处理 2 忽略
+            "user": {
+                "nick_name": "",
+                "pic": ""
+            }
+        }
+    ],
+    "count": 1
+}
+```
+
+### 2.申述处理
+
+* API {GET|POST} http://test-apiadmin.17laihou.com/doll/edit_observe.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+\_id|string|true||记录ID
+type|int|true||申述类型 0 卡顿延迟 1 抓到娃娃不算
+status|int|true||处理状态 0 未处理 1 已处理 2 忽略
+count|int|true||补货数量，填对应的钻石数，或补的娃娃数
+desc|string|true||补货说明，会提示给用户
+
+* 返回
+```json
+{
+    "code": 1
+}
+```
+
+## 报修管理
+### 1.报修列表
+
+* API {GET|POST} http://test-apiadmin.17laihou.com/doll/repair_list.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+stime|String|false|yyyy-MM-dd HH: mm:ss|创建时间开始
+etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
+fid|string|false||机器号
+problem|int|false||问题类型 0：失灵， 1：延迟， 2： 其它
+status|int|false||处理状态 0 未处理 1 处理中 2 完成
+page|int|false||页码
+size|int|false||每页记录数
+
+* 返回
+```json
+{
+    "all_page": 11,
+    "code": 1,
+    "data": [
+        {
+            "_id": "1711232013251202883",
+            "room_id": 1202883, //房间ID
+            "fid": "", //机器ID
+            "toy_id": 0,   //娃娃ID
+            "toy": {
+                "_id": 123,
+                "name": 123,
+                "pic": ""
+            },
+            "status": 0, //处理状态 0 未处理 1 处理中 2 完成
+            "problem": {
+                "0": 123,
+                "1": 123,
+                "2": 123
+            },
+            "timestamp": 123123123123
+        }
+    ],
+    "count": 1
+}
+```
+
+### 2.申述处理
+
+* API {GET|POST} http://test-apiadmin.17laihou.com/doll/repair_edit.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+\_id|string|true||记录ID
+status|int|true||处理状态 0 未处理 1 处理中 2 完成
+
+* 返回
+```json
+{
+    "code": 1
+}
+```
