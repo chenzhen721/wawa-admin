@@ -7,6 +7,7 @@ import com.ttpod.rest.persistent.KGS
 import com.ttpod.rest.web.Crud
 import com.ttpod.star.admin.BaseController
 import com.ttpod.star.admin.Web
+import com.ttpod.star.common.util.KeyUtils
 import com.ttpod.star.model.CatchObserveStatus
 import org.apache.commons.lang.StringUtils
 import org.slf4j.Logger
@@ -150,6 +151,7 @@ class DollController extends BaseController {
         }
         if (status == 2) {
             if (1 == catch_repair_logs().update($$(_id: _id), $$($set: [status: status]), false, false, writeConcern).getN()) {
+                mainRedis.delete(KeyUtils.ROOM.room_repair(repair_log['room_id']))
                 return [code: 1]
             }
         }
