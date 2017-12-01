@@ -4,7 +4,6 @@ import com.mongodb.BasicDBObject
 import com.mongodb.DBCollection
 import com.mongodb.DBObject
 import com.mongodb.QueryBuilder
-import com.ttpod.rest.anno.Rest
 import com.ttpod.rest.anno.RestWithSession
 import com.ttpod.rest.common.doc.IMessageCode
 import com.ttpod.rest.common.util.WebUtils
@@ -77,12 +76,12 @@ class FinanceController extends BaseController {
         def logWithId = new BasicDBObject(
                 _id: orderId,
                 user_id: id,
-                coin: num,
+                diamond: num,
                 via: 'Admin',
                 session: Web.getSession(),
                 remark: remark
         )
-        if (addCoin(id, num, logWithId)) {
+        if (addDiamond(id, num, logWithId)) {
             Crud.opLog(OpType.finance_add, [user_id: id, order_id: orderId, coin: num, remark: remark])
         }
         [code: 1]
@@ -96,7 +95,7 @@ class FinanceController extends BaseController {
         def userId = req['user_id'] as Integer
         def target = req['target'] as Integer
         def cny = req['cny'] as Integer
-        def coin = req['coin'] as Long
+        def diamond = req['coin'] as Long
         def via = req['via']
         def shop = req['shop']
         def broker = req['broker']
@@ -109,7 +108,7 @@ class FinanceController extends BaseController {
                 _id: order_id,
                 user_id: userId,
                 cny: cny,
-                coin: coin,
+                diamond: diamond,
                 via: via,
                 shop: shop,//商品类型
                 ext: broker, // 如果经纪人id 填写在这里
@@ -125,7 +124,7 @@ class FinanceController extends BaseController {
             logWithId.put('to_id', target)
             to_id = target
         }
-        if (addCoin(to_id, coin, logWithId)) {
+        if (addDiamond(to_id, diamond, logWithId)) {
             Crud.opLog(OpType.repair_order, logWithId)
             return [code: 1]
         }
@@ -204,8 +203,8 @@ class FinanceController extends BaseController {
             return [code: 0, msg: 'num must > 0']
         }
         def remark = req['remark'] as String
-        if (users().update(new BasicDBObject(_id, id).append('finance.coin_count', [$gte: num])
-                , new BasicDBObject('$inc', ['finance.coin_count': 0 - num]), false, false, writeConcern).getN() == 1) {
+        if (users().update(new BasicDBObject(_id, id).append('finance.diamond_count', [$gte: num])
+                , new BasicDBObject('$inc', ['finance.diamond_count': 0 - num]), false, false, writeConcern).getN() == 1) {
             Crud.opLog(OpType.finance_cut_coin, [user_id: id, coin: num, remark: remark])
             return [code: 1]
         }
@@ -233,58 +232,7 @@ class FinanceController extends BaseController {
         return map
     }
 
-    /**
-     * 直播统计
-     */
-    def live_static(HttpServletRequest req) {
-        def df = new DecimalFormat('0.##')
-        def sdf = new SimpleDateFormat('yyyy-MM-dd')
-        def tableApply = adminMongo.getCollection('applys')
-        def tableLivestat = adminMongo.getCollection('stat_lives')
-        def dataList = new ArrayList(50)
-        def query = Web.fillTimeBetween(req)
-        //query.put('second').greaterThanEquals(30 * 60)//查询播出时间大于30分钟的主播
-        def live_type = req.getParameter('live_type') as Integer//直播类型 1 PC, 2 手机
-        //手机直播
-        if (live_type != null && live_type > LiveType.UnKnown.ordinal()) {
-            query.and('user_id').in(rooms().find($$("apply_type", live_type as Integer), $$('xy_star_id', 1))
-                    .toArray().collect { it.getAt('xy_star_id') as Integer })
-        }
 
-        tableLivestat.aggregate(
-                $$($match, query.get()),
-                $$($project, [_id: '$_id', timestamp: '$timestamp', second: '$second', earned: '$earned', pc_second: '$pc_second', pc_earned: '$pc_earned', app_second: '$app_second', app_earned: '$app_earned', user_id: '$user_id', 'award_count': '$award_count']),
-                $$($group, [_id: '$timestamp', second: [$sum: '$second'], earned: [$sum: '$earned'], pc_second: [$sum: '$pc_second'], pc_earned: [$sum: '$pc_earned'], app_second: [$sum: '$app_second'], app_earned: [$sum: '$app_earned'], userSet: [$addToSet: '$user_id'], 'award_count': [$sum: '$award_count']]),
-                $$($sort, [_id: -1])
-        ).results().each { BasicDBObject obj ->
-            def timestamp = obj.remove('_id') as Long
-            if (timestamp != null) {
-                def userSet = obj.remove('userSet') as List
-                def userCount = userSet?.size() as Number//播出人数
-                def earned = obj.get('earned') as BigDecimal//总vc
-                def app_earned = obj.get('app_earned') as BigDecimal//手机直播维C
-                def second = obj.get('second') as BigDecimal//播出时长
-                def app_second = obj.get('app_second') as BigDecimal//手机播出时长
-                def applyQuery = $$([status   : ApplyType.通过.ordinal(),
-                                     lastmodif: [$gte: timestamp, $lt: timestamp + 24 * 60 * 60 * 1000]])
-                if (live_type != null && live_type > LiveType.UnKnown.ordinal()) {
-                    applyQuery.append("live_type", live_type as Integer)
-                }
-                def applyCount = tableApply.count(applyQuery)
-                obj.put('timestamp', sdf.format(timestamp))
-                obj.put('applyCount', applyCount)
-                obj.put('userCount', userCount)
-                obj.put('avgSecond', df.format(second / userCount))
-                obj.put('avgAppSecond', df.format(app_second / userCount))
-                obj.put('cny', earned / 100)
-                obj.put('app_cny', app_earned / 100)
-                obj.put('avgCny', df.format(earned / 100 / userCount))
-
-                dataList.add(obj)
-            }
-        }
-        [code: 1, data: dataList]
-    }
 
     /**
      * 充值消费比例
@@ -318,287 +266,7 @@ class FinanceController extends BaseController {
         }
     }
 
-    /**
-     * 主播直播统计
-     * @param req
-     * @return
-     */
-    def stat_list(HttpServletRequest req) {
 
-        if (req['stime'] == null) {
-            return [code: 0]
-        }
-        def timeQuery = Web.fillTimeBetween(req).get()
-        def page = req.getInt('page') ?: 1//默认第一页
-        def size = req.getInt('size') ?: 20//默认每页显示20条
-        def live_type = req.getParameter('live_type') as Integer//直播类型 1 PC, 2 手机
-        def temp = req.getParameter('temp') as Boolean//临时直播
-        def all = req.getParameter('all') as String
-        def query = new BasicDBObject()
-        String sid = req[_id]
-        if (StringUtils.isNotBlank(sid)) {
-            query.put('user_id', sid as Integer)
-        } else {
-            def brokerId = req['broker']
-            if (brokerId) {
-                query.put('user_id', [$in: users().find($$("star.broker", brokerId as Integer), $$('nick_name', 1))
-                        .toArray().collect { it.getAt(_id) }])//*.get(_id)]) //.collect {it[_id]}])
-            }
-        }
-        //手机直播
-        if (live_type != null && live_type > LiveType.UnKnown.ordinal()) {
-            query.put('user_id', [$in: rooms().find($$("apply_type", live_type as Integer), $$('xy_star_id', 1))
-                    .toArray().collect { it.getAt('xy_star_id') as Integer }])//*.get(_id)]) //.collect {it[_id]}])
-        }
-        //临时直播主播
-        if (temp != null) {
-            query.put('user_id', [$in: rooms().find($$("temp", temp as Boolean), $$('xy_star_id', 1))
-                    .toArray().collect { it.getAt('xy_star_id') as Integer }])//*.get(_id)]) //.collect {it[_id]}])
-        }
-
-        query.putAll(timeQuery)
-        //采取分页查询的方式，计算开播用户的总数
-        def userIterator = adminMongo.getCollection("stat_lives").aggregate(
-                new BasicDBObject('$match', query),
-                new BasicDBObject('$project', [user_id: '$user_id']),
-                new BasicDBObject('$group', [_id: null, users: [$addToSet: '$user_id']])
-        ).results().iterator()
-        def userObj = userIterator.hasNext() ? userIterator.next() as BasicDBObject : new BasicDBObject()
-        def userSet = (userObj.get('users') ?: []) as Set
-        def total = userSet.size() as Integer
-        if (StringUtils.isNotBlank(all)) size = total
-        def all_page = (total / size) as Integer
-        if (total % size > 0) all_page += 1
-        if (all_page != 0 && page > all_page) page = all_page
-
-        Iterator records = adminMongo.getCollection("stat_lives").aggregate(
-                new BasicDBObject('$match', query),
-                new BasicDBObject('$project', [_id: '$user_id', second: '$second', day: '$value', earned: '$earned', pc_second:
-                        '$pc_second', pc_earned   : '$pc_earned', app_second: '$app_second', app_earned: '$app_earned', meme: '$meme', award_count: '$award_count']),
-                new BasicDBObject('$group', [_id       : '$_id', second: [$sum: '$second'], earned: [$sum: '$earned'],
-                                             pc_second : [$sum: '$pc_second'], pc_earned: [$sum: '$pc_earned'], app_second: [$sum: '$app_second'],award_count:['$sum':'$award_count'],
-                                             app_earned: [$sum: '$app_earned'], days: [$sum: '$day'], meme: [$sum: '$meme']]),
-                new BasicDBObject('$sort', [second: -1]),
-                new BasicDBObject('$skip', (page - 1) * size),
-                new BasicDBObject('$limit', size)
-        ).results().iterator()
-        def dataList = new ArrayList(size)
-        def applys = adminMongo.getCollection('applys')
-        def users = users()
-        while (records.hasNext()) {
-            def obj = records.next()
-            def uid = obj.get(_id) as Integer
-            def applylist = applys.find(new BasicDBObject('xy_user_id': uid, status: ApplyType.通过.ordinal()), new BasicDBObject(
-                    tel: 1, real_name: 1, bank_id: 1, bank: 1, bank_location: 1, bank_name: 1, bank_user_name: 1, sfz: 1
-            )).sort(new BasicDBObject(lastmodif: -1))
-            if (applylist?.hasNext()) {
-                def apply = applylist.next()
-                apply.removeField(_id)
-                obj.putAll(apply)
-            }
-            def user = users.findOne(new BasicDBObject(_id, uid), new BasicDBObject('star.timestamp': 1, 'star.broker': 1, nick_name: 1, 'finance.bean_count_total': 1))
-            if (user != null)
-                obj.putAll(user)
-
-            if (!obj.containsField('award_count') || obj['award_count'] == null) {
-                obj.put('award_count',0)
-            }
-            //obj.put("days",obj.get('days').collect(new HashSet(30)) {new Date(((Number)it).longValue()).format("yyyy-MM-dd")})
-            dataList.add(obj)
-        }
-        WebUtils.normalOutModel(total, all_page, dataList)
-    }
-
-    def star_salary(HttpServletRequest req) {
-
-        if (req['time'] == null) {
-            return [code: 0]
-        }
-        String month = req['time']
-        def stime = new SimpleDateFormat("yyyyMM").parse(month);
-
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(stime);
-        calendar.add(Calendar.MONTH, 1);
-        //月末
-        Date etime = calendar.getTime();
-
-        def query = Web.fillTimeBetween(stime, etime).get()
-
-        def page = req.getInt('page') ?: 1//默认第一页
-        def size = req.getInt('size') ?: 20//默认每页显示20条
-        def live_type = req.getParameter('live_type') as Integer//直播类型 1 PC, 2 手机
-        def temp = req.getParameter('temp') as Boolean//临时直播
-        def all = req.getParameter('all') as String
-        String sid = req[_id]
-
-        def star_partnership = req['star_partnership'] as Integer//主播类型：1对私，2对公
-        def broker_partnership = req['broker_partnership'] as Integer//经纪人类型：1对私，2对公
-        def broker_special = req['broker_special'] as Integer//经纪人是否特殊
-//        def level = req['level'] as Integer;
-
-        if (StringUtils.isNotBlank(sid)) {
-            query.put('user_id', sid as Integer)
-        } else {
-            def brokerId = req['broker']
-            if (brokerId) {
-                query.put('user_id', [$in: users().find($$("star.broker", brokerId as Integer), $$('nick_name', 1))
-                        .toArray().collect { it.getAt(_id) }])//*.get(_id)]) //.collect {it[_id]}])
-            }
-        }
-        //手机直播
-        if (live_type != null && live_type > LiveType.UnKnown.ordinal()) {
-            query.put('user_id', [$in: rooms().find($$("apply_type", live_type as Integer), $$('xy_star_id', 1))
-                    .toArray().collect { it.getAt('xy_star_id') as Integer }])//*.get(_id)]) //.collect {it[_id]}])
-        }
-        //临时直播主播
-        if (temp != null) {
-            query.put('user_id', [$in: rooms().find($$("temp", temp as Boolean), $$('xy_star_id', 1))
-                    .toArray().collect { it.getAt('xy_star_id') as Integer }])//*.get(_id)]) //.collect {it[_id]}])
-        }
-
-        //主播类型：1对私，2对公
-        if (star_partnership != null) {
-            query.put('user_id', [$in: users().find($$("priv", UserType.主播.ordinal())
-                    .append("star.partnership", star_partnership == 1 ? $$($ne, 2) : 2), $$('_id', 1))
-                    .toArray().collect { it.getAt('_id') as Integer }])//*.get(_id)]) //.collect {it[_id]}])
-        }
-        //经纪人类型：1对私，2对公
-        if (broker_partnership != null) {
-            def inBrokerQuery = [$in: users().find($$("priv", UserType.经纪人.ordinal())
-                    .append("broker.partnership", broker_partnership == 1 ? $$($ne, 2) : 2), $$('_id', 1))
-                    .toArray().collect { it.getAt('_id') as Integer }]//*.get(_id)]) //.collect {it[_id]}])
-            query.put('user_id', [$in: users().find($$("star.broker", inBrokerQuery)).toArray().collect {
-                it.getAt('_id') as Integer
-            }])//*.get(_id)]) //.collect {it[_id]}])
-        }
-        //经纪人是否特殊
-        if (broker_special != null) {
-            def inBrokerQuery = [$in: users().find($$("priv", UserType.经纪人.ordinal())
-                    .append("broker.special", 1), $$('_id', broker_special == 0 ? $$($ne, 1) : 1))
-                    .toArray().collect { it.getAt('_id') as Integer }]//*.get(_id)]) //.collect {it[_id]}])
-            query.put('user_id', [$in: users().find($$("star.broker", inBrokerQuery)).toArray().collect {
-                it.getAt('_id') as Integer
-            }])//*.get(_id)]) //.collect {it[_id]}])
-        }
-
-        def total = adminMongo.getCollection("stat_lives").aggregate(
-                new BasicDBObject('$match', query),
-                new BasicDBObject('$project', [_id: '$user_id']),
-                new BasicDBObject('$group', [_id: '$_id']),
-        ).results().iterator().size() as Integer
-
-        if (StringUtils.isNotBlank(all)) size = total
-        def all_page = (total / size) as Integer
-        if (total % size > 0) all_page += 1
-        if (all_page != 0 && page > all_page) page = all_page
-
-        Iterator records = adminMongo.getCollection("stat_lives").aggregate(
-                new BasicDBObject('$match', query),
-                new BasicDBObject('$project', [_id: '$user_id', second: '$second', day: '$value', earned: '$earned', pc_second:
-                        '$pc_second', pc_earned   : '$pc_earned', app_second: '$app_second', app_earned: '$app_earned', meme: '$meme']),
-                new BasicDBObject('$group', [_id       : '$_id', second: [$sum: '$second'], earned: [$sum: '$earned'],
-                                             pc_second : [$sum: '$pc_second'], pc_earned: [$sum: '$pc_earned'], app_second: [$sum: '$app_second'],
-                                             app_earned: [$sum: '$app_earned'], days: [$sum: '$day'], meme: [$sum: '$meme']]),
-                new BasicDBObject('$sort', [second: -1]),
-                new BasicDBObject('$skip', (page - 1) * size),
-                new BasicDBObject('$limit', size)
-        ).results().iterator()
-        def dataList = new ArrayList(size)
-        def applys = adminMongo.getCollection('applys')
-        while (records.hasNext()) {
-            def obj = records.next()
-            def uid = obj.get(_id) as Integer
-            def applylist = applys.find(new BasicDBObject('xy_user_id': uid, status: ApplyType.通过.ordinal()), new BasicDBObject(
-                    tel: 1, real_name: 1, bank_id: 1, bank: 1, bank_location: 1, bank_name: 1, bank_user_name: 1, sfz: 1
-            )).sort(new BasicDBObject(lastmodif: -1))
-            if (applylist?.hasNext()) {
-                def apply = applylist.next()
-                apply.removeField(_id)
-                obj.putAll(apply)
-            }
-            def user = users().findOne(new BasicDBObject(_id, uid), new BasicDBObject('star.timestamp': 1, 'star.broker': 1, 'star.partnership': 1, 'star.special': 1, nick_name: 1, 'finance.bean_count_total': 1))
-            if (user != null) {
-                obj.putAll(user)
-                def brokerId = (user['star'] as DBObject)?.get("broker") as Integer
-                if (brokerId) {
-                    def broker = users().findOne(new BasicDBObject(_id, brokerId), new BasicDBObject('star.timestamp': 1, 'star.broker': 1, nick_name: 1, 'finance.bean_count_total': 1, 'broker.partnership': 1, 'broker.special': 1))
-                    Map brokerMap = new HashMap();
-                    brokerMap.put("_id", broker.get("_id"))
-                    brokerMap.put("nick_name", broker.get("nick_name"))
-                    brokerMap.put("partnership", (broker.get("broker") as DBObject).get("partnership"))
-                    brokerMap.put("special", (broker.get("broker") as DBObject).get("special"))
-                    obj.put("broker", brokerMap);
-                }
-            }
-
-            def new_earned = obj.get("earned") as Integer;
-            def bs = basicSalary().findOne($$("_id", month + "_" + uid))
-            if (bs != null) {
-                new_earned = bs.get("new_earned") as Integer;
-                obj.put("remark", bs.get("remark"));
-            }
-            obj.put("new_earned", new_earned);
-
-            obj.put("level", getLevel(user, stime.getTime(), obj.get("earned") as Integer, obj.get("days") as Integer));
-            obj.put("time", month)
-
-            dataList.add(obj)
-        }
-        WebUtils.normalOutModel(total, all_page, dataList)
-    }
-
-    static List<Map<String, Integer>> levels = [["earned": 20, "amount": 600], ["earned": 50, "amount": 1300], ["earned": 100, "amount": 3000], ["earned": 250, "amount": 5000], ["earned": 500, "amount": 10000], ["earned": 800, "amount": 15000]];
-
-    static Map<String, Integer> getLevel(DBObject user, long stime, int earned, int days) {
-
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(stime);
-        calendar.add(Calendar.MONTH, 1);
-        long etime = calendar.getTime().getTime();
-        //本月
-
-        //ef special = user.get("star.special") as Integer;
-        def timestamp = (user['star'] as DBObject)?.get('timestamp') as Long;
-
-        //本月签约 || 本月之前且开播天数>=20
-        if ((timestamp >= stime && timestamp < etime)
-                || (timestamp < stime && days >= 20)
-        ) {
-            //if (special != 1) {
-            //标准底薪结算
-            Map<String, Integer> result = null;
-            for (Map<String, Integer> level : levels) {
-                if (earned >= level.get("earned") * 10000) {
-                    result = level;
-                }
-            }
-            return result;
-            //}
-        }
-
-        return null;
-    }
-
-    /**
-     * 主播底薪修改
-     * @param req
-     * @return
-     */
-    def star_salary_modify(HttpServletRequest req) {
-        if (req['_id'] == null || req['time'] == null || req['new_earned'] == null) {
-            return [code: 0]
-        }
-
-        Integer uid = req['_id'] as Integer;
-        String month = req['time'];
-        String id = month + "_" + uid;
-
-        basicSalary().update($$("_id", id),
-                $$($set, ["new_earned": req["new_earned"] as Integer, "remark": req["remark"]]), true, false)
-
-        return OK();
-    }
 
     static class PayStat {
         final Set user = new HashSet(2000)
@@ -778,14 +446,10 @@ class FinanceController extends BaseController {
     def donate_exp(HttpServletRequest req) {
         def num = req.getInt('num')
         def userId = req.getInt(_id)
-//        def row = users().update($$(_id, userId), $$($inc, $$('finance.coin_spend_total', num)), false, false, writeConcern).getN()
         def query = $$(_id, userId)
-        def update = $$($inc, $$('finance.coin_spend_total', num))
+        def update = $$($inc, $$('exp', num))
         def user = users().findAndModify(query, null, null, false, update, true, false)
         if (user != null) {
-            def finance = user['finance'] as Map
-            def coin_spend_total = finance.containsKey('coin_spend_total') ? finance['coin_spend_total'] as Long : 0L
-            Web.setSpend(userId, 'spend', coin_spend_total)
 //            messageController.sendSingleMsg(userId, '经验奖励', "尊敬的么么用户，您好！恭喜你获得了${num}经验奖励！", MsgType.系统消息);
             Crud.opLog(OpType.finance_donate_exp, [user_id: userId, num: num])
         }

@@ -23,8 +23,6 @@ import static com.ttpod.rest.common.doc.MongoKey.$unset
 
 /**
  * 垃圾信息相关内容
- * date: 13-10-11 下午2:31
- * @author: haigen.xiong@ttpod.com
  */
 @RestWithSession
 class SpamController extends BaseController

@@ -31,6 +31,7 @@ import javax.annotation.Resource
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import java.lang.ref.SoftReference
+import java.lang.reflect.Array
 import java.text.SimpleDateFormat
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
@@ -51,7 +52,11 @@ class UserController extends BaseController {
     public StringRedisTemplate liveRedis;
     static final Logger logger = LoggerFactory.getLogger(UserController.class)
 
-    def rewards() { return activeMongo.getCollection('rewards') }
+    def user_award_logs() { return logMongo.getCollection('user_award_logs') }
+    def user_battle_logs() { return gameLogMongo.getCollection('user_battle_logs') }
+    def family_event_logs() { return gameLogMongo.getCollection('family_event_logs') }
+    def member_contributions() { return familyMongo.getCollection('member_contributions')}
+    def stat_mic() { return adminMongo.getCollection('stat_mic')}
 
     DBCollection table() { users() }
 
@@ -106,7 +111,6 @@ class UserController extends BaseController {
 
         Crud.list(req, table(), query.get(), ALL_FIELD, SJ_DESC) { List<BasicDBObject> data ->
             def logins = logMongo.getCollection('day_login')
-//            String day = new Date().format('yyyyMMdd_')
             def ret = new BasicDBObject(ip: 1, uid: 1, timestamp: 1)
             for (BasicDBObject obj : data) { // 更新昵称 http://192.168.1.181/redmine/issues/4086
                 //def login = logins.findOne("${day}${obj[_id]}".toString(),ret)
@@ -116,305 +120,18 @@ class UserController extends BaseController {
                     obj.put('login', login)
                 }
                 obj.put("ban_status", 0)
-                /*性能差
-                def keys = liveRedis.keys(KeyUtils.USER.blackClient("*"))
-                def valOp = liveRedis.opsForValue()
-                // def pre = KeyUtils.USER.blackClient("").length()
-
-                for (String key : keys) {
-                    String value = (String) valOp.get(key)
-                    String[] tmp = value.split("_")
-                    String sUserId = tmp[0]
-                    if (sUserId.equals(user_id))
-                        obj.put("ban_status", 1)
-                }*/
                 String user_id = obj[_id].toString()
                 if (bannedUsers.contains(user_id))
                     obj.put("ban_status", 1)
-                if (priv.equals(UserType.经纪人.ordinal())) {
-                    def timeQuery = new BasicDBObject()
-                    def queryfield = [:]
-                    if (stime != null) queryfield.put($gte, stime.getTime())
-                    if (etime != null) queryfield.put($lt, etime.getTime())
-                    if (queryfield.size() > 0) timeQuery.put('timestamp', queryfield)
-                    def beanStatIter = adminMongo.getCollection('stat_brokers').aggregate(
-                            $$($match, timeQuery.append('user_id', user_id as Integer)),
-                            $$($project, [bean_count: '$star.bean_count']),
-                            $$($group, [_id: null, bean_total: [$sum: '$bean_count']])
-                    ).results().iterator()
-                    if (beanStatIter.hasNext()) {
-                        obj.put("bean_period", beanStatIter.next().get("bean_total"))
-                    }
-                    //旗下主播数量
-                    def broker = obj?.get('broker') as Map
-                    def star_total = obj?.get('star_total') as Integer
-                    if (broker) {
-                        def real_star_count = users().count($$('star.broker', user_id as Integer))
-                        if (star_total != real_star_count) {//同步主播数量
-                            broker['star_total'] = real_star_count
-                            users().update($$(_id: user_id as Integer), $$($set: ['broker.star_total': real_star_count]))
-                        }
-
-                    }
-                }
+                obj.put("weixin_bind", obj['account'] != null && obj['account']['open_id'] != null ?: false)
 
             }
         }
 
-    }
-
-    /**
-     * 经纪人接口管理
-     * @param req
-     * @return
-     */
-    def broker_list(HttpServletRequest req) {
-        def query = Web.fillTimeBetween(req).get()
-        query.put('priv', UserType.经纪人.ordinal())
-
-        def stime = Web.getTime(req, 'pstime')
-        def etime = Web.getTime(req, 'petime')
-
-        //签约时间
-        def astime = Web.getTime(req, 'astime')
-        def aetime = Web.getTime(req, 'aetime')
-
-        //经纪人类型：对私，对公
-        if (req['partnership'] as Integer == 2) {
-            query.put('broker.partnership', 2)
-        }
-        //经纪人是否特殊
-        if (req['special'] as Integer == 1) {
-            query.put('broker.special', 1)
-        }
-
-        Crud.list(req, table(), query, ALL_FIELD, SJ_DESC) { List<BasicDBObject> data ->
-            for (BasicDBObject obj : data) {
-                Integer user_id = obj[_id] as Integer
-                def timeQuery = new BasicDBObject()
-                def queryfield = [:]
-                if (stime != null) queryfield.put($gte, stime.getTime())
-                if (etime != null) queryfield.put($lt, etime.getTime())
-                if (queryfield.size() > 0) timeQuery.put('timestamp', queryfield)
-                def beanStatIter = adminMongo.getCollection('stat_brokers').aggregate(
-                        $$($match, timeQuery.append('user_id', user_id as Integer)),
-                        $$($project, [bean_count: '$star.bean_count']),
-                        $$($group, [_id: null, bean_total: [$sum: '$bean_count']])
-                ).results().iterator()
-                if (beanStatIter.hasNext()) {
-                    // 脚本统计出来的能量 room_cost + game_award
-
-                    obj.put("bean_period", beanStatIter.next().get("bean_total"))
-                }
-                //旗下主播数量
-                if (obj.containsField('broker')) {
-                    def star_total = 0
-                    def broker = obj['broker'] as Map
-                    if (broker.containsKey('star_total')) {
-                        star_total = broker['star_total'] as Integer
-                    }
-                    //同步主播数量
-                    def real_star_count = users().count($$('star.broker', user_id)) as Integer
-                    if (real_star_count != star_total) {
-                        users().update($$(_id: user_id), $$($set: ['broker.star_total': real_star_count]))
-                    }
-                    //一段时间内签约主播,被解约的也不会被查询出来
-                    List<Integer> stars = getUidsByApplyTime(astime, aetime, user_id);
-                    logger.debug("broker {} stars: {}", user_id, stars)
-                    broker.put('apply_period_stars', stars.size())
-                    //有效签约数量 (代理在某段签约时间内签约主播一段时间内收益达到10W维C的
-                    broker.putAll(caculateStars(stars, timeQuery, null))
-                }
-            }
-        }
-    }
-
-    /**
-     * 经纪人接口管理
-     * @param req
-     * @return
-     */
-    def broker_salary(HttpServletRequest req) {
-        if (req['time'] == null) {
-            return [code: 0]
-        }
-        String month = req['time']
-        def stime = new SimpleDateFormat("yyyyMM").parse(month);
-
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(stime);
-        calendar.add(Calendar.MONTH, 1);
-        //月末
-        Date etime = calendar.getTime();
-
-        calendar.setTime(stime); calendar.add(Calendar.MONTH, -1);
-        calendar.set(Calendar.DAY_OF_MONTH, 21);
-        //上上月21号
-        Date stime21 = calendar.getTime();
-
-        Integer broker_partnership = req['broker_partnership'] as Integer//经纪人类型：对私，对公
-        Integer broker_special = req['broker_special'] as Integer//经纪人是否特殊
-
-        def query = $$("priv", UserType.经纪人.ordinal())
-
-        if (StringUtils.isNotBlank(req[_id])) {
-            query.put('_id', req[_id] as Integer)
-        }
-        //经纪人类型：对私，对公
-        if (broker_partnership != null) {
-            query.put('broker.partnership', broker_partnership == 1 ? $$($ne, 2) : 2)
-        }
-        //经纪人是否特殊
-        if (broker_special != null) {
-            query.put('broker.special', broker_special == 0 ? $$($ne, 1) : 1)
-        }
-
-        /*在上月21日-本月末这个时间段内
-        新签约的主播中有3名及以上当月维C收益各达到20W
-        及以上或新签约主播总收益当月达到100W维C及以上*/
-        Crud.list(req, users(), query, ALL_FIELD, SJ_DESC) { List<BasicDBObject> data ->
-            for (BasicDBObject obj : data) {
-                Integer user_id = obj[_id] as Integer
-                def timeQuery = new BasicDBObject()
-                def queryfield = [:]
-                queryfield.put($gte, stime.getTime())
-                queryfield.put($lt, etime.getTime())
-                if (queryfield.size() > 0) timeQuery.put('timestamp', queryfield)
-                def beanStatIter = adminMongo.getCollection('stat_brokers').aggregate(
-                        $$($match, timeQuery.append('user_id', user_id as Integer)),
-                        $$($project, [bean_count: '$star.bean_count']),
-                        $$($group, [_id: null, bean_total: [$sum: '$bean_count']])
-                ).results().iterator()
-                if (beanStatIter.hasNext()) {
-                    obj.put("bean_period", beanStatIter.next().get("bean_total"))
-                }
-
-                //经纪人收益有调整
-                def basicSalary = basicSalary().findOne($$(_id, month + "_" + user_id))
-                if (basicSalary != null) {
-                    obj.put("new_earned", basicSalary.get("new_earned"))
-                    obj.put("remark", basicSalary.get("remark"))
-                }
-
-                //旗下主播数量
-                def broker = obj?.get('broker') as Map
-                def star_total = obj?.get('star_total') as Integer
-                if (broker) {
-                    def real_star_count = users().count($$('star.broker', user_id))
-                    if (star_total != real_star_count) {//同步主播数量
-                        broker['star_total'] = real_star_count
-                        users().update($$(_id: user_id), $$($set: ['broker.star_total': real_star_count]))
-                    }
-                    //一段时间内签约主播
-                    List<Integer> stars = getUidsByApplyTime(stime21, etime, user_id);
-                    logger.debug("broker {} stars: {}", user_id, stars)
-                    broker.put('apply_period_stars', stars.size())
-                    //有效签约数量 (代理在某段签约时间内签约主播一段时间内收益达到20W维C的
-                    def caculate = caculateStars(stars, timeQuery, month);
-                    broker.putAll(caculate)
-
-                    def commission = 0.17;
-
-                    //签约前两月结算18%
-                    Long timestamp = broker.get("timestamp") as Long;
-                    calendar.setTime(stime); calendar.add(Calendar.MONTH, 2);
-                    Date month2etime = calendar.getTime()
-                    if (timestamp >= stime.getTime() && timestamp < month2etime.getTime()) {
-                        commission = 0.18;
-                        //有3名及以上当月维C收益各达到20W，或总收益当月达到100W维C及以上
-                    } else if ((caculate.get("apply_period_effective_stars") as Integer) > 2
-                            || (caculate.get("apply_period_bean_total") as Integer) > 1000000) {
-                        commission = 0.18;
-                    }
-
-                    broker.put("commission", commission)
-                }
-                obj.put("time", month)
-            }
-        }
-    }
-
-    /**
-     * 经纪人底薪修改
-     * @param req
-     * @return
-     */
-    def broker_salary_modify(HttpServletRequest req) {
-        if (req['_id'] == null || req['time'] == null || req['new_earned'] == null) {
-            return [code: 0]
-        }
-
-        Integer uid = req['_id'] as Integer;
-        String month = req['time'];
-        String id = month + "_" + uid;
-
-        basicSalary().update($$("_id", id),
-                $$($set, ["new_earned": req["new_earned"] as Integer, "remark": req["remark"]]), true, false)
-
-        return OK();
-    }
-
-    /**
-     * 一段时间签约主播
-     */
-    private List<Integer> getUidsByApplyTime(Date applyStime, Date applyEtime, Integer brokerId) {
-        def timeQuery = $$(priv: UserType.主播.ordinal(), 'star.broker': brokerId)
-        def queryfield = [:]
-        if (applyStime != null) queryfield.put($gte, applyStime.getTime())
-        if (applyEtime != null) queryfield.put($lt, applyEtime.getTime())
-        if (queryfield.size() > 0) {
-            timeQuery.put('star.timestamp', queryfield)
-            //logger.debug("broker ApplyTime timeQuery: ${timeQuery}")
-            return users().find(timeQuery, $$(_id: 1)).toArray()*._id
-        }
-        return Collections.emptyList();
-    }
-
-    private static final Long EFFECTIVE_LIMIT = 200000
-    /**
-     * 统计一段签约时间内收益 以及达到达到10W维C收益的主播数量
-     * @return
-     */
-    private Map caculateStars(List<Integer> stars, BasicDBObject timeQuery, String month) {
-        Map result = new HashMap()
-        Integer count = 0;
-        Long bean_total = 0;
-        result.put('apply_period_effective_stars', count)
-        result.put('apply_period_bean_total', bean_total)
-        if (stars == null || stars.size() == 0) return result;
-
-        timeQuery.put('user_id', $$($in: stars))
-        logger.debug("broker caculateStars query: {}", timeQuery)
-        Iterator records = adminMongo.getCollection("stat_lives").aggregate(
-                new BasicDBObject('$match', timeQuery),
-                new BasicDBObject('$project', [_id: '$user_id', earned: '$earned']),
-                new BasicDBObject('$group', [_id: '$_id', earned: [$sum: '$earned']])
-        ).results().iterator()
-        while (records.hasNext()) {
-            def obj = records.next()
-            def uid = obj.get(_id) as Integer
-            Long earned = obj.get('earned') as Long
-
-            if (StringUtils.isNotEmpty(month)) {
-                def basicSalary = basicSalary().findOne($$(_id, month + "_" + uid))
-                if (basicSalary != null) {
-                    earned = basicSalary.get("new_earned") as Integer;
-                }
-            }
-
-            logger.debug("broker star : {}, earned: {}", uid, earned)
-            if (earned >= EFFECTIVE_LIMIT) {
-                count++;
-            }
-            bean_total += earned
-        }
-        result.put('apply_period_effective_stars', count)
-        result.put('apply_period_bean_total', bean_total)
-        return result;
     }
 
     static final String FREEZE_TITLE = '冻结账户'
-    static final String FREEZE_CONTENT = '管理员冻结账户,请联系爱玩客户人员'
+    static final String FREEZE_CONTENT = '管理员冻结账户,请联系客户人员'
 
     def freeze(HttpServletRequest req) {
         def id = req.getInt(_id)
@@ -461,7 +178,7 @@ class UserController extends BaseController {
      * @return
      */
     static final String BAN_TITLE = '封杀设备'
-    static final String BAN_CONTENT = '管理员封杀设备,请联系爱玩直播客服人员'
+    static final String BAN_CONTENT = '管理员封杀设备,请联系客服人员'
 
     def ban(HttpServletRequest req) {
         def id = req.getInt(_id)
@@ -528,7 +245,7 @@ class UserController extends BaseController {
 
         def zhuboId = oldRoom.get("xy_star_id") as Integer
 
-        def reason = '管理员封杀设备,如有疑问,请联系爱玩客服人员'
+        def reason = '管理员封杀设备,如有疑问,请联系客服人员'
         // 管理员封杀设备后无法登陆
 //        liveRedis.opsForValue().set(KeyUtils.LIVE.blackStar(zhuboId), KeyUtils.MARK_VAL, ttl, TimeUnit.SECONDS)
         def publish_star_close_body = ['star_id': zhuboId, 'reason': reason, 'ttl': ttl]
@@ -627,73 +344,7 @@ class UserController extends BaseController {
         return OK()
     }
 
-    /**
-     * 完善经纪人信息
-     * @param req
-     */
-    def info_complete(HttpServletRequest req) {
-        logger.debug('Received set_cash_info params is {}', req.getParameterMap())
 
-        def userId = req['user_id']
-
-        if (StringUtils.isBlank(userId)) {
-            return Web.missParam()
-        }
-
-        // 身份证
-        def sfz = req['sfz']
-        // 真实姓名
-        def realName = req['real_name']
-        // 卡号
-        def bankId = req['bank_id']
-        // 所在地
-        def bankLocation = req['bank_location']
-        // 支行名称
-        def bankName = req['bank_name']
-        // 所属银行
-        def bank = req['bank']
-
-        def map = [real_name: realName, bank_id: bankId, bank_location: bankLocation, bank_name: bankName, bank: bank, sfz: sfz]
-        def query = $$('_id': userId as Integer, 'priv': UserType.经纪人.ordinal())
-        def update = $$('$set': $$('broker.cash': map))
-        users().update(query, update)
-    }
-
-    /**
-     * 设置经济人推荐主播个数
-     * @return
-     */
-    def set_broker_recomm(HttpServletRequest req) {
-        def id = req.getInt(_id)
-        def count = req.getInt('count')
-        Integer type = ServletRequestUtils.getIntParameter(req, "type", RecommendType.新人.ordinal())
-        //初始化之前代理推荐的主播 TODO 运营到手台手动取消推荐
-        /*def stars = users().find($$('star.broker':id), $$(_id:1)).toArray()
-        if(stars != null && stars.size() > 0){
-            def star_ids = stars.collect{it[_id] as Integer}
-                star_ids.each {Integer star_id ->
-                    adminMongo.getCollection('config').update($$(_id,RecommController.index_recommend_list)
-                            ,$$($pull , $$(RecommController.index_new_star_field,star_id)))
-                }
-        }*/
-        def updateInfo = null
-        def updateRecommCount = null
-        if (RecommendType.新人.ordinal().equals(type)) {
-            updateInfo = $$('broker.recomm_limit': count)
-            updateRecommCount = $$('broker.recomm_count': 0)
-        } else if (RecommendType.普通.ordinal().equals(type)) {
-            updateInfo = $$('broker.meme_recomm_limit': count)
-            updateRecommCount = $$('broker.meme_recomm_count': 0)
-        }
-
-        if (users().update(new BasicDBObject(_id, id).append("priv", UserType.经纪人.ordinal()),
-                $$($set: updateInfo), false, false, writeConcern
-        ).getN() == 1) {
-            users().update($$(_id: id), $$($set: updateRecommCount), false, false, writeConcern)
-            Crud.opLog(OpType.broker_recomm_set, [type: type, user_id: id, count: count])
-        }
-        return OK()
-    }
 
     def ban_list(HttpServletRequest req) {
         String uid = req[_id]
@@ -729,20 +380,6 @@ class UserController extends BaseController {
     }
 
 
-    def broker_show(HttpServletRequest req) {
-        def id = req[_id]
-        DBObject query = Web.fillTimeBetween(req).get()
-        if (id) {
-            query['user_id'] = id as Integer
-        }
-        Crud.list(req, adminMongo.getCollection('stat_brokers'), query, ALL_FIELD, SJ_DESC) { List<BasicDBObject> data ->
-            def users = users()
-            for (BasicDBObject obj : data) {
-                obj.putAll(users.findOne(obj['user_id'], new BasicDBObject(nick_name: 1, broker: 1)))
-            }
-        }
-    }
-
     static long zeroMill = new Date().clearTime().getTime()
 
     def cost_log(HttpServletRequest req) {
@@ -755,29 +392,7 @@ class UserController extends BaseController {
         Crud.list(req, room_db, query.get(), ALL_FIELD, NATURAL_DESC, null)
     }
 
-    def send_gift_export(HttpServletRequest req, HttpServletResponse res) {
-        def _id = req.getParameter(_id) as String
-        if (StringUtils.isBlank(_id)) {
-            return [code: 0, msg: '请输入用户ID']
-        }
-        String type = 'send_gift'
-        Date[] dates = ExportUtils.checkDate(Web.getStime(req), Web.getEtime(req))
-        def query = Web.fillTimeBetween(dates[0], dates[1]).and('type').is(type)
-        query.put('session._id').is(_id)
-        def room_db = logMongo.getCollection('room_cost')
-        def bodyBuf = new StringBuffer()
-        def title = Boolean.TRUE
-        def result = ExportUtils.list(req, room_db, query.get(), ALL_FIELD, NATURAL_DESC) { List<BasicDBObject> list ->
-            ExportUtils.render(list, ExportType.getListByType(type), bodyBuf, title)
-            if (Boolean.TRUE.equals(title)) title = Boolean.FALSE
-        } as Map
-        def count = result['count'] as String
-        def page = result['all_page'] as String
-        def typeName = ExportType.valueOf(type)?.getDesc();
-        StringBuffer titleBuf = ExportUtils.generateTitle(dates, count, page)
-        String filename = ExportUtils.generateFilename(dates, "${_id}-${typeName}-道具销售流水".toString())
-        ExportUtils.response(res, filename, titleBuf.append(bodyBuf).toString())
-    }
+
 
     def cost_log_export(HttpServletRequest req, HttpServletResponse res) {
         def type = req['type']
@@ -813,191 +428,10 @@ class UserController extends BaseController {
         Crud.list(req, room_db, query.get(), ALL_FIELD, SJ_DESC, null)
     }
 
-    def gift_rec(HttpServletRequest req) {
-        QueryBuilder q = Web.fillTimeBetween(req)
-        q.and('type').is("send_gift")
-        if (req[_id]) {
-            def user_id = req.getInt(_id)
-            q.and('session.data.xy_user_id').is(user_id)
-        }
-        def room_db = logMongo.getCollection('room_cost')
-        Crud.list(req, room_db, q.get(), ALL_FIELD, NATURAL_DESC)
-    }
-
-    def gift_rec_export(HttpServletRequest req, HttpServletResponse res) {
-        Date[] dates = ExportUtils.checkDate(Web.getStime(req), Web.getEtime(req))
-        def query = Web.fillTimeBetween(dates[0], dates[1]).and('type').is('send_gift')
-        def room_db = logMongo.getCollection('room_cost')
-        def bodyBuf = new StringBuffer()
-        def title = Boolean.TRUE
-        def result = ExportUtils.list(req, room_db, query.get(), ALL_FIELD, NATURAL_DESC) { List<BasicDBObject> list ->
-            ExportUtils.render(list, ExportType.GIFT_REC_LIST, bodyBuf, title)
-            if (Boolean.TRUE.equals(title)) title = Boolean.FALSE
-        } as Map
-        def count = result['count'] as String
-        def page = result['all_page'] as String
-        StringBuffer buf = ExportUtils.generateTitle(dates, count, page)
-        String filename = ExportUtils.generateFilename(dates, "收礼-道具销售流水")
-        ExportUtils.response(res, filename, buf.append(bodyBuf).toString())
-    }
-
-    def football_log(HttpServletRequest req) {
-        QueryBuilder q = Web.fillTimeBetween(req)
-        q.and('type').is("football_shoot")
-        if (req[_id]) {
-            q.and('session._id').is(req[_id])
-        }
-        Crud.list(req, logMongo.getCollection('room_cost'), q.get(), ALL_FIELD, SJ_DESC)
-    }
-
-    def card_log(HttpServletRequest req) {
-        QueryBuilder q = Web.fillTimeBetween(req)
-        q.and('type').is("open_card")
-        if (req[_id]) {
-            q.and('session._id').is(req[_id])
-        }
-        Crud.list(req, logMongo.getCollection('room_cost'), q.get(), ALL_FIELD, SJ_DESC)
-    }
-
-    def egg_log(HttpServletRequest req) {
-        QueryBuilder q = Web.fillTimeBetween(req)
-        q.and('type').is("open_egg")
-        if (req[_id]) {
-            q.and('session._id').is(req[_id])
-        }
-        Crud.list(req, logMongo.getCollection('room_cost'), q.get(), ALL_FIELD, NATURAL_DESC)
-    }
-
-    def bingo_egg_log(HttpServletRequest req) {
-        QueryBuilder q = Web.fillTimeBetween(req)
-        q.and('type').is("open_bingo_egg")
-        if (req[_id]) {
-            q.and('session._id').is(req[_id])
-        }
-        Crud.list(req, logMongo.getCollection('room_cost'), q.get(), ALL_FIELD, NATURAL_DESC)
-    }
-
-    def car_race_log(HttpServletRequest req) {
-        QueryBuilder q = Web.fillTimeBetween(req)
-        q.and('type').is("car_race")
-        if (req[_id]) {
-            q.and('session._id').is(req[_id])
-        }
-        Crud.list(req, logMongo.getCollection('room_cost'), q.get(), ALL_FIELD, NATURAL_DESC)
-    }
-
-    def prettynum_log(HttpServletRequest req) {
-        QueryBuilder q = Web.fillTimeBetween(req)
-        q.and('type').is("buy_prettynum")
-        if (req[_id]) {
-            q.and('session._id').is(req[_id])
-        }
-        Crud.list(req, logMongo.getCollection('room_cost'), q.get(), ALL_FIELD, SJ_DESC)
-    }
-
-    def luck_log(HttpServletRequest req) {
-        def query = Web.fillTimeBetween(req)
-        if (req[_id]) {
-            query.and('session._id').is(req[_id])
-        }
-        Crud.list(req, logMongo.getCollection('room_luck'), query.get(), ALL_FIELD, SJ_DESC)
-    }
-
-    def bell_log(HttpServletRequest req) {
-        QueryBuilder q = Web.fillTimeBetween(req)
-        q.and('type').is("send_bell")
-        if (req[_id]) {
-            q.and('session._id').is(req[_id])
-        }
-        Crud.list(req, logMongo.getCollection('room_cost'), q.get(), ALL_FIELD, NATURAL_DESC)
-    }
-
-    def reward_log(HttpServletRequest req) {
-        QueryBuilder q = Web.fillTimeBetween(req)
-        if (req[_id]) {
-            q.and('user_id').is(req[_id] as Integer)
-        }
-        Crud.list(req, rewards(), q.get(), ALL_FIELD, SJ_DESC) { List<BasicDBObject> data ->
-            def users = users()
-            for (BasicDBObject obj : data) {
-                obj.put('user_nick_name', users.findOne(obj['user_id'] as Integer, new BasicDBObject(nick_name: 1))?.get('nick_name'))
-                if (obj['star_id']) {
-                    obj.put('star_nick_name', users.findOne(obj['star_id'] as Integer, new BasicDBObject(nick_name: 1))?.get('nick_name'))
-                }
-
-            }
-        }
-    }
-
-    def luck_log_export(HttpServletRequest req, HttpServletResponse res) {
-        Date[] dates = ExportUtils.checkDate(Web.getStime(req), Web.getEtime(req))
-        def query = Web.fillTimeBetween(dates[0], dates[1])
-        def luck_db = logMongo.getCollection('room_luck')
-        def bodyBuf = new StringBuffer()
-        def title = Boolean.TRUE
-        def result = ExportUtils.list(req, luck_db, query.get(), ALL_FIELD, SJ_DESC) { List<BasicDBObject> list ->
-            ExportUtils.render(list, ExportType.LUCK_LIST, bodyBuf, title)
-            if (Boolean.TRUE.equals(title)) title = Boolean.FALSE
-        } as Map
-        def count = result['count'] as String
-        def page = result['all_page'] as String
-        StringBuffer titleBuf = ExportUtils.generateTitle(dates, count, page)
-        String filename = ExportUtils.generateFilename(dates, "中奖记录-道具销售流水")
-
-        ExportUtils.response(res, filename, titleBuf.append(bodyBuf).toString())
-    }
-
-    def exchange_log(HttpServletRequest req) {
-        def query = Web.fillTimeBetween(req)
-        if (req[_id]) {
-            query.and('user_id').is(req.getInt(_id))
-        }
-        Crud.list(req, logMongo.getCollection('exchange_log'), query.get(), ALL_FIELD, SJ_DESC)
-    }
-
-    def lottery_log(HttpServletRequest req) {
-        def query = Web.fillTimeBetween(req)
-        if (req[_id]) {
-            query.and('user_id').is(req.getInt(_id))
-        }
-
-        String active_name = req.getParameter("active_name")
-        if (StringUtils.isNotBlank(active_name))
-            query.and("active_name").is(active_name)
-
-        String lottery_type = req.getParameter("lottery_type")
-
-        logger.info("lottery_type---------->:" + lottery_type)
-        if (StringUtils.isNotBlank(lottery_type)) {
-            Integer iLotteryType = Integer.parseInt(lottery_type)
-            query.and("lottery_type").is(iLotteryType)
-        }
-        Crud.list(req, logMongo.getCollection('lottery_logs'), query.get(), ALL_FIELD, NATURAL_DESC)
-    }
-
-    def lottery_log_export(HttpServletRequest req, HttpServletResponse res) {
-        Date[] dates = ExportUtils.checkDate(Web.getStime(req), Web.getEtime(req))
-        def query = Web.fillTimeBetween(dates[0], dates[1])
-        def lottery_db = logMongo.getCollection('lottery_logs')
-        SoftReference<StringBuffer> softBodyBuf = new SoftReference<StringBuffer>(new StringBuffer());
-        def bodyBuf = softBodyBuf.get()
-        def title = Boolean.TRUE
-        def result = ExportUtils.list(req, lottery_db, query.get(), ALL_FIELD, NATURAL_DESC) { List<BasicDBObject> list ->
-            ExportUtils.render(list, ExportType.LOTTERY_LIST, bodyBuf, title)
-            if (Boolean.TRUE.equals(title)) title = Boolean.FALSE
-        } as Map
-        def count = result['count'] as String
-        def page = result['all_page'] as String
-        StringBuffer buf = ExportUtils.generateTitle(dates, count, page)
-        String filename = ExportUtils.generateFilename(dates, "抽奖记录-道具销售流水")
-        ExportUtils.response(res, filename, buf.append(bodyBuf).toString())
-    }
-
 
     def union_photo(HttpServletRequest req) {
         Crud.list(req, adminMongo.getCollection("union_photos"), $$("user_id", req.getInt(_id)), ALL_FIELD, SJ_DESC)
     }
-
 
     static final Long SIX_HUNDRED_SECONDS = 600L
 
@@ -1131,20 +565,6 @@ class UserController extends BaseController {
         //userRedis.opsForHash().put(KeyUtils.accessToken(token), "enter_info", enter_info)
         //Web.putUserInfoToSession(KeyUtils.accessToken(token),"enter_info", enter_info)
         return [code: 0]
-    }
-
-    def broker_edit(HttpServletRequest req) {
-        Integer userId = req.getInt("_id")
-        Integer partnership = req["partnership"] as Integer
-        Integer special = req['special'] as Integer
-
-        def update = new BasicDBObject()
-        update.put("broker.partnership", partnership)
-        update.put("broker.special", special)
-
-        users().update($$(_id, userId).append("priv", UserType.经纪人.ordinal()), new BasicDBObject('$set', update))
-
-        return [code: 1]
     }
 
     private final static String PRIV_KEY = "meme#*&07071zhibo";
@@ -1291,6 +711,23 @@ class UserController extends BaseController {
     }
 
     /**
+     * 解绑用户微信
+     * @param req
+     * @return
+     */
+    def unbind_weixin(HttpServletRequest req) {
+        //获得tuid
+        Integer uid = req.getInt(_id)
+        def user = table().findOne(uid, $$(tuid: 1))
+        /*String tuid = user['tuid'] as String
+        def sign = MD5.digest2HEX("${PRIV_KEY}&userId=${tuid}".toString())*/
+        users().update($$(_id: uid), $$($unset: ['account.open_id': true]), false, false, writeConcern)
+        Crud.opLog(OpType.unbind_weixin, [user_id: uid])
+
+        OK()
+    }
+
+    /**
      * 发送手机验证码
      * @param req
      * @return
@@ -1379,15 +816,12 @@ class UserController extends BaseController {
         return [code: 1, data: [url: url]]
     }
 
-    /**
-     * 删除用户自定义背景
-     * @param req
-     * @return
-     */
-    def del_bg(HttpServletRequest req) {
-        table().update($$(_id: req.getInt(_id)), $$($unset: [bg_url: 1]))
-        Crud.opLog(OpType.del_bg, [user_id: req.getInt(_id)])
-        return [code: 1]
+    private String getNickName(Integer uid) {
+        if (uid != null) {
+            def nick_name = users().findOne($$(_id: uid), $$(nick_name: 1))?.get('nick_name')
+            return nick_name
+        }
+        return null
     }
 
 }

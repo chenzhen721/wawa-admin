@@ -27,15 +27,17 @@ class DiamondController extends BaseController {
 
     /**
      * 钻石加币
+     * 目前后台管理的加币功能在@see FinanceController add
      * @param req
      */
+    @Deprecated
     def add_logs(HttpServletRequest req) {
         def userId = ServletRequestUtils.getIntParameter(req, '_id', 0)
         def query = Web.fillTimeBetween(req)
         if (userId != 0) {
             query.and('user_id').is(userId)
         }
-        def diamond_logs = adminMongo.getCollection("diamond_logs")
+        def diamond_logs = logMongo.getCollection("diamond_logs")
         def map = Crud.list(req, diamond_logs, query.get(), null, SJ_DESC)
         DiamondActionType[] das = DiamondActionType.values()
         def types = [:]
@@ -80,12 +82,13 @@ class DiamondController extends BaseController {
     }
 
     /**
+     * //TODO
      * 钻石聚合
      * @param req
      */
     def daily_stat(HttpServletRequest req) {
         def query = Web.fillTimeBetween(req)
-        def diamond_reports = adminMongo.getCollection('diamond_dailyReport_stat')
+        def diamond_reports = adminMongo.getCollection('finance_daily_log')
         def data = Crud.list(req, diamond_reports, query.get(), ALL_FIELD, SJ_DESC)
         DiamondActionType[] das = DiamondActionType.values()
         def inc = [:]
@@ -113,7 +116,7 @@ class DiamondController extends BaseController {
      * @return
      */
     def add(HttpServletRequest req) {
-        Integer userId = ServletRequestUtils.getIntParameter(req, '_id', 0)
+        /*Integer userId = ServletRequestUtils.getIntParameter(req, '_id', 0)
         Long num = ServletRequestUtils.getLongParameter(req, 'num', 0L)
         if (userId == 0 || num == 0L) {
             return Web.notAllowed()
@@ -128,7 +131,7 @@ class DiamondController extends BaseController {
         Boolean flag = num > 0 ? addCoin(userId, num, logWithId, obj) : minusCoin(userId, num, logWithId, obj)
         if (flag) {
             Crud.opLog(OpType.diamond_add, [user_id: userId, order_id: diamondId, coin: num, remark: remark])
-        }
+        }*/
 
         [code: 1]
     }
@@ -153,7 +156,7 @@ class DiamondController extends BaseController {
                 logWithId.append("qd", qd);
             }
         }
-        DBCollection logColl = adminMongo.getCollection('diamond_logs');
+        DBCollection logColl = logMongo.getCollection('diamond_logs');
         if (logColl.count(new BasicDBObject(_id, log_id)) == 0 &&
                 users.update(new BasicDBObject('_id', userId).append('diamond_logs._id', new BasicDBObject($ne, log_id)),
                         new BasicDBObject($inc, obj)

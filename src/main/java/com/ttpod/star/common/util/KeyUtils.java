@@ -175,6 +175,9 @@ public  abstract class KeyUtils {
             return ROOM + roomId + ":live";
         }
 
+        public static String room_repair(Object roomId) {
+            return ROOM + roomId + ":repair:apply";
+        }
 
     }
     public static class LIVE {

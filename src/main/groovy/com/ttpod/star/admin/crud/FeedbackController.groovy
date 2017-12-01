@@ -13,8 +13,7 @@ import static com.ttpod.rest.common.doc.MongoKey.*
 import static com.ttpod.rest.common.util.WebUtils.$$
 
 /**
- * date: 13-7-2 下午5:20
- * @author: yangyang.cong@ttpod.com
+ * 用户反馈
  */
 @RestWithSession
 class FeedbackController extends BaseController{

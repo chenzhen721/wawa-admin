@@ -79,8 +79,10 @@ class Controller extends BaseController{
         logger.debug("request parameters : {}", request.getParameterMap())*/
         String input = request[auth_code]
         String ver = request['ver'] ?: '0'
-        if (codeVerifError(request,input)){
-            return [code: 30419,msg:'验证码错误']
+        if (!isTest) {
+            if (codeVerifError(request, input)) {
+                return [code: 30419, msg: '验证码错误']
+            }
         }
 
         String name = request["name"]

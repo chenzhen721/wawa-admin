@@ -2,7 +2,8 @@ package com.ttpod.star.model;
 
 
 public enum IMType {
-    系统消息("msg.system","msg_system");
+    系统消息("msg.system","msg_system")
+    ;
 
     private String action;
 

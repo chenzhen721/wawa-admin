@@ -16,17 +16,18 @@ import java.util.Map;
  * Created by wqh on 2016/11/11.
  */
 public class IMUtil {
-
     static final Logger logger = LoggerFactory.getLogger(IMUtil.class);
-
 
     private static final String IM_DOMAIN = AppProperties.get("im.domain", "http://test-aiim.memeyule.com:6070");
 
-    public static void sendToUser(Object body) {
-        send("user", body);
+    public static final String SEND_TO_ALL = "/api/publish/all";
+    public static final String SEND_TO_GROUP = "/api/publish/batch";
+
+    public static void sendToUser(String path, Object body) {
+        send(path, body);
     }
     public static void sendToUsers(Object body) {
-        send("batch", body);
+        send(SEND_TO_GROUP, body);
     }
 
     private static void send(final String path, final Object body) {
@@ -34,8 +35,9 @@ public class IMUtil {
             @Override
             public void run() {
                 try {
-                    String result = HttpClientUtils.postJson(IM_DOMAIN + "/api/publish/" + path, JSONUtil.beanToJson(body));
-                    if (result != null && JSONUtil.jsonToMap(result).get("code") != 1) {
+                    String result = HttpClientUtils.postJson(IM_DOMAIN + path, JSONUtil.beanToJson(body));
+                    logger.info("result: {}", result);
+                    if (result != null && JSONUtil.jsonToMap(result).get("code").equals(1)) {
                         logger.error("push error" + result);
                     }
                     logger.debug("push result:" + result);
@@ -71,7 +73,7 @@ public class IMUtil {
         data.put("text", text);
         data.put("ts", now);
         data.put("expire_time", expireTime);
-
+        data.put("type", 2);
         message.put("action", IMType.系统消息.getAction());
         message.put("data", data);
 

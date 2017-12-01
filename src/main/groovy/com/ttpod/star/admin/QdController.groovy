@@ -22,8 +22,7 @@ import static com.ttpod.rest.common.doc.MongoKey.*
 import static com.ttpod.rest.common.util.WebUtils.$$
 
 /**
- * date: 13-4-22 10:40
- * @author: yangyang.cong@ttpod.com
+ * 渠道统计相关
  */
 //@Rest
 @RestWithSession
