@@ -68,6 +68,7 @@ class FinanceController extends BaseController {
         String input = req[auth_code]
         /*if (codeVerifError(req, input)) {
             return [code: 30419, msg: '验证码错误']
+
         }*/
         Integer id = req.getInt(_id)
         Long num = req['num'] as Long
