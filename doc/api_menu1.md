@@ -39,7 +39,6 @@ etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
 ### 2.商品修改
 
 * API 添加 {GET|POST} http://test-apiadmin.17laihou.com/catchu/toy_add.json  
-      修改 {GET|POST} http://test-apiadmin.17laihou.com/catchu/toy_edit.json
 * 参数
 
 字段名|类型|是否必须|取值|说明
