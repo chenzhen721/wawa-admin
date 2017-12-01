@@ -75,7 +75,7 @@ class FinanceController extends BaseController {
         String remark = req['remark'] as String
         def orderId = "${id}_${num}_Admin_${System.currentTimeMillis()}".toString()
         def logWithId = new BasicDBObject(
-                _id: orderId,
+                _id: orderId,//订单号
                 user_id: id,
                 diamond: num,
                 via: 'Admin',
