@@ -292,7 +292,7 @@ class CatchuController extends BaseController {
         def head_pic = ServletRequestUtils.getStringParameter(req, 'head_pic') //缩略图
         def desc = ServletRequestUtils.getStringParameter(req, 'desc', '') //描述
         def tid = ServletRequestUtils.getStringParameter(req, 'tid') //
-        def total_stock = ServletRequestUtils.getIntParameter(req, 'total_stock', 0) //总库存， stock 发货库存
+        def total_stock = ServletRequestUtils.getIntParameter(req, 'stock', 0) //总库存， stock 发货库存
         def timestamp = new Date().getTime()
         if (toys().count($$(_id: _id)) > 0) {
             return [code: 0]
@@ -361,7 +361,7 @@ class CatchuController extends BaseController {
         if (_id == null || total_stock == null) {
             return Web.missParam()
         }
-        def inc = ['stock.stock': total_stock, 'stock.total': total_stock]
+        def inc = $$('stock.stock', total_stock).append('stock.total', total_stock)
         if (toys().update($$(_id: _id), $$($inc: inc, $set: ['stock.timestamp': System.currentTimeMillis()])).getN() == 1) {
             Crud.opLog(toys().getName() + "_stock_add", inc)
             return [code: 1]
