@@ -27,8 +27,10 @@ class DiamondController extends BaseController {
 
     /**
      * 钻石加币
+     * 目前后台管理的加币功能在@see FinanceController add
      * @param req
      */
+    @Deprecated
     def add_logs(HttpServletRequest req) {
         def userId = ServletRequestUtils.getIntParameter(req, '_id', 0)
         def query = Web.fillTimeBetween(req)

@@ -1,0 +1,8 @@
+package com.ttpod.star.model;
+
+/**
+ * 邮寄状态
+ */
+public enum CatchObserveStatus {
+    未处理, 已处理, 忽略
+}

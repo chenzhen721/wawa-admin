@@ -4,6 +4,8 @@ import com.ttpod.rest.common.doc.ParamKey;
 import com.ttpod.rest.web.data.SimpleJsonView;
 import groovy.transform.CompileStatic;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
