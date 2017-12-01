@@ -14,7 +14,7 @@ build_staging :
           - ssh webserver@192.168.2.9  "sleep 1m"
           - ssh webserver@192.168.2.10  "source /etc/profile;cd ~/wa-admin;rm -rf bak.webapp && mv -f webapp bak.webapp;unzip star-admin.war -d webapp;./restart.sh"
     only :
-        - aliproduct
+        - master
     tags :
         - java-shell
 
