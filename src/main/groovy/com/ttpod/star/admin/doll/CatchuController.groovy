@@ -361,7 +361,7 @@ class CatchuController extends BaseController {
         if (_id == null || total_stock == null) {
             return Web.missParam()
         }
-        def inc = $$('stock.stock', total_stock).append('stock.total', total_stock)
+        def inc = [stock: [stock: total_stock, total: total_stock]]
         if (toys().update($$(_id: _id), $$($inc: inc, $set: ['stock.timestamp': System.currentTimeMillis()])).getN() == 1) {
             Crud.opLog(toys().getName() + "_stock_add", inc)
             return [code: 1]
