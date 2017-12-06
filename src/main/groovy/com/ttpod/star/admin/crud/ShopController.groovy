@@ -38,6 +38,7 @@ class ShopController extends BaseController{
     @Delegate Crud crud = new Crud(table(),true,
             [_id:{seqKGS.nextId()},item_id:Str,name:Str,pic:Str,status:Bool,cost:Int,count:Int,
              unit:Str,limit:Int,desc:Str,tag:Str,timestamp:Timestamp,lastModif:Timestamp,group:Str,
+             after_award_desc:Str,after_award_diamond:Int,after_award_days:Int,award_type:Int,
              stime:{String str->  (str == null || str.isEmpty()) ? null : Web.getTime(str).getTime()}
             ],
             new Crud.QueryCondition(){
