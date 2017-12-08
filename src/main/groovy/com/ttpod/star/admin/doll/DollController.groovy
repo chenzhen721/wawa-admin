@@ -61,7 +61,7 @@ class DollController extends BaseController {
         def query = Web.fillTimeBetween(req).get()
         def _id = ServletRequestUtils.getStringParameter(req, '_id')
         if (StringUtils.isNotBlank(_id)) {
-            query.put('_id', _id)
+            query.put('_id', Integer.parseInt(_id))
         }
         def status = ServletRequestUtils.getIntParameter(req, 'status')
         if (status != null) {
