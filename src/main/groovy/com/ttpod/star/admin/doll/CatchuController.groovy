@@ -130,12 +130,13 @@ class CatchuController extends BaseController {
         def order = ServletRequestUtils.getIntParameter(req, 'order', 0) //合作商户 0 catchu 1 奇异果
         def winrate = ServletRequestUtils.getIntParameter(req, 'winrate', 25) //25中1
         def playtime = ServletRequestUtils.getIntParameter(req, 'playtime', 40) //40s
+        def device_type = ServletRequestUtils.getIntParameter(req, 'device_type', 0) //设备类型 0主板型 1PC型
         def timestamp = new Date().getTime()
 
         if (StringUtils.isBlank(name) || type == null || StringUtils.isBlank(pic) || price == null || toy_id == null) {
             return [code: 0]
         }
-        def map = [_id: _id, toy_id: toy_id, name: name, type: type, partner: partner, online: online, pic: pic, price: price, desc: desc, order: order, timestamp: timestamp]
+        def map = [_id: _id, toy_id: toy_id, name: name, type: type, partner: partner, online: online, pic: pic, price: price, desc: desc, order: order, device_type: device_type, timestamp: timestamp]
         if (fid != null) {
             map.put('fid', fid)
         }
@@ -191,6 +192,10 @@ class CatchuController extends BaseController {
         def type = ServletRequestUtils.getBooleanParameter(req, 'type') //是否备货中
         if (type != null) {
             map.put('type', type)
+        }
+        def device_type = ServletRequestUtils.getBooleanParameter(req, 'device_type') //是否备货中
+        if (device_type != null) {
+            map.put('device_type', device_type)
         }
         def online = ServletRequestUtils.getBooleanParameter(req, 'online') //是否上架
         if (online != null) {

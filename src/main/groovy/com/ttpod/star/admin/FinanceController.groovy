@@ -68,13 +68,14 @@ class FinanceController extends BaseController {
         String input = req[auth_code]
         /*if (codeVerifError(req, input)) {
             return [code: 30419, msg: '验证码错误']
+
         }*/
         Integer id = req.getInt(_id)
         Long num = req['num'] as Long
         String remark = req['remark'] as String
         def orderId = "${id}_${num}_Admin_${System.currentTimeMillis()}".toString()
         def logWithId = new BasicDBObject(
-                _id: orderId,
+                _id: orderId,//订单号
                 user_id: id,
                 diamond: num,
                 via: 'Admin',
