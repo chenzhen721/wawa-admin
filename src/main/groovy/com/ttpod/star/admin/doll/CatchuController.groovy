@@ -780,6 +780,67 @@ class CatchuController extends BaseController {
     }
 
     /**
+     * 修改快递信息
+     * @param req
+     * @return
+     */
+    def edit_post_info(HttpServletRequest req) {
+        //影响快递单号查询
+        def _id = ServletRequestUtils.getStringParameter(req, '_id')
+        if (StringUtils.isBlank(_id)) {
+            return Web.missParam()
+        }
+        def shipping_no = ServletRequestUtils.getStringParameter(req, 'shipping_no')
+        def shipping_com = ServletRequestUtils.getStringParameter(req, 'shipping_com')
+        def shipping_name = ServletRequestUtils.getStringParameter(req, 'shipping_name')
+        def query = new BasicDBObject(_id: _id)
+        def set = new BasicDBObject()
+        if (StringUtils.isNotBlank(shipping_no)) {
+            set.put('shipping_no', shipping_no)
+        }
+        if (StringUtils.isNotBlank(shipping_com)) {
+            set.put('shipping_com', shipping_com)
+        }
+        if (StringUtils.isNotBlank(shipping_name)) {
+            set.put('shipping_name', shipping_name)
+        }
+        if (1 == apply_post_logs().update(query, $$($set: set), false, false, writeConcern).getN()) {
+            Crud.opLog(apply_post_logs().getName() + '_edit_post_info', set)
+            return [code: 1]
+        }
+        return [code: 0]
+    }
+
+    /**
+     * 包裹拆单
+     */
+    def post_unbox(HttpServletRequest req) {
+        def _id = ServletRequestUtils.getStringParameter(req, '_id')
+        if (StringUtils.isBlank(_id)) {
+            return Web.missParam()
+        }
+        def desc = ServletRequestUtils.getStringParameter(req, 'desc', '')//简述
+        //如果逻辑删除这条记录，需要把对应的快递申请回退
+        def post_log = apply_post_logs().findOne($$(_id: _id, post_type: [$ne: CatchPostType.已同步订单.ordinal()], is_delete: [$ne: true]))
+        if (post_log != null) {
+            apply_post_logs().update($$(_id: post_log['_id']), $$($set: [is_delete: true, status: 2, desc: desc]))
+            def toys = post_log['toys'] as List
+            if (toys != null && toys.size() > 0) {
+                toys.each { BasicDBObject toy ->
+                    def r_id = toy['record_id'] as String
+                    //记录还原
+                    catch_success_logs().update($$(_id: r_id), $$($set: [post_type: 0], $unset: [pack_id: 1, apply_time: 1]))
+                }
+            }
+        }
+        if (1 == apply_post_logs().update($$(_id: _id, is_delete: [$ne: true]), $$($set: [is_delete: true]), false, false, writeConcern).getN()) {
+            Crud.opLog(apply_post_logs().getName() + '_post_unbox', [is_delete: true])
+            return [code: 1]
+        }
+        return [code: 0]
+    }
+
+    /**
      * 已发货
      * @param req
      * @return
