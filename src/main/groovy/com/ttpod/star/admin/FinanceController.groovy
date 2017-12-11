@@ -50,7 +50,7 @@ class FinanceController extends BaseController {
         stringQuery(q, req, '_id')
         String gte = req.getParameter('coingte')
         if (StringUtils.isNotBlank(gte)) {
-            q.and('coin').greaterThanEquals(Integer.valueOf(gte))
+            q.and('diamond').greaterThanEquals(Integer.valueOf(gte))
         }
         Crud.list(req, table(), q.get(), ALL_FIELD, SJ_DESC) { List<BasicDBObject> data ->
             def users = users()
