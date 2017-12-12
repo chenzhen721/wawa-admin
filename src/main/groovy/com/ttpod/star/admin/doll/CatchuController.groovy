@@ -193,7 +193,7 @@ class CatchuController extends BaseController {
         if (type != null) {
             map.put('type', type)
         }
-        def device_type = ServletRequestUtils.getBooleanParameter(req, 'device_type') //是否备货中
+        def device_type = ServletRequestUtils.getIntParameter(req, 'device_type') //是否备货中
         if (device_type != null) {
             map.put('device_type', device_type)
         }
