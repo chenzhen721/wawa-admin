@@ -69,7 +69,7 @@ public final class CrudExt {
         }
         if(map.size() > 0 && table.update(new BasicDBObject(_id,id), update).getN() == 1){
             map.put(_id,id)
-            Crud.opLog(table.getName() + "_edit", update)
+            Crud.opLog(table.getName() + "_edit", [set: map, unset: unset])
         }
         return IMessageCode.OK
     }
