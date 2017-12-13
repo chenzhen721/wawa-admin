@@ -60,10 +60,16 @@ public final class CrudExt {
                 }
             }
         }
-
-        if(map.size() > 0 && table.update(new BasicDBObject(_id,id),new BasicDBObject($set: map, $unset: unset)).getN() == 1){
+        def update = new BasicDBObject()
+        if (!map.isEmpty()) {
+            update.put('$set', map)
+        }
+        if (!unset.isEmpty()) {
+            update.put('$unset', unset)
+        }
+        if(map.size() > 0 && table.update(new BasicDBObject(_id,id), update).getN() == 1){
             map.put(_id,id)
-            Crud.opLog(table.getName() + "_edit", [set: map, unset: unset])
+            Crud.opLog(table.getName() + "_edit", update)
         }
         return IMessageCode.OK
     }
