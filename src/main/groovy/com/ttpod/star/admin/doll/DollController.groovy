@@ -82,7 +82,7 @@ class DollController extends BaseController {
         }
         def set = [status: status] as Map
         if (CatchObserveStatus.已处理.ordinal() == status) {
-            def type = ServletRequestUtils.getIntParameter(req, 'type') //申述奖励类型 0 补币 1补娃娃
+            def type = ServletRequestUtils.getIntParameter(req, 'type') //申述奖励类型 0 补娃娃 1补币
             def count = ServletRequestUtils.getIntParameter(req, 'count')
             def desc = ServletRequestUtils.getStringParameter(req, 'desc')
             if (type == null || count == null || StringUtils.isBlank(desc)) {

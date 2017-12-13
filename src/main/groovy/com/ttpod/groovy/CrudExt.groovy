@@ -8,6 +8,7 @@ import groovy.transform.CompileStatic
 
 import javax.servlet.http.HttpServletRequest
 
+import static com.ttpod.groovy.CrudExtClosures.IntNullable
 import static com.ttpod.rest.common.doc.MongoKey.$set
 import static com.ttpod.rest.common.doc.MongoKey._id
 
@@ -41,6 +42,7 @@ public final class CrudExt {
         }
 
         Map map = new HashMap()
+        Map unset = new HashMap()
         for (Map.Entry<String, Closure> entry : props.entrySet()) {
             String key = entry.getKey()
             if(key.equals(_id)){
@@ -50,14 +52,18 @@ public final class CrudExt {
             if(strValue != null){
                 Object val = entry.getValue().call(strValue)
                 if (val != null) {
-                    map.put(key, val)
+                    if (CrudExtClosures.NULL == val) {
+                        unset.put(key, 1)
+                    } else {
+                        map.put(key, val)
+                    }
                 }
             }
         }
 
-        if(map.size() > 0 && table.update(new BasicDBObject(_id,id),new BasicDBObject($set,map)).getN() == 1){
+        if(map.size() > 0 && table.update(new BasicDBObject(_id,id),new BasicDBObject($set: map, $unset: unset)).getN() == 1){
             map.put(_id,id)
-            Crud.opLog(table.getName() + "_edit", map)
+            Crud.opLog(table.getName() + "_edit", [set: map, unset: unset])
         }
         return IMessageCode.OK
     }
