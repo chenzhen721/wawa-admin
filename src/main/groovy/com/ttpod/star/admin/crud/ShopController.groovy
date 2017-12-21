@@ -42,7 +42,8 @@ class ShopController extends BaseController{
                  unit            :Str, limit:Int, desc:Str, tag:Str, timestamp:Timestamp, lastModif:Timestamp, group:Str,
                  after_award_desc:Str, after_award_diamond:IntNullable,
                  after_award_days:IntNullable, award_type:IntNullable,
-                 stime           :{String str->  (str == null || str.isEmpty()) ? null : Web.getTime(str).getTime()}
+                 stime           :{String str->  (str == null || str.isEmpty()) ? null : Web.getTime(str).getTime()},
+                 order:{String str->  (str == null || str.isEmpty()) ? 1 : Integer.valueOf(str)  }
     ]
 
     private CrudExt crudExt = new CrudExt(table(), props, true)
@@ -56,7 +57,7 @@ class ShopController extends BaseController{
                     return super.query(req)
                 }
                 public DBObject sortby(HttpServletRequest req) {
-                    return new BasicDBObject([status: 1, "stime":-1])
+                    return new BasicDBObject([order: 1, status: 1, "stime":-1])
                 }
             }
     )

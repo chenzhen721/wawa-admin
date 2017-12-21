@@ -98,7 +98,7 @@ class CatchuController extends BaseController {
         def query = Web.fillTimeBetween(req)
         intQuery(query, req, "_id")//房间ID
         stringQuery(query, req, "fid")//对应娃娃机ID
-        Crud.list(req, table(), query.get(), ALL_FIELD, $$(order: 1, type: -1, timestamp: -1))
+        Crud.list(req, table(), query.get(), ALL_FIELD, $$(order: 1, online: -1, type: -1, timestamp: -1))
     }
 
     /**
