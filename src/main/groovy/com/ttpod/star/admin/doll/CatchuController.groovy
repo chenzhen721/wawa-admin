@@ -828,7 +828,6 @@ class CatchuController extends BaseController {
         //如果逻辑删除这条记录，需要把对应的快递申请回退
         def post_log = apply_post_logs().findOne($$(_id: _id, post_type: [$ne: CatchPostType.已同步订单.ordinal()], is_delete: [$ne: true], is_pay_postage: [$ne: true]))
         if (post_log != null) {
-            apply_post_logs().update($$(_id: post_log['_id']), $$($set: [is_delete: true, status: 2, desc: desc]))
             def toys = post_log['toys'] as List
             if (toys != null && toys.size() > 0) {
                 toys.each { BasicDBObject toy ->
@@ -837,7 +836,7 @@ class CatchuController extends BaseController {
                     catch_success_logs().update($$(_id: r_id), $$($set: [post_type: 0], $unset: [pack_id: 1, apply_time: 1]))
                 }
             }
-            if (1 == apply_post_logs().update($$(_id: _id, is_delete: [$ne: true]), $$($set: [is_delete: true]), false, false, writeConcern).getN()) {
+            if (1 == apply_post_logs().update($$(_id: _id, is_delete: [$ne: true]), $$($set: [is_delete: true, status: 2, desc: desc]), false, false, writeConcern).getN()) {
                 Crud.opLog(apply_post_logs().getName() + '_post_unbox', [is_delete: true])
                 return [code: 1]
             }
