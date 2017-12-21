@@ -731,10 +731,12 @@ class CatchuController extends BaseController {
         }
         //客户端是否显示此订单，是否删除 true 删除 无字段或false正常
         def is_delete = ServletRequestUtils.getBooleanParameter(req, 'is_delete')
-        if (is_delete == null || !is_delete) {
-            query.put('is_delete', [$ne: true])
-        } else {
-            query.put('is_delete', is_delete)
+        if (is_delete != null) {
+            if (!is_delete) {
+                query.put('is_delete', [$ne: true])
+            } else {
+                query.put('is_delete', is_delete)
+            }
         }
         //正常情况下的，邮寄状态 0,未处理, 1待发货, 2已发货, 3已同步订单
         def post_type = ServletRequestUtils.getIntParameter(req, 'post_type')
