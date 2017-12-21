@@ -779,7 +779,7 @@ class CatchuController extends BaseController {
         def set = [status: CatchPostStatus.审核失败.ordinal(), is_delete: is_delete, desc: desc]
         if (1 <= apply_post_logs().update(query, $$($set: set), false, true, writeConcern).getN()) {
             //def list = catch_records().find($$(pack_id: [$in: packIdList]), $$(toy: 1, address: 1)).sort($$(pack_id: 1, timestamp: -1)).toArray()
-            Crud.opLog(catch_records().getName() + '_batch_post', set)
+            Crud.opLog(catch_records().getName() + '_batch_refuse', set)
             return [code: 1]
         }
         //有不符合条件的记录
@@ -862,8 +862,8 @@ class CatchuController extends BaseController {
         }
 
         //更新成功
-        def query = $$(_id: [$in: postIdList], post_type: CatchPostType.待发货.ordinal(), is_delete: [$ne: true], status: CatchPostStatus.未审核.ordinal())
-        def set = [post_type: CatchPostType.已发货.ordinal(), status: CatchPostStatus.审核通过.ordinal(), is_pay_postage: [$ne: false]]
+        def query = $$(_id: [$in: postIdList], post_type: CatchPostType.待发货.ordinal(), is_delete: [$ne: true], status: CatchPostStatus.未审核.ordinal(), is_pay_postage: [$ne: false])
+        def set = [post_type: CatchPostType.已发货.ordinal(), status: CatchPostStatus.审核通过.ordinal()]
         if (1 <= apply_post_logs().update(query, $$($set: set), false, true, writeConcern).getN()) {
             Crud.opLog(catch_records().getName() + '_batch_post', set)
             return [code: 1]
