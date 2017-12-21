@@ -749,6 +749,10 @@ class CatchuController extends BaseController {
         if (StringUtils.isNotBlank(record_id)) {
             query.put('toys.record_id', record_id)
         }
+        def channel = ServletRequestUtils.getIntParameter(req, 'channel')
+        if (channel != null) {
+            query.put('channel', channel)
+        }
         Crud.list(req, apply_post_logs(), query, ALL_FIELD, SJ_DESC)
     }
 
