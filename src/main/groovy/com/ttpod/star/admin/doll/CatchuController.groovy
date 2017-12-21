@@ -837,10 +837,10 @@ class CatchuController extends BaseController {
                     catch_success_logs().update($$(_id: r_id), $$($set: [post_type: 0], $unset: [pack_id: 1, apply_time: 1]))
                 }
             }
-        }
-        if (1 == apply_post_logs().update($$(_id: _id, is_delete: [$ne: true]), $$($set: [is_delete: true]), false, false, writeConcern).getN()) {
-            Crud.opLog(apply_post_logs().getName() + '_post_unbox', [is_delete: true])
-            return [code: 1]
+            if (1 == apply_post_logs().update($$(_id: _id, is_delete: [$ne: true]), $$($set: [is_delete: true]), false, false, writeConcern).getN()) {
+                Crud.opLog(apply_post_logs().getName() + '_post_unbox', [is_delete: true])
+                return [code: 1]
+            }
         }
         return [code: 0]
     }
