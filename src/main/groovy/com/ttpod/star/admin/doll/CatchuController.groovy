@@ -11,6 +11,7 @@ import com.ttpod.star.admin.BaseController
 import com.ttpod.star.admin.Web
 import com.ttpod.star.common.util.HttpClientUtils
 import com.ttpod.star.common.util.JSONUtil
+import com.ttpod.star.model.CatchPostChannel
 import com.ttpod.star.model.CatchPostStatus
 import com.ttpod.star.model.CatchPostType
 import com.ttpod.star.web.api.play.Qiyiguo
@@ -130,7 +131,7 @@ class CatchuController extends BaseController {
         def order = ServletRequestUtils.getIntParameter(req, 'order', 0) //合作商户 0 catchu 1 奇异果
         def winrate = ServletRequestUtils.getIntParameter(req, 'winrate', 25) //25中1
         def playtime = ServletRequestUtils.getIntParameter(req, 'playtime', 40) //40s
-        def device_type = ServletRequestUtils.getIntParameter(req, 'device_type', 0) //设备类型 0主板型 1PC型
+        def device_type = ServletRequestUtils.getIntParameter(req, 'device_type', 0) //设备类型 0主板型 1PC型 2即构
         def timestamp = new Date().getTime()
 
         if (StringUtils.isBlank(name) || type == null || StringUtils.isBlank(pic) || price == null || toy_id == null) {
@@ -821,7 +822,7 @@ class CatchuController extends BaseController {
         }
         def desc = ServletRequestUtils.getStringParameter(req, 'desc', '')//简述
         //如果逻辑删除这条记录，需要把对应的快递申请回退
-        def post_log = apply_post_logs().findOne($$(_id: _id, post_type: [$ne: CatchPostType.已同步订单.ordinal()], is_delete: [$ne: true]))
+        def post_log = apply_post_logs().findOne($$(_id: _id, post_type: [$ne: CatchPostType.已同步订单.ordinal()], is_delete: [$ne: true], is_pay_postage: [$ne: true]))
         if (post_log != null) {
             apply_post_logs().update($$(_id: post_log['_id']), $$($set: [is_delete: true, status: 2, desc: desc]))
             def toys = post_log['toys'] as List
@@ -857,7 +858,7 @@ class CatchuController extends BaseController {
 
         //更新成功
         def query = $$(_id: [$in: postIdList], post_type: CatchPostType.待发货.ordinal(), is_delete: [$ne: true], status: CatchPostStatus.未审核.ordinal())
-        def set = [post_type: CatchPostType.已发货.ordinal(), status: CatchPostStatus.审核通过.ordinal()]
+        def set = [post_type: CatchPostType.已发货.ordinal(), status: CatchPostStatus.审核通过.ordinal(), is_pay_postage: [$ne: false]]
         if (1 <= apply_post_logs().update(query, $$($set: set), false, true, writeConcern).getN()) {
             Crud.opLog(catch_records().getName() + '_batch_post', set)
             return [code: 1]
@@ -880,7 +881,8 @@ class CatchuController extends BaseController {
         if (end != null) {
             timestamp.put('$lt', end)
         }
-        def query = $$(push_time: [$exists: false], status: CatchPostStatus.审核通过.ordinal(), is_delete: [$ne: true], post_type: CatchPostType.已发货.ordinal())
+        def query = $$(channel: CatchPostChannel.奇异果.ordinal(), push_time: [$exists: false], status: CatchPostStatus.审核通过.ordinal(),
+                is_delete: [$ne: true], post_type: CatchPostType.已发货.ordinal(), is_pay_postage: [$ne: false])
         if (timestamp.size() > 0) {
             query.put('timestamp', timestamp)
         }

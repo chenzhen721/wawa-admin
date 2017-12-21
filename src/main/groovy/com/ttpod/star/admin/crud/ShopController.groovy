@@ -64,6 +64,10 @@ class ShopController extends BaseController{
     private static final Map vip = [_id: 'vip', name: 'vip', pic: ''] //TODO
     private static final Map coin = [_id: 'coin', name: '金币', pic: ''] //TODO
 
+    def add(HttpServletRequest req) {
+        return crudExt.add(req)
+    }
+
     def edit(HttpServletRequest req) {
         return crudExt.edit(req)
     }

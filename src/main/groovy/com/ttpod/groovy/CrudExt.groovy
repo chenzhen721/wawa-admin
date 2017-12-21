@@ -34,6 +34,23 @@ public final class CrudExt {
         this.props = props
     }
 
+    public Map add(HttpServletRequest req) {
+
+        Map map = new HashMap();
+        for (Map.Entry<String, Closure> entry : props.entrySet()) {
+            String key = entry.getKey();
+            Object val = entry.getValue().call(req.getParameter(key));
+            if (val != null && val != CrudExtClosures.NULL) {
+                map.put(key, val)
+            }
+        }
+        if(table.save(new BasicDBObject(map)).getN() == 1){
+            Crud.opLog(table.getName() + "_add", map);
+        }
+
+        return IMessageCode.OK
+    }
+
     public Object edit(HttpServletRequest req) {
 
         Object id = parseId(req)
