@@ -828,10 +828,10 @@ class CatchuController extends BaseController {
         //如果逻辑删除这条记录，需要把对应的快递申请回退
         def post_log = apply_post_logs().findOne($$(_id: _id, post_type: [$ne: CatchPostType.已同步订单.ordinal()], is_delete: [$ne: true], is_pay_postage: [$ne: true]))
         if (post_log != null) {
-            def toys = post_log['toys'] as List
+            def toys = post_log['record_ids'] as List
             if (toys != null && toys.size() > 0) {
-                toys.each { BasicDBObject toy ->
-                    def r_id = toy['record_id'] as String
+                toys.each { String r_id ->
+                    //def r_id = toy['record_id'] as String
                     //记录还原
                     catch_success_logs().update($$(_id: r_id), $$($set: [post_type: 0], $unset: [pack_id: 1, apply_time: 1]))
                 }
