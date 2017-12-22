@@ -683,6 +683,8 @@ class CatchuController extends BaseController {
             return Web.missParam()
         }
         def desc = ServletRequestUtils.getStringParameter(req, 'desc', '')//简述
+        //todo 如果这条记录包含在已邮寄包裹内则无法回退
+
         //如果逻辑删除这条记录，需要把对应的快递申请回退
         def post_log = apply_post_logs().findOne($$('toys.record_id': _id, is_delete: [$ne: true]))
         if (post_log != null) {
@@ -754,6 +756,14 @@ class CatchuController extends BaseController {
         def channel = ServletRequestUtils.getIntParameter(req, 'channel')
         if (channel != null) {
             query.put('channel', channel)
+        }
+        def need_postage = ServletRequestUtils.getBooleanParameter(req, 'need_postage')
+        if (need_postage != null) {//需要邮费 true   不需要邮费false
+            query.put('need_postage', need_postage)
+        }
+        def is_pay_postage = ServletRequestUtils.getBooleanParameter(req, 'is_pay_postage')
+        if (is_pay_postage != null) { //若需要邮费这个字段有意义 未支付 false   已支付 true
+            query.put('is_pay_postage', is_pay_postage)
         }
         Crud.list(req, apply_post_logs(), query, ALL_FIELD, SJ_DESC)
     }
