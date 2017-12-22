@@ -277,7 +277,10 @@ user_id|int|false||用户ID
 room_id|int|false||房间ID
 status|int|false||发货通过这个状态来判断 审核状态：0, 未审核 1, 通过 2,未通过
 post_type|int|false||正常情况下的邮寄状态：0,未处理, 1待发货, 2已发货, 3已同步订单
+channel|int|false||邮寄类型：0,奇异果, 1活动, 2ZEGO
 is_delete|bool|false|true;false|客户端是否显示此订单 是否删除 true 删除 无字段或false正常
+need_postage|bool|false|true;false|需要邮费 true   不需要邮费false
+is_pay_postage|bool|false|true;false|未支付 false   已支付 true
 page|int|false||页码
 size|int|false||每页记录数
 
