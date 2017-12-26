@@ -36,7 +36,7 @@ public abstract class Qiyiguo {
 
     public static final boolean isTest  = AppProperties.get("api.domain").contains("test-");
 
-    public static final String HOST = isTest ? "http://doll.artqiyi.com" : "http://doll.artqiyi.com";
+    public static final String HOST = isTest ? "http://testdoll.artqiyi.com" : "http://doll.artqiyi.com";
     public static final String PLATFORM = "meme";
     public static final String APP_ID = isTest ? "984069e5f8edd8ca4411e81863371f16" : "984069e5f8edd8ca4411e81863371f16";
     public static final List<String> KEY_WITHOUT_SIGN = new ArrayList<String>(){{this.add("sign"); this.add("app"); this.add("act");}};
