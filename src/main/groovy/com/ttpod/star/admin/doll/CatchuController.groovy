@@ -127,8 +127,8 @@ class CatchuController extends BaseController {
         def pic = ServletRequestUtils.getStringParameter(req, 'pic') //房间图片
         def price = ServletRequestUtils.getIntParameter(req, 'price')
         def desc = ServletRequestUtils.getStringParameter(req, 'desc', '')
-        def partner = ServletRequestUtils.getIntParameter(req, 'partner', 1) //合作商户 0 catchu 1 奇异果
-        def order = ServletRequestUtils.getIntParameter(req, 'order', 0) //合作商户 0 catchu 1 奇异果
+        def partner = ServletRequestUtils.getIntParameter(req, 'partner', 1) //合作商户 0 catchu 1 奇异果 2ZEGO
+        def order = ServletRequestUtils.getIntParameter(req, 'order', 0) //排序
         def winrate = ServletRequestUtils.getIntParameter(req, 'winrate', 25) //25中1
         def playtime = ServletRequestUtils.getIntParameter(req, 'playtime', 40) //40s
         def device_type = ServletRequestUtils.getIntParameter(req, 'device_type', 0) //设备类型 0主板型 1PC型 2即构
@@ -141,7 +141,7 @@ class CatchuController extends BaseController {
         if (fid != null) {
             map.put('fid', fid)
         }
-        if (StringUtils.isNotBlank(fid)) {
+        if (StringUtils.isNotBlank(fid) && 1 == partner) {
             if (winrate < 1|| winrate > 888) {
                 return [code: 30406]
             }
@@ -150,7 +150,6 @@ class CatchuController extends BaseController {
                 logger.error('change winning rate fail.' + fid + ' to: ' + winrate)
                 return [code: 30404]
             }
-            map.put('winrate', winrate)
             if (playtime < 5|| playtime > 60) {
                 return [code: 30407]
             }
@@ -159,8 +158,9 @@ class CatchuController extends BaseController {
                 logger.error('change playtime fail.' + fid + ' to: ' + playtime)
                 return [code: 30405]
             }
-            map.put('playtime', playtime)
         }
+        map.put('winrate', winrate)
+        map.put('playtime', playtime)
         if(table().save(new BasicDBObject(map)).getN() == 1){
             Crud.opLog(table().getName() + "_add", map)
         }
