@@ -141,7 +141,7 @@ class CatchuController extends BaseController {
         if (fid != null) {
             map.put('fid', fid)
         }
-        if (StringUtils.isNotBlank(fid)) {
+        if (StringUtils.isNotBlank(fid) && 1 == partner) {
             if (winrate < 1|| winrate > 888) {
                 return [code: 30406]
             }
@@ -150,7 +150,6 @@ class CatchuController extends BaseController {
                 logger.error('change winning rate fail.' + fid + ' to: ' + winrate)
                 return [code: 30404]
             }
-            map.put('winrate', winrate)
             if (playtime < 5|| playtime > 60) {
                 return [code: 30407]
             }
@@ -159,8 +158,9 @@ class CatchuController extends BaseController {
                 logger.error('change playtime fail.' + fid + ' to: ' + playtime)
                 return [code: 30405]
             }
-            map.put('playtime', playtime)
         }
+        map.put('winrate', winrate)
+        map.put('playtime', playtime)
         if(table().save(new BasicDBObject(map)).getN() == 1){
             Crud.opLog(table().getName() + "_add", map)
         }
