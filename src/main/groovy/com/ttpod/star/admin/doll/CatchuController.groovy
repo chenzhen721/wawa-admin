@@ -194,7 +194,7 @@ class CatchuController extends BaseController {
         if (type != null) {
             map.put('type', type)
         }
-        def device_type = ServletRequestUtils.getIntParameter(req, 'device_type') //是否备货中
+        def device_type = ServletRequestUtils.getIntParameter(req, 'device_type') //0 奇异果推流   1奇异果图片流  2 zego
         if (device_type != null) {
             map.put('device_type', device_type)
         }
@@ -239,36 +239,33 @@ class CatchuController extends BaseController {
                 return [code: 30400]
             }
 
-            logger.info('rec result: ' + rec.toString())
-            logger.info('winrate result: ' + (rec['fid'] != null && winrate != null && winrate != rec['winrate']))
-            logger.info('fid result: ' + (rec['fid'] != null))
-            logger.info('winrate: ' + winrate)
-            logger.info('rec result: ' + (winrate != rec['winrate']))
-            if (rec['fid'] != null && winrate != rec['winrate']) {
-                def device_id = rec['fid'] as String
-                if (winrate < 1 || winrate > 888) {
-                    return [code: 30406]
+            if (1 == rec['partner']) {
+                if (rec['fid'] != null && winrate != rec['winrate']) {
+                    def device_id = rec['fid'] as String
+                    if (winrate < 1 || winrate > 888) {
+                        return [code: 30406]
+                    }
+                    QiygRespDTO respDTO = Qiyiguo.winning_rate(device_id, winrate)
+                    logger.info('respdto: ' + respDTO)
+                    if (respDTO == null || !respDTO.getDone()) {
+                        logger.error('change winning rate fail.' + device_id + ' to: ' + winrate)
+                        return [code: 30404]
+                    }
                 }
-                QiygRespDTO respDTO = Qiyiguo.winning_rate(device_id, winrate)
-                logger.info('respdto: ' + respDTO)
-                if (respDTO == null || !respDTO.getDone()) {
-                    logger.error('change winning rate fail.' + device_id + ' to: ' + winrate)
-                    return [code: 30404]
+                if (rec['fid'] != null && playtime != rec['playtime']) {
+                    def device_id = rec['fid'] as String
+                    if (playtime < 5 || playtime > 60) {
+                        return [code: 30407]
+                    }
+                    def respDTO = Qiyiguo.playtime(device_id, playtime)
+                    if (respDTO == null || !respDTO.getDone()) {
+                        logger.error('change playtime fail.' + device_id + ' to: ' + playtime)
+                        return [code: 30405]
+                    }
                 }
-                map.put('winrate', winrate)
             }
-            if (rec['fid'] != null && playtime != rec['playtime']) {
-                def device_id = rec['fid'] as String
-                if (playtime < 5 || playtime > 60) {
-                    return [code: 30407]
-                }
-                def respDTO = Qiyiguo.playtime(device_id, playtime)
-                if (respDTO == null || !respDTO.getDone()) {
-                    logger.error('change playtime fail.' + device_id + ' to: ' + playtime)
-                    return [code: 30405]
-                }
-                map.put('playtime', playtime)
-            }
+            map.put('winrate', winrate)
+            map.put('playtime', playtime)
         }
         if(table().update($$(_id: _id), $$($set: map)).getN() == 1) {
             Crud.opLog(table().getName() + "_edit", map)
