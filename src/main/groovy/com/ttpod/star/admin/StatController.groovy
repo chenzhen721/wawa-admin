@@ -208,7 +208,7 @@ class StatController extends BaseController {
             query.put('qd', qd)
         }
         query.put('type', type)
-        Crud.list(req, adminMongo.getCollection('stat_doll'), query, $$(regs: 0), $$(timestamp: -1)) { List<BasicDBObject> data ->
+        Crud.list(req, adminMongo.getCollection('stat_regpay'), query, $$(regs: 0), $$(timestamp: -1)) { List<BasicDBObject> data ->
             for (BasicDBObject obj : data) {
                 obj.removeField('history')
                 /*def toy = catchMongo.getCollection("catch_toy").findOne($$([_id:obj.get("toy_id") as Long]))
