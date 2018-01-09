@@ -51,7 +51,7 @@ etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
 }
 ```
 
-## 运营数据总表
+## 新增付费用户表
 ### 列表
 
 * API {GET|POST} http://test-apiadmin.17laihou.com/stat/regpay_report.json
