@@ -299,12 +299,13 @@ class CatchuController extends BaseController {
         def tid = ServletRequestUtils.getStringParameter(req, 'tid') //
         def total_stock = ServletRequestUtils.getIntParameter(req, 'stock', 0) //总库存， stock 发货库存
         def points = ServletRequestUtils.getIntParameter(req, 'points', 0) //可兑换的积分
+        def cost = ServletRequestUtils.getIntParameter(req, 'cost', 0) //娃娃成本
         def timestamp = new Date().getTime()
         if (toys().count($$(_id: _id)) > 0) {
             return [code: 0]
         }
         def stock = [stock: total_stock, count: 0, total: total_stock, timestamp: System.currentTimeMillis()]
-        def map = [_id: _id, name: name, type: type, tid: tid, stock: stock, points: points, pic: pic, head_pic: head_pic, desc: desc, timestamp: timestamp]
+        def map = [_id: _id, name: name, type: type, tid: tid, stock: stock, points: points, cost: cost, pic: pic, head_pic: head_pic, desc: desc, timestamp: timestamp]
         if(toys().save(new BasicDBObject(map)).getN() == 1){
             Crud.opLog(toys().getName() + "_add", map)
             return [code: 1]
@@ -353,6 +354,10 @@ class CatchuController extends BaseController {
         def points = ServletRequestUtils.getStringParameter(req, 'points')
         if (StringUtils.isNotBlank(points)) {
             map.put('points', points)
+        }
+        def cost = ServletRequestUtils.getStringParameter(req, 'cost')
+        if (StringUtils.isNotBlank(cost)) {
+            map.put('cost', cost)
         }
         if(toys().update($$(_id: _id), new BasicDBObject($set: map)).getN() == 1){
             Crud.opLog(toys().getName() + "_edit", map)
