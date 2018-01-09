@@ -6,8 +6,10 @@ import com.mongodb.QueryBuilder
 import com.ttpod.rest.anno.Rest
 import com.ttpod.rest.web.Crud
 import com.ttpod.star.model.DiamondActionType
+import org.apache.commons.lang.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.web.bind.ServletRequestUtils
 
 import javax.servlet.http.HttpServletRequest
 
@@ -192,4 +194,32 @@ class StatController extends BaseController {
             }
         }
     }
+
+    /**
+     * 付费用户生命周期统计
+     * @param req
+     */
+    def regpay_report(HttpServletRequest req) {
+        def query = Web.fillTimeBetween(req).get()
+        def qd = ServletRequestUtils.getStringParameter(req, 'qd')
+        def type = ServletRequestUtils.getStringParameter(req, 'type', 'total')
+        if (StringUtils.isNotBlank(qd)) {
+            type = 'qd'
+            query.put('qd', qd)
+        }
+        query.put('type', type)
+        Crud.list(req, adminMongo.getCollection('stat_regpay'), query, $$(regs: 0), $$(timestamp: -1)) { List<BasicDBObject> data ->
+            for (BasicDBObject obj : data) {
+                obj.removeField('history')
+                //todo 时间查询
+                /*def toy = catchMongo.getCollection("catch_toy").findOne($$([_id:obj.get("toy_id") as Long]))
+                obj.put("name", toy?.get("name"))
+                obj.put("head_pic", toy?.get("head_pic"))*/
+            }
+        }
+    }
+
+
+
+
 }
