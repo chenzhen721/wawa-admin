@@ -211,6 +211,7 @@ class StatController extends BaseController {
         Crud.list(req, adminMongo.getCollection('stat_regpay'), query, $$(regs: 0), $$(timestamp: -1)) { List<BasicDBObject> data ->
             for (BasicDBObject obj : data) {
                 obj.removeField('history')
+                //todo 时间查询
                 /*def toy = catchMongo.getCollection("catch_toy").findOne($$([_id:obj.get("toy_id") as Long]))
                 obj.put("name", toy?.get("name"))
                 obj.put("head_pic", toy?.get("head_pic"))*/
