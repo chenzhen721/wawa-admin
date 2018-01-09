@@ -690,7 +690,9 @@ class CatchuController extends BaseController {
                 timestamp: records['timestamp'],
                 replay_url: records['replay_url'],
                 goods_id: records['goods_id'],
-                relative_record: _id //对应的补单记录
+                relative_record: _id, //对应的补单记录
+                is_delete: false,
+                is_award: false
         )
         catch_success_logs().save(success_log)
         Crud.opLog(catch_success_logs().getName() + '_success_record_add', success_log)
@@ -977,6 +979,8 @@ class CatchuController extends BaseController {
                             } else {
                                 list.add(obj['_id'])
                             }
+                            //下单成功，更新对应的success_log至post_type: 2 已发货
+                            catch_success_logs().update($$(_id: [$in: obj['record_ids'] as Set]), $$($set: [post_type: CatchPostType.已发货.ordinal(), post_time: time]), false, true, writeConcern)
                         } else {
                             //下单失败回退，如果回退失败记录单号
                             apply_post_logs().update($$(_id: obj['_id'], push_time: time), $$($unset: [push_time: 1], $inc: inc), false, false, writeConcern).getN()
