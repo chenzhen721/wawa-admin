@@ -51,6 +51,52 @@ etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
 }
 ```
 
+## 运营数据总表
+### 列表
+
+* API {GET|POST} http://test-apiadmin.17laihou.com/stat/regpay_report.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+stime|String|false|yyyy-MM-dd HH: mm:ss|创建时间开始
+etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
+qd|String|false||查询对应渠道号
+type|String|false|total-总计 qd-渠道数据|如果输入渠道号查询默认type为qd
+
+* 返回
+
+```json
+{
+    "count": 11, 
+    "data": [{
+                 "_id" : "20171120_wawa_default_regpay",
+                 "type" : "qd", //qd或total
+                 "qd" : "wawa_default",
+                 "timestamp" : 1511107200000, //日期
+                 "reg_count" : 501,  //注册人数
+                 "pay_user_count1" : 5, //次日新增付费人数
+                 "pay_total1" : 60.0,   //次日新增付费金额
+                 "pay_user_count3" : 8, //3日新增付费人数
+                 "pay_total3" : 115.0, //3日新增付费金额
+                 "pay_user_count7" : 5, //7日新增付费人数
+                 "pay_total7" : 69.0, //7日新增付费金额
+                 "pay_user_count30" : 1, //30日新增付费人数
+                 "pay_total30" : 4.0,  //30日新增付费金额
+                 "pay_user_count" : 5, //当日新增付费人数
+                 "pay_total" : 30.0,  //当日新增付费金额
+                 "pay_last5" : 3,  // 近5日新增付费人数
+                 "payuser_current" : 53, // 截止到今天付费总人数
+                 "paytotal_current" : 2183.0, //截止到今天付费总金额
+                 "paycount_current" : 343, //截止到今天付费总次数
+                 "payuserlogin_rate_current" : 38.4339622642, //当日注册用户中付费的 平均登录天数
+                 "复购次数": 123 // paycount_current/payuser_current
+             }],
+    "code": 1,
+    "all_page": 12
+}
+```
+
 ## 登录日统计 （同线上）
 
 ## 钻石日报表
