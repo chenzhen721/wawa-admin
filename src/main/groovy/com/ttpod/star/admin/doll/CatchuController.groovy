@@ -699,6 +699,7 @@ class CatchuController extends BaseController {
                 replay_url: records['replay_url'],
                 goods_id: goods_id,
                 relative_record: _id, //对应的补单记录
+                channel: CatchPostChannel.奇异果.ordinal(),
                 is_delete: false,
                 is_award: false
         )
