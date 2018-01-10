@@ -678,8 +678,16 @@ class CatchuController extends BaseController {
         if (records == null) {
             return Web.missParam()
         }
+        def goods_id = records['goods_id']
         if (records['goods_id'] == null) {
-            return Web.missParam()
+            //查询相同的商品对应的goods_id
+            def toyId = records['toy']['_id'] as Integer
+            def list = catch_records().find($$('toy._id': toyId, device_type: [$ne: 2], goods_id: [$exists: true])).sort($$(timestamp: -1)).toArray()
+            if (list.size() <= 0) {
+                return Web.missParam()
+            }
+            goods_id = list[0]['goods_id'] as Integer
+            catch_records().update($$(_id: records['_id']), $$($set: [goods_id: goods_id]), false, false, writeConcern)
         }
         def success_log = $$(_id: '' + records['_id'] + '_supplement',
                 room_id: records['room_id'],
@@ -689,12 +697,13 @@ class CatchuController extends BaseController {
                 coin: records['coin'],
                 timestamp: records['timestamp'],
                 replay_url: records['replay_url'],
-                goods_id: records['goods_id'],
+                goods_id: goods_id,
                 relative_record: _id, //对应的补单记录
+                channel: CatchPostChannel.奇异果.ordinal(),
                 is_delete: false,
                 is_award: false
         )
-        catch_success_logs().save(success_log)
+        catch_success_logs().save(success_log, writeConcern)
         Crud.opLog(catch_success_logs().getName() + '_success_record_add', success_log)
         return [code: 1]
     }
