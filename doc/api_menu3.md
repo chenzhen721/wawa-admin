@@ -105,7 +105,7 @@ type|String|false|total-总计 qd-渠道数据|如果输入渠道号查询默认
 }
 ```
 
-## 订单统计表
+## 订单统计表(木有？)
 ### 列表
 
 * API {GET|POST} http://test-apiadmin.17laihou.com/stat/order_report.json
