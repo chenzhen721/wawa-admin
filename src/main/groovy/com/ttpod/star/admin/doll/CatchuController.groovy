@@ -702,7 +702,7 @@ class CatchuController extends BaseController {
                 is_delete: false,
                 is_award: false
         )
-        catch_success_logs().save(success_log)
+        catch_success_logs().save(success_log, writeConcern)
         Crud.opLog(catch_success_logs().getName() + '_success_record_add', success_log)
         return [code: 1]
     }
