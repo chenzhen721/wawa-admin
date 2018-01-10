@@ -90,8 +90,49 @@ type|String|false|total-总计 qd-渠道数据|如果输入渠道号查询默认
                  "paytotal_current" : 2183.0, //截止到今天付费总金额
                  "paycount_current" : 343, //截止到今天付费总次数
                  "payuserlogin_rate_current" : 38.4339622642, //当日注册用户中付费的 平均登录天数
-                 "复购次数": 123 // paycount_current/payuser_current
+                 "复购次数": 123, // paycount_current/payuser_current
+                 "diamond_add_current": 123, //到目前为止领取钻石数
+                 "diamond_user_current": 123, //到目前为止获得赠送的人数
+                 "invite_user_current": 123, //到目前为止邀请好友数
+                 "invite_diamond_current": 123, //到目前为止邀请好友获得的钻石数
+                 "diamond_cost_current": 123, //到目前为止消耗的钻石数
+                 "charge_award_current": 123, //充值优惠钻石
+                 "admin_add_current admin": 123 //补单
+                 
              }],
+    "code": 1,
+    "all_page": 12
+}
+```
+
+## 订单统计表
+### 列表
+
+* API {GET|POST} http://test-apiadmin.17laihou.com/stat/order_report.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+stime|String|false|yyyy-MM-dd HH: mm:ss|创建时间开始
+etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
+
+* 返回
+```json
+{
+    "count": 11, 
+    "data": [{
+         "_id" : "20171120_order",
+         "type" : "order", //
+         "timestamp" : 1511107200000, //日期
+         "total_pay" : 501,  //总营收
+         "total_cost" : 5, //总成本
+         "order_count" : 60.0,   //寄出单数
+         "goods_count" : 8, //商品个数
+         "goods_cost" : 115.0, //商品价值
+         "postage" : 5, //快递费用
+         "user_count" : 69.0 //邮寄用户数
+                 
+     }],
     "code": 1,
     "all_page": 12
 }
@@ -122,11 +163,9 @@ _id|int|false||商品ID
          "timestamp" : 1511107200000, //日期
          "toy_id": "", //娃娃编号
          "name": "", //娃娃名称
-         "head_pic":"", //娃娃图片
-         //"进入次数": （目前没有）
+         "head_pic":"", //娃娃图片 //"进入次数": （目前没有）
          "count": 123, //抓取次数
-         "bingo_count": 123, //抓中次数
-         //"下抓率（没有 依赖进入次数）
+         "bingo_count": 123, //抓中次数 //"下抓率（没有 依赖进入次数）
          "rate": 123, // 实际抓中概率
          "winrate": 123, //设定概率
          "price": 123, //单次抓取价格
