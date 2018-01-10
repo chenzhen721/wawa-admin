@@ -392,6 +392,38 @@ etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
 }
 ```
 
+### 4.订单统计表
+
+* API {GET|POST} http://test-apiadmin.17laihou.com/stat/order_report.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+stime|String|false|yyyy-MM-dd HH: mm:ss|创建时间开始
+etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
+
+* 返回
+```json
+{
+    "count": 11, 
+    "data": [{
+         "_id" : "20171120_order",
+         "type" : "order", //
+         "timestamp" : 1511107200000, //日期
+         "total_pay" : 501,  //总营收
+         "total_cost" : 5, //总成本
+         "order_count" : 60.0,   //寄出单数
+         "goods_count" : 8, //商品个数
+         "goods_cost" : 115.0, //商品价值
+         "postage" : 5, //快递费用
+         "user_count" : 69.0 //邮寄用户数
+                 
+     }],
+    "code": 1,
+    "all_page": 12
+}
+```
+
 ## 商城管理
 ### 1.商城列表
 
