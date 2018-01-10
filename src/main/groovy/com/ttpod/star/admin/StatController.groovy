@@ -219,7 +219,13 @@ class StatController extends BaseController {
         }
     }
 
-
-
+    /**
+     * 订单数据统计
+     */
+    def order_report(HttpServletRequest req) {
+        def query = Web.fillTimeBetween(req).get()
+        query.put('type', 'order')
+        super.list(req, query)
+    }
 
 }
