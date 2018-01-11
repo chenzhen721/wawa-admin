@@ -449,14 +449,21 @@ size|int|false||每页记录数
             "lastModif": 1506579704416,
             "stime": 1506441600000, //商品生效时间
             "pic": "", //图片
-            "cost_diamond": 50, //花费钻石
+            "cost": 50, //花费金额
             "unit": "个月", //单位描述
             "name": "vip", //商品名称
             "limit": 10, //每日限额
-            "desc": "", //限额描述
+            "desc": "", //描述
             "tag": "90%OFF", //折扣标签
             "status": true, //是否上架
-            "timestamp": 1506579704416 //添加时间
+            "timestamp": 1506579704416, //添加时间
+            "group": 1506579704416, //商品聚类
+            "order": 1506579704416, //排序
+            "award": 1506579704416, //额外奖励钻石数，不影响充值钻石数
+            "after_award_desc": 1506579704416, //充值后激活奖励描述
+            "after_award_diamond": 1506579704416, //充值后激活奖励钻石数
+            "after_award_days": 1506579704416, //充值后激活奖励天数
+            "award_type": 1506579704416 //奖励类型 0-优惠 1-首冲特权 不填无优惠
         }
     ],
     "count": 1
@@ -483,6 +490,12 @@ desc|str|true||描述
 tag|str|true||折扣标签
 stime|str|true||上架时间
 group|str|true||聚类，eg: 钻石列表 diamond
+order|int|true||排序
+award|int|true||额外奖励的钻石数
+after_award_desc|str|false||充值后激活奖励描述
+after_award_diamond|int|false||充值后激活奖励钻石数
+after_award_days|int|false||充值后激活奖励天数
+award_type|int|false||奖励类型0-优惠 1-首冲特权 不填无优惠
 
 * 返回
 ```json

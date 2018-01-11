@@ -79,6 +79,7 @@ public final class CrudExt {
         }
         def update = new BasicDBObject()
         if (!map.isEmpty()) {
+            map.put("lastModif", System.currentTimeMillis())
             update.put('$set', map)
         }
         if (!unset.isEmpty()) {
