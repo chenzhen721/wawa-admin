@@ -110,7 +110,9 @@ class CatchuController extends BaseController {
                 if (obj['is_replace'] as Boolean) {
                     def mids = obj['mids'] as Set
                     obj['machines'] = machine().find($$(_id: [$in: mids]))
-                    def toy = toys().findOne($$(_id: obj['toy_id'] as Integer))
+                }
+                def toy = toys().findOne($$(_id: obj['toy_id'] as Integer))
+                if (toy != null) {
                     obj['winrate'] = toy['winrate'] as Integer
                     obj['price'] = toy['price'] as Integer
                 }
