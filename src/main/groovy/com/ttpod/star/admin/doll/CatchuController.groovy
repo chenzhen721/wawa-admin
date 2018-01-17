@@ -2,6 +2,7 @@ package com.ttpod.star.admin.doll
 
 import com.mongodb.BasicDBObject
 import com.mongodb.DBCollection
+import com.mongodb.DBObject
 import com.ttpod.rest.anno.RestWithSession
 import com.ttpod.rest.common.doc.IMessageCode
 import com.ttpod.rest.common.util.http.HttpStatusException
@@ -73,6 +74,10 @@ class CatchuController extends BaseController {
         return catchMongo.getCollection('catch_toy')
     }
 
+    DBCollection machine() {
+        return catchMongo.getCollection('catch_machine')
+    }
+
     DBCollection catch_records() {
         return catchMongo.getCollection('catch_record')
     }
@@ -100,7 +105,17 @@ class CatchuController extends BaseController {
         stringQuery(query, req, "fid")//对应娃娃机ID
         intQuery(query, req, "partner")//对应合作方
         intQuery(query, req, "device_type")//对应娃娃机设备类型
-        Crud.list(req, table(), query.get(), ALL_FIELD, $$(order: 1, online: -1, type: -1, timestamp: -1))
+        Crud.list(req, table(), query.get(), ALL_FIELD, $$(order: 1, online: -1, type: -1, timestamp: -1)) {List<BasicDBObject> list->
+            for(BasicDBObject obj : list) {
+                if (obj['is_replace'] as Boolean) {
+                    def mids = obj['mids'] as Set
+                    obj['machines'] = machine().find($$(_id: [$in: mids]))
+                    def toy = toys().findOne($$(_id: obj['toy_id'] as Integer))
+                    obj['winrate'] = toy['winrate'] as Integer
+                    obj['price'] = toy['price'] as Integer
+                }
+            }
+        }
     }
 
     /**
@@ -109,15 +124,39 @@ class CatchuController extends BaseController {
      * @return
      */
     def add(HttpServletRequest req) {
-        def _id = seqKGS.nextId()
-        def fid = ServletRequestUtils.getStringParameter(req, 'fid', '')
-        //一个远程房间只能创建一次
-        /*if (StringUtils.isNotBlank(fid)) {
-            def room = table().findOne($$(fid: fid))
-            if (room != null) {
+        //合作商户 0 catchu 1 奇异果 2 ZEGO 3 奇异果即构  与device_type对应，0 1 是奇异果  2是ZEGO
+        def partner = ServletRequestUtils.getIntParameter(req, 'partner', 1)
+        if (partner == null) {
+            return [code: 0]
+        }
+        def is_replace = ServletRequestUtils.getBooleanParameter(req, 'is_replace', false)
+        def map = [partner: partner, is_replace: is_replace] as Map
+        //是否要设置为代抓
+        //如果是代抓，则要设置多个机器群
+        if (is_replace) {
+            def mids = ServletRequestUtils.getStringParameter(req, 'mids') //多个以逗号隔开
+            if (StringUtils.isBlank(mids)) {
                 return [code: 0]
             }
-        }*/
+            def machines = mids.split(',')
+            if (machines == null || machines.size() <= 0 || machine().find($$(_id: [$in: machines])).size() != machines) {
+                return [code: 0]
+            }
+            map.put('mids', machines)
+        }
+        if (partner == 1) { //奇异果
+            return add_qiyiguo(req, map)
+        } else if (partner == 2) { //即构
+            return add_zego(req, map)
+        } else if (partner == 3) { //即构奇异果合作
+            return add_zego(req, map)
+        }
+    }
+
+    //ZEGO动态调整房间
+    private add_zego(HttpServletRequest req, Map map) {
+        def _id = seqKGS.nextId()
+        def fid = ServletRequestUtils.getStringParameter(req, 'fid', '') //对应的机器ID
         def toy_id = ServletRequestUtils.getIntParameter(req, 'toy_id')
         def toyItem = toys().findOne(toy_id)
         if (toyItem == null) {
@@ -127,29 +166,70 @@ class CatchuController extends BaseController {
         def type = ServletRequestUtils.getBooleanParameter(req, 'type', true) //是否备货中
         def online = ServletRequestUtils.getBooleanParameter(req, 'online', true) //是否下架
         def pic = ServletRequestUtils.getStringParameter(req, 'pic') //房间图片
-        def price = ServletRequestUtils.getIntParameter(req, 'price')
+        //todo 移到toy def price = ServletRequestUtils.getIntParameter(req, 'price')
         def desc = ServletRequestUtils.getStringParameter(req, 'desc', '')
-        def partner = ServletRequestUtils.getIntParameter(req, 'partner', 1) //合作商户 0 catchu 1 奇异果 2ZEGO
+        //合作商户 0 catchu 1 奇异果 2 ZEGO 3 奇异果即构  与device_type对应，0 1 是奇异果  2是ZEGO
+        def partner = ServletRequestUtils.getIntParameter(req, 'partner', 1)
         def order = ServletRequestUtils.getIntParameter(req, 'order', 0) //排序
-        def winrate = ServletRequestUtils.getIntParameter(req, 'winrate', 25) //25中1
         def playtime = ServletRequestUtils.getIntParameter(req, 'playtime', 40) //40s
-        def device_type = ServletRequestUtils.getIntParameter(req, 'device_type', 0) //设备类型 0主板型 1PC型 2即构
+        //todo 移到 machine def device_type = ServletRequestUtils.getIntParameter(req, 'device_type', 0) //设备类型 0主板型 1PC型 2即构
         def timestamp = new Date().getTime()
 
-        if (StringUtils.isBlank(name) || type == null || StringUtils.isBlank(pic) || price == null || toy_id == null) {
+        if (StringUtils.isBlank(name) || type == null || StringUtils.isBlank(pic) || toy_id == null) {
             return [code: 0]
         }
-        def map = [_id: _id, toy_id: toy_id, name: name, type: type, partner: partner, online: online, pic: pic, price: price, desc: desc, order: order, device_type: device_type, timestamp: timestamp]
+        map.putAll([_id: _id, toy_id: toy_id, name: name, type: type, partner: partner, online: online, pic: pic, desc: desc, order: order, timestamp: timestamp])
         if (fid != null) {
             map.put('fid', fid)
         }
-        if (StringUtils.isNotBlank(fid) && 1 == partner) {
-            if (winrate < 1|| winrate > 888) {
-                return [code: 30406]
-            }
-            QiygRespDTO respDTO = Qiyiguo.winning_rate(fid, winrate)
+        def winrate = toyItem['winrate'] as Integer
+        map.put('winrate', winrate)
+        map.put('playtime', playtime)
+        if(table().save(new BasicDBObject(map)).getN() == 1){
+            Crud.opLog(table().getName() + "_add", map)
+        }
+        return IMessageCode.OK
+    }
+
+    //添加奇异果房间
+    private add_qiyiguo(HttpServletRequest req, Map map) {
+        def _id = seqKGS.nextId()
+        def fid = ServletRequestUtils.getStringParameter(req, 'fid', '')
+        //一个远程房间只能创建一次
+        def toy_id = ServletRequestUtils.getIntParameter(req, 'toy_id')
+        def toyItem = toys().findOne(toy_id)
+        if (toyItem == null) {
+            return [code: 0]
+        }
+        def name = ServletRequestUtils.getStringParameter(req, 'name')
+        def type = ServletRequestUtils.getBooleanParameter(req, 'type', true) //是否备货中
+        def online = ServletRequestUtils.getBooleanParameter(req, 'online', true) //是否下架
+        def pic = ServletRequestUtils.getStringParameter(req, 'pic') //房间图片
+        //todo 移到toy def price = ServletRequestUtils.getIntParameter(req, 'price')
+        def desc = ServletRequestUtils.getStringParameter(req, 'desc', '')
+        //合作商户 0 catchu 1 奇异果 2 ZEGO 3 奇异果即构  与device_type对应，0 1 是奇异果  2是ZEGO
+        def partner = ServletRequestUtils.getIntParameter(req, 'partner', 1)
+        def order = ServletRequestUtils.getIntParameter(req, 'order', 0) //排序
+        //todo 移到toy def winrate = ServletRequestUtils.getIntParameter(req, 'winrate', 25) //25中1
+        def playtime = ServletRequestUtils.getIntParameter(req, 'playtime', 40) //40s
+        //todo 移到machine def device_type = ServletRequestUtils.getIntParameter(req, 'device_type', 0) //设备类型 0主板型 1PC型 2即构
+        def timestamp = new Date().getTime()
+
+        if (StringUtils.isBlank(name) || type == null || StringUtils.isBlank(pic) || toy_id == null) {
+            return [code: 0]
+        }
+        map.putAll([_id: _id, toy_id: toy_id, name: name, type: type, partner: partner, online: online, pic: pic, desc: desc, order: order, timestamp: timestamp])
+
+        if (fid != null) {
+            map.put('fid', fid)
+        }
+        def machine = machine().findOne($$(_id: fid))
+        def winrate = toyItem['winrate'] as Integer
+        if (machine != null) {
+            def tid = machine['tid'] as String
+            QiygRespDTO respDTO = Qiyiguo.winning_rate(tid, winrate)
             if (respDTO == null || !respDTO.getDone()) {
-                logger.error('change winning rate fail.' + fid + ' to: ' + winrate)
+                logger.error('change winning rate fail.' + tid + ' to: ' + winrate)
                 return [code: 30404]
             }
             if (playtime < 5|| playtime > 60) {
@@ -161,7 +241,7 @@ class CatchuController extends BaseController {
                 return [code: 30405]
             }
         }
-        map.put('winrate', winrate)
+        //map.put('winrate', winrate) //展示用，会添加默认商品
         map.put('playtime', playtime)
         if(table().save(new BasicDBObject(map)).getN() == 1){
             Crud.opLog(table().getName() + "_add", map)
@@ -183,6 +263,18 @@ class CatchuController extends BaseController {
         if (room == null) {
             return [code: 30402]
         }
+        def partner = room['partner']
+        if (partner == 1) {
+            return edit_qiyiguo(req, room)
+        } else if (partner == 2) {
+            return edit_zego(req, room)
+        } else if (partner == 3) {
+
+        }
+    }
+
+    def edit_qiyiguo(HttpServletRequest req, DBObject room) {
+        def _id = room['_id']
         def map = [:]
         def name = ServletRequestUtils.getStringParameter(req, 'name')
         if (StringUtils.isNotBlank(name)) {
@@ -196,10 +288,10 @@ class CatchuController extends BaseController {
         if (type != null) {
             map.put('type', type)
         }
-        def device_type = ServletRequestUtils.getIntParameter(req, 'device_type') //0 奇异果推流   1奇异果图片流  2 zego
-        if (device_type != null) {
+        //todo 移到machine def device_type = ServletRequestUtils.getIntParameter(req, 'device_type') //0 奇异果推流   1奇异果图片流  2 zego
+        /*if (device_type != null) {
             map.put('device_type', device_type)
-        }
+        }*/
         def online = ServletRequestUtils.getBooleanParameter(req, 'online') //是否上架
         if (online != null) {
             map.put('online', online)
@@ -225,50 +317,120 @@ class CatchuController extends BaseController {
         if (order != null) {
             map.put('order', order)
         }
+        //修改toy
+        Integer winrate = null
         if (toyId != null && toyId != (room['toy_id'] as Integer)) {
             map.put('toy_id', toyId)
             def toyItem = toys().findOne(toyId)
             if (toyItem == null) {
                 return [code: 30401]
             }
+            winrate = toyItem['winrate'] as Integer
         }
-        def rec = table().findOne($$(_id: _id))
-        if (rec['online'] == Boolean.TRUE && (online == null || online == Boolean.TRUE)) {
-            def winrate = ServletRequestUtils.getIntParameter(req, 'winrate', 25) //25中1
-            def playtime = ServletRequestUtils.getIntParameter(req, 'playtime', 40) //40s
-
-            if (rec == null) {
-                return [code: 30400]
+        def tid = null
+        if (fid != null && fid != (room['fid'] as Integer)) {
+            map.put('fid', fid)
+            def machine = machine().findOne($$(_id: fid))
+            if (machine == null) {
+                return [code: 30401]
             }
-
-            if (1 == rec['partner']) {
-                if (rec['fid'] != null && winrate != rec['winrate']) {
-                    def device_id = rec['fid'] as String
-                    if (winrate < 1 || winrate > 888) {
-                        return [code: 30406]
-                    }
-                    QiygRespDTO respDTO = Qiyiguo.winning_rate(device_id, winrate)
-                    logger.info('respdto: ' + respDTO)
-                    if (respDTO == null || !respDTO.getDone()) {
-                        logger.error('change winning rate fail.' + device_id + ' to: ' + winrate)
-                        return [code: 30404]
-                    }
+            tid = machine['tid']
+        }
+        if (room['online'] == Boolean.TRUE && (online == null || online == Boolean.TRUE)) {
+            if (tid != null || winrate != null) {
+                if (tid == null) {
+                    def machine = machine().findOne($$(_id: room['fid']))
+                    tid = machine['tid']
                 }
-                if (rec['fid'] != null && playtime != rec['playtime']) {
-                    def device_id = rec['fid'] as String
-                    if (playtime < 5 || playtime > 60) {
-                        return [code: 30407]
-                    }
-                    def respDTO = Qiyiguo.playtime(device_id, playtime)
-                    if (respDTO == null || !respDTO.getDone()) {
-                        logger.error('change playtime fail.' + device_id + ' to: ' + playtime)
-                        return [code: 30405]
-                    }
+                if (winrate < 1 || winrate > 888) {
+                    return [code: 30406]
+                }
+                QiygRespDTO respDTO = Qiyiguo.winning_rate(tid as String, winrate as Integer)
+                logger.info('respdto: ' + respDTO)
+                if (respDTO == null || !respDTO.getDone()) {
+                    logger.error('change winning rate fail.' + tid + ' to: ' + winrate)
+                    return [code: 30404]
                 }
             }
-            map.put('winrate', winrate)
+            def playtime = ServletRequestUtils.getIntParameter(req, 'playtime') //40s
+            if (room['fid'] != null && playtime != room['playtime']) {
+                def machine = machine().findOne($$(_id: room['fid']))
+                def device_id = machine['tid'] as String
+                if (playtime < 5 || playtime > 60) {
+                    return [code: 30407]
+                }
+                def respDTO = Qiyiguo.playtime(device_id, playtime)
+                if (respDTO == null || !respDTO.getDone()) {
+                    logger.error('change playtime fail.' + device_id + ' to: ' + playtime)
+                    return [code: 30405]
+                }
+            }
+            //map.put('winrate', winrate)
             map.put('playtime', playtime)
         }
+        if(table().update($$(_id: _id), $$($set: map)).getN() == 1) {
+            Crud.opLog(table().getName() + "_edit", map)
+        }
+        return IMessageCode.OK
+    }
+
+    def edit_zego(HttpServletRequest req, DBObject room) {
+        def _id = room['_id']
+        def map = [:]
+        def name = ServletRequestUtils.getStringParameter(req, 'name')
+        if (StringUtils.isNotBlank(name)) {
+            map.put('name', name)
+        }
+        def fid = ServletRequestUtils.getStringParameter(req, 'fid')
+        if (StringUtils.isNotBlank(fid)) {
+            map.put('fid', fid)
+        }
+        def type = ServletRequestUtils.getBooleanParameter(req, 'type') //是否备货中
+        if (type != null) {
+            map.put('type', type)
+        }
+        //todo 移到machine def device_type = ServletRequestUtils.getIntParameter(req, 'device_type') //0 奇异果推流   1奇异果图片流  2 zego
+        /*if (device_type != null) {
+            map.put('device_type', device_type)
+        }*/
+        def online = ServletRequestUtils.getBooleanParameter(req, 'online') //是否上架
+        if (online != null) {
+            map.put('online', online)
+        }
+        def pic = ServletRequestUtils.getStringParameter(req, 'pic') //房间图片
+        if (StringUtils.isNotBlank(pic)) {
+            map.put('pic', pic)
+        }
+        /*def price = ServletRequestUtils.getIntParameter(req, 'price')
+        if (price != null) {
+            map.put('price', price)
+        }*/
+        def desc = ServletRequestUtils.getStringParameter(req, 'desc')
+        if (StringUtils.isNotBlank(desc)) {
+            map.put('desc', desc)
+        }
+        /*def partner = ServletRequestUtils.getIntParameter(req, 'partner')
+        if (partner != null) {
+            map.put('partner', partner)
+        }*/
+        def toyId = ServletRequestUtils.getIntParameter(req, 'toy_id')
+        def order = ServletRequestUtils.getIntParameter(req, 'order')
+        if (order != null) {
+            map.put('order', order)
+        }
+        //修改toy
+        //def winrate = null
+        /*if (toyId != null && toyId != (room['toy_id'] as Integer)) {
+            map.put('toy_id', toyId)
+            def toyItem = toys().findOne(toyId)
+            if (toyItem == null) {
+                return [code: 30401]
+            }
+            winrate = toyItem['winrate']
+        }*/
+        def playtime = ServletRequestUtils.getIntParameter(req, 'playtime') //40s
+        //map.put('winrate', winrate ?: 25)
+        map.put('playtime', playtime ?: 40)
         if(table().update($$(_id: _id), $$($set: map)).getN() == 1) {
             Crud.opLog(table().getName() + "_edit", map)
         }
@@ -302,13 +464,21 @@ class CatchuController extends BaseController {
         def cost = ServletRequestUtils.getIntParameter(req, 'cost', 0) //娃娃成本
         def price = ServletRequestUtils.getIntParameter(req, 'price') //抓取单价
         def winrate = ServletRequestUtils.getIntParameter(req, 'winrate', 4) //抓取概率100为必中
+        def channel = ServletRequestUtils.getIntParameter(req, 'channel', 0) //todo 抓中礼物邮寄通道
         def timestamp = new Date().getTime()
+        if (winrate < 1 || winrate > 888) {
+            return [code: 30406]
+        }
         if (toys().count($$(_id: _id)) > 0) {
             return [code: 0]
         }
         def stock = [stock: total_stock, count: 0, total: total_stock, timestamp: System.currentTimeMillis()]
         def map = [_id: _id, name: name, type: type, tid: tid, stock: stock, points: points, cost: cost, pic: pic,
-                   head_pic: head_pic, desc: desc, price: price, winrate: winrate, timestamp: timestamp]
+                   head_pic: head_pic, channel: channel, desc: desc, price: price, winrate: winrate, timestamp: timestamp]
+        def goods_id = ServletRequestUtils.getIntParameter(req, 'goods_id')
+        if (goods_id != null) {
+            map.put('goods_id', goods_id)
+        }
         if(toys().save(new BasicDBObject(map)).getN() == 1){
             Crud.opLog(toys().getName() + "_add", map)
             return [code: 1]
@@ -366,9 +536,109 @@ class CatchuController extends BaseController {
         if (StringUtils.isNotBlank(price)) {
             map.put('price', price)
         }
-        def winrate = ServletRequestUtils.getStringParameter(req, 'winrate')
-        if (StringUtils.isNotBlank(winrate)) {
+        def winrate = ServletRequestUtils.getIntParameter(req, 'winrate')
+        if (winrate != null) {
+            if (winrate < 1 || winrate > 888) {
+                return [code: 30406]
+            }
             map.put('winrate', winrate)
+            //判断是否需要调整概率
+            if (winrate != toy['winrate']) {
+                rooms().find($$(toy_id: _id)).toArray().each {BasicDBObject obj ->
+                    if (tid == null) {
+                        def machine = machine().findOne($$(_id: obj['fid']))
+                        tid = machine['tid']
+                    }
+                    QiygRespDTO respDTO = Qiyiguo.winning_rate(tid as String, winrate as Integer)
+                    logger.info('respdto: ' + respDTO)
+                    if (respDTO == null || !respDTO.getDone()) {
+                        logger.error('change winning rate fail.' + tid + ' to: ' + winrate)
+                        return [code: 30404]
+                    }
+                }
+            }
+        }
+        // 添加邮寄类型 0-奇异果, 1-活动人工, 2-即构
+        def channel = ServletRequestUtils.getStringParameter(req, 'channel')
+        if (StringUtils.isNotBlank(channel)) {
+            map.put('channel', channel)
+        }
+        if(toys().update($$(_id: _id), new BasicDBObject($set: map)).getN() == 1){
+            Crud.opLog(toys().getName() + "_edit", map)
+            return [code: 1]
+        }
+        return [code: 0]
+    }
+
+    /**
+     * 机器列表
+     * @param req
+     * @return
+     */
+    def machine_list(HttpServletRequest req) {
+        def query = Web.fillTimeBetween(req)
+        Crud.list(req, machine(), query.get(), ALL_FIELD, SJ_DESC)
+    }
+
+    /**
+     * 商品添加
+     * @param req
+     */
+    def machine_add(HttpServletRequest req) {
+        def _id = seqKGS.nextId()
+
+        def name = ServletRequestUtils.getStringParameter(req, 'name')
+        def type = ServletRequestUtils.getBooleanParameter(req, 'type', true) //是否可用
+        def device_type = ServletRequestUtils.getIntParameter(req, 'device_type', 0) //设备类型 0主板型 1PC型 2即构
+        def desc = ServletRequestUtils.getStringParameter(req, 'desc', '') //描述
+        def tid = ServletRequestUtils.getStringParameter(req, 'tid') //机器ID
+        if (StringUtils.isNotBlank(tid)) {
+            def machine = machine().findOne($$(tid: tid))
+            if (machine != null) {
+                return [code: 0]
+            }
+        }
+        def timestamp = new Date().getTime()
+        if (machine().count($$(_id: _id)) > 0) {
+            return [code: 0]
+        }
+        def map = [_id: _id, name: name, type: type, device_type: device_type, tid: tid, desc: desc, timestamp: timestamp]
+        if(machine().save(new BasicDBObject(map)).getN() == 1){
+            Crud.opLog(toys().getName() + "_add", map)
+            return [code: 1]
+        }
+        return [code: 0]
+    }
+
+    /**
+     * 商品编辑
+     * @param req
+     */
+    def machine_edit(HttpServletRequest req) {
+        def _id = ServletRequestUtils.getIntParameter(req, '_id')
+        if (_id == null) {
+            return [code: 0]
+        }
+        def map = [:]
+        def name = ServletRequestUtils.getStringParameter(req, 'name')
+        if (StringUtils.isNotBlank(name)) {
+            map.put('name', name)
+        }
+        def type = ServletRequestUtils.getBooleanParameter(req, 'type') //是否开放
+        if (type != null) {
+            map.put('type', type as String)
+        }
+        def desc = ServletRequestUtils.getStringParameter(req, 'desc')
+        if (StringUtils.isNotBlank(desc)) {
+            map.put('desc', desc)
+        }
+        def tid = ServletRequestUtils.getStringParameter(req, 'tid')
+        if (StringUtils.isNotBlank(tid)) {
+            map.put('tid', tid)
+        }
+        def device_type = ServletRequestUtils.getStringParameter(req, 'device_type')
+        if (StringUtils.isNotBlank(device_type)) {
+            map.put('device_type', device_type)
         }
         if(toys().update($$(_id: _id), new BasicDBObject($set: map)).getN() == 1){
             Crud.opLog(toys().getName() + "_edit", map)

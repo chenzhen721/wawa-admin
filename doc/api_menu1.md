@@ -48,7 +48,7 @@ device_type|int|false||设备类型
 ### 2.房间修改
 
 * API 添加 {GET|POST} http://test-apiadmin.17laihou.com/catchu/add.json  
-* API 添加 {GET|POST} http://test-apiadmin.17laihou.com/catchu/edit.json  
+      编辑 {GET|POST} http://test-apiadmin.17laihou.com/catchu/edit.json  
 * 参数
 
 字段名|类型|是否必须|取值|说明
@@ -65,7 +65,7 @@ playtime|int|true||游戏时长
 winrate|int|true||命中概率（只做展示用）修改的时候不需要
 price|int|true||抓取价格（只做展示用）修改的时候不需要
 is_replace|bool|true||是否代抓
-mids|String|true||代抓房间名称
+mids|String|true||代抓房间ID 多个以,隔开
 type|bool|true|是否备货中
 partner|int|true||合作方 1-奇异果 2-ZEGO 3-奇异果ZEGO
 
@@ -99,6 +99,12 @@ etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
             "pic": "https://aiimg.sumeme.com/15/7/1510991024079.png", 
             "head_pic": "https://aiimg.sumeme.com/6/6/1510991028358.png", 
             "desc": "眯眼熊", 
+            "points": 123, //可兑换的积分
+            "cost": 12, //娃娃成本
+            "price": 12, //抓取单价
+            "winrate": 25, //命中概率
+            "channel": 1, //邮寄通道 0-奇异果, 1-活动人工, 2-即构, 3-自营
+            "goods_id": 123,
             "stock": {
                 "stock": 123, //库存
                 "total": 123, //进货量
@@ -125,8 +131,12 @@ type|bool|false|默认为true|是否可用
 pic|String|true||详情图
 head_pic|string|true||缩略图
 desc|String|false|false|描述
-tid|string|false||关联娃娃ID，没有不填
-stock|int|false||默认0
+points|int|true||可兑换积分
+cost|int|false||娃娃成本
+price|int|false||抓取单价
+winrate|int|false||命中概率 1-888
+channel|int|false||邮寄通道 0-奇异果, 1-活动人工, 2-即构, 3-自营
+goods_id|int|false||可同步商品ID（邮寄方式为奇异果时必填）
 
 * 返回
 
@@ -134,9 +144,57 @@ stock|int|false||默认0
 ```json
 {"code": 1}
 ```
-    失败
+
+## 娃娃机器管理
+### 1.机器列表
+
+* API {GET|POST} http://test-apiadmin.17laihou.com/catchu/machine_list.json  
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+stime|String|false|yyyy-MM-dd HH: mm:ss|创建时间开始
+etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
+
+* 返回
 ```json
-{"code": 0, "msg":"失败原因"}
+{
+    "count": 10, 
+    "data": [
+        {
+            "_id": 100060, 
+            "name": "眯眼熊", 
+            "type": "true",  //是否可用
+            "device_type": 1,  //设备类型 0主板型 1PC型 2即构
+            "tid": "机器ID",  //关联机器ID
+            "desc": "眯眼熊",  //机器描述
+            "timestamp": 1510925907864
+        }], 
+    "code": 1, 
+    "all_page": 2
+}
+```
+
+### 2.商品修改
+
+* API 添加 {GET|POST} http://test-apiadmin.17laihou.com/catchu/machine_add.json  
+      编辑 {GET|POST} http://test-apiadmin.17laihou.com/catchu/machine_edit.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+\_id|int|false||edit必传
+name|String|true||商品名称
+type|bool|false|默认为true|是否可用
+device_type|int|true||设备类型 0主板型 1PC型 2即构
+tid|string|true||关联机器ID
+desc|String|false|false|描述
+
+* 返回
+
+    成功
+```json
+{"code": 1}
 ```
 
 ### 3.商品库存添加
