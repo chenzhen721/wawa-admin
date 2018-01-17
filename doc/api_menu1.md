@@ -67,7 +67,7 @@ price|int|true||抓取价格（只做展示用）修改的时候不需要
 is_replace|bool|true||是否代抓
 mids|String|true||代抓房间名称
 type|bool|true|是否备货中
-partner|int|true||合作方
+partner|int|true||合作方 1-奇异果 2-ZEGO 3-奇异果ZEGO
 
 * 返回
 
