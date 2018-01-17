@@ -107,7 +107,7 @@ class CatchuController extends BaseController {
         intQuery(query, req, "device_type")//对应娃娃机设备类型
         Crud.list(req, table(), query.get(), ALL_FIELD, $$(order: 1, online: -1, type: -1, timestamp: -1)) {List<BasicDBObject> list->
             for(BasicDBObject obj : list) {
-                if (obj['is_replace'] as Boolean) {
+                if (obj['is_replace'] != null && obj['is_replace'] as Boolean) {
                     def mids = obj['mids'] as Set
                     obj['machines'] = machine().find($$(_id: [$in: mids]))
                 }
