@@ -63,6 +63,7 @@ order|int|true||排序 越小越靠前
 timestamp|int|true||添加时间
 playtime|int|true||游戏时长
 winrate|int|true||命中概率（只做展示用）修改的时候不需要
+price|int|true||抓取价格（只做展示用）修改的时候不需要
 is_replace|bool|true||是否代抓
 mids|String|true||代抓房间名称
 type|bool|true|是否备货中
