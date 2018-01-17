@@ -1,5 +1,80 @@
 # 日常运营
 
+## 娃娃机房间管理
+### 1.房间列表
+
+* API {GET|POST} http://test-apiadmin.17laihou.com/catchu/list.json  
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+\_id|int|false||房间ID
+fid|int|false||机器ID
+toy_id|int|false||娃娃ID
+partner|int|false||合作方
+device_type|int|false||设备类型
+
+* 返回
+```json
+{
+    "count": 1,
+    "data": [
+        {
+            "_id": 12985,
+            "toy_id": 12781,
+            "name": "奇异果-zego01",
+            "type": true,
+            "partner": 2, 
+            "online": true,
+            "pic": "https://aiimg.sumeme.com/51/3/1515253571187.png",
+            "price": 19,
+            "desc": "http://test-aiimg.sumeme.com/38/6/1516169132838.jpg",
+            "order": 0,
+            "device_type": 2,
+            "timestamp": 1515045861127,
+            "fid": "WWJ_ZEGO_22b3cddecebe_No.X022", //机器ID
+            "winrate": 1,
+            "playtime": 40,
+            "followers": 1,
+            "is_replace": false,
+            "machines": [{"_id": 123, "name": ""}]
+        }
+    ],
+    "code": 1,
+    "all_page": 1
+}
+```
+
+### 2.房间修改
+
+* API 添加 {GET|POST} http://test-apiadmin.17laihou.com/catchu/add.json  
+* API 添加 {GET|POST} http://test-apiadmin.17laihou.com/catchu/edit.json  
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+\_id|int|false||edit必传
+toy_id|int|true||娃娃ID
+fid|int|true||机器ID
+name|String|true||房间名称
+pic|String|true||房间封面
+desc|String|true||描述
+order|int|true||排序 越小越靠前
+timestamp|int|true||添加时间
+playtime|int|true||游戏时长
+winrate|int|true||命中概率（只做展示用）修改的时候不需要
+is_replace|bool|true||是否代抓
+mids|String|true||代抓房间名称
+type|bool|true|是否备货中
+partner|int|true||合作方
+
+* 返回
+
+    成功
+```json
+{"code": 1}
+```
+
 ## 娃娃商品管理
 ### 1.商品列表
 
