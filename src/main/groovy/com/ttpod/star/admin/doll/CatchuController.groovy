@@ -235,15 +235,14 @@ class CatchuController extends BaseController {
 
         if (is_replace) {
             def rids = ServletRequestUtils.getStringParameter(req, 'rids') //多个以逗号隔开
-            if (StringUtils.isBlank(rids)) {
-                return [code: 0]
+            if (StringUtils.isNotBlank(rids)) {
+                def roomIds = rids.split(',')
+                def ids = roomIds.collect{ it as Integer}
+                if (roomIds == null || roomIds.size() <= 0 || table().find($$(_id: [$in: ids])).size() != roomIds.size()) {
+                    return [code: 0]
+                }
+                map.put('rids', ids)
             }
-            def roomIds = rids.split(',')
-            def ids = roomIds.collect{ it as Integer}
-            if (roomIds == null || roomIds.size() <= 0 || table().find($$(_id: [$in: ids])).size() != roomIds.size()) {
-                return [code: 0]
-            }
-            map.put('rids', ids)
         }
 
         if(goods().update($$(_id: _id), $$($set: map)).getN() == 1) {
