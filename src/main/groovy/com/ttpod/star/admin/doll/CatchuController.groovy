@@ -114,8 +114,8 @@ class CatchuController extends BaseController {
                 }
                 def toy = toys().findOne($$(_id: obj['toy_id'] as Integer))
                 if (toy != null) {
-                    obj['head_pic'] = toy['head_pic'] as Integer
-                    obj['price'] = toy['price'] as Integer
+                    obj['head_pic'] = toy['head_pic']
+                    obj['price'] = toy['price']
                 }
                 def room = table().findOne($$(_id: obj['room_id'] as Integer))
                 if (room != null) {
