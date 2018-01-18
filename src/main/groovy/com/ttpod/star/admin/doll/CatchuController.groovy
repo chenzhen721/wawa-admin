@@ -163,24 +163,30 @@ class CatchuController extends BaseController {
         def toy_id = ServletRequestUtils.getIntParameter(req, 'toy_id') //商品ID
         def toyItem = toys().findOne(toy_id)
         if (toyItem == null) {
-            return [code: 0]
+            return [code: 123]
         }
         def room_id = ServletRequestUtils.getIntParameter(req, 'room_id') //房间ID
         def roomItem = table().findOne(room_id)
         if (roomItem == null) {
-            return [code: 0]
+            return [code: 333]
         }
-        def map = [_id: _id, toy_id: toy_id, room_id: room_id, cate_id: cate_id, tag_id: tag_id, partner: partner, is_replace: is_replace,
+        def map = [_id: _id, toy_id: toy_id, room_id: room_id, partner: partner, is_replace: is_replace,
                    name: name, type: type, online: online, order: order, timestamp: System.currentTimeMillis()] as Map
+        if (tag_id != null) {
+            map.put('tag_id', tag_id)
+        }
+        if (cate_id != null) {
+            map.put('cate_id', cate_id)
+        }
         //如果是代抓，则要设置多个机器群
         if (is_replace) {
             def rids = ServletRequestUtils.getStringParameter(req, 'rids') //多个以逗号隔开
             if (StringUtils.isBlank(rids)) {
-                return [code: 0]
+                return [code: 444]
             }
             def roomIds = rids.split(',')
             if (roomIds == null || roomIds.size() <= 0 || table().find($$(_id: [$in: roomIds])).size() != roomIds.size()) {
-                return [code: 0]
+                return [code: 555]
             }
             map.put('rids', roomIds)
         }
