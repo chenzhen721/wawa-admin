@@ -104,7 +104,10 @@ class CatchuController extends BaseController {
         intQuery(query, req, "_id")//商品ID
         stringQuery(query, req, "room_id")//对应房间ID
         intQuery(query, req, "partner")//对应合作方，一个合作方只能关联对应的机器
-        booleanQuery(query, req, "is_replace")//是否代抓
+        def is_replace = ServletRequestUtils.getBooleanParameter(req, 'is_replace')
+        if (is_replace != null) {
+            query.put('is_replace').is(is_replace)
+        }
         intQuery(query, req, "cate_id")//是否代抓
         intQuery(query, req, "is_replace")//是否代抓
         Crud.list(req, goods(), query.get(), ALL_FIELD, $$(order: 1, online: -1, type: -1, timestamp: -1)) {List<BasicDBObject> list->
@@ -244,7 +247,10 @@ class CatchuController extends BaseController {
         intQuery(query, req, "_id")//房间ID
         stringQuery(query, req, "fid")//对应娃娃机ID
         intQuery(query, req, "partner")//对应合作方
-        booleanQuery(query, req, "online")//对应合作方
+        def online = ServletRequestUtils.getBooleanParameter(req, 'online')
+        if (online != null) {
+            query.put('online').is(online)
+        }
         intQuery(query, req, "device_type")//对应娃娃机设备类型
         Crud.list(req, table(), query.get(), ALL_FIELD, $$(order: 1, timestamp: -1))
     }
@@ -358,12 +364,6 @@ class CatchuController extends BaseController {
         if (StringUtils.isNotBlank(pic)) {
             map.put('pic', pic)
         }
-        def partner = ServletRequestUtils.getIntParameter(req, 'partner') //房间图片
-        if (partner != null) {
-            map.put('partner', partner)
-        } else {
-            partner = room['partner']
-        }
         def desc = ServletRequestUtils.getStringParameter(req, 'desc')
         if (StringUtils.isNotBlank(desc)) {
             map.put('desc', desc)
@@ -377,6 +377,7 @@ class CatchuController extends BaseController {
         def playtime = ServletRequestUtils.getIntParameter(req, 'playtime', 40) //
         map.put('winrate', winrate ?: 25)
         map.put('playtime', playtime ?: 40)
+        def partner = room['partner']
         if (partner == 1) {
             return edit_qiyiguo(req, room)
         }
@@ -387,32 +388,6 @@ class CatchuController extends BaseController {
     }
 
     def edit_qiyiguo(HttpServletRequest req, DBObject room) {
-        def _id = room['_id']
-        def map = [:]
-        def name = ServletRequestUtils.getStringParameter(req, 'name')
-        if (StringUtils.isNotBlank(name)) {
-            map.put('name', name)
-        }
-        def fid = ServletRequestUtils.getStringParameter(req, 'fid')
-        if (StringUtils.isNotBlank(fid)) {
-            map.put('fid', fid)
-        }
-        def device_type = ServletRequestUtils.getIntParameter(req, 'device_type') //0 奇异果推流   1奇异果图片流  2 zego
-        if (device_type != null) {
-            map.put('device_type', device_type)
-        }
-        def desc = ServletRequestUtils.getStringParameter(req, 'desc')
-        if (StringUtils.isNotBlank(desc)) {
-            map.put('desc', desc)
-        }
-        def partner = ServletRequestUtils.getIntParameter(req, 'partner')
-        if (partner != null) {
-            map.put('partner', partner)
-        }
-        def order = ServletRequestUtils.getIntParameter(req, 'order')
-        if (order != null) {
-            map.put('order', order)
-        }
         Integer winrate = ServletRequestUtils.getIntParameter(req, 'winrate')
         if (fid != null && fid != (room['fid'] as String)) {
             map.put('fid', fid)
