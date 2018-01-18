@@ -239,10 +239,11 @@ class CatchuController extends BaseController {
                 return [code: 0]
             }
             def roomIds = rids.split(',')
-            if (roomIds == null || roomIds.size() <= 0 || table().find($$(_id: [$in: roomIds])).size() != roomIds.size()) {
+            def ids = roomIds.collect{ it as Integer}
+            if (roomIds == null || roomIds.size() <= 0 || table().find($$(_id: [$in: ids])).size() != roomIds.size()) {
                 return [code: 0]
             }
-            map.put('rids', roomIds)
+            map.put('rids', ids)
         }
 
         if(goods().update($$(_id: _id), $$($set: map)).getN() == 1) {
