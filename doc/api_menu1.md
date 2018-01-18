@@ -58,12 +58,14 @@ is_replace|int|false||是否代抓
 name|String|true||商品名称
 type|bool|false|默认为true|备货在页面上能显示
 online|bool|true||是否上线  不在页面上显示
+is_replace|bool|true||是否代抓
 partner|int|true||合作方
 room_id|int|true||房间ID
 toy_id|int|true||商品ID
 cate_id|int|true||商品类型
 tag_id|int|true||标签
 order|int|true||排序 （小在前）
+rids|string|true||代抓房间号 选代抓必填
 timestamp|int|true||添加时间
 
 * 返回

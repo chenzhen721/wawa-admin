@@ -75,10 +75,6 @@ class CatchuController extends BaseController {
         return catchMongo.getCollection('catch_toy')
     }
 
-    DBCollection machine() {
-        return catchMongo.getCollection('catch_machine')
-    }
-
     DBCollection goods() {
         return adminMongo.getCollection('goods')
     }
@@ -121,7 +117,7 @@ class CatchuController extends BaseController {
                     obj['head_pic'] = toy['head_pic'] as Integer
                     obj['price'] = toy['price'] as Integer
                 }
-                def room = rooms().findOne($$(_id: obj['room_id'] as Integer))
+                def room = table().findOne($$(_id: obj['room_id'] as Integer))
                 if (room != null) {
                     obj['winrate'] = room['winrate']
                     obj['playtime'] = room['playtime']
@@ -155,7 +151,7 @@ class CatchuController extends BaseController {
             return [code: 0]
         }
         def room_id = ServletRequestUtils.getIntParameter(req, 'room_id') //房间ID
-        def roomItem = rooms().findOne(room_id)
+        def roomItem = table().findOne(room_id)
         if (roomItem == null) {
             return [code: 0]
         }
@@ -167,7 +163,7 @@ class CatchuController extends BaseController {
                 return [code: 0]
             }
             def roomIds = rids.split(',')
-            if (roomIds == null || roomIds.size() <= 0 || rooms().find($$(_id: [$in: roomIds])).size() != roomIds.size()) {
+            if (roomIds == null || roomIds.size() <= 0 || table().find($$(_id: [$in: roomIds])).size() != roomIds.size()) {
                 return [code: 0]
             }
             map.put('rids', roomIds)
@@ -209,7 +205,7 @@ class CatchuController extends BaseController {
             return [code: 0]
         }
         def room_id = ServletRequestUtils.getIntParameter(req, 'room_id') //房间ID
-        def roomItem = rooms().findOne(room_id)
+        def roomItem = table().findOne(room_id)
         if (roomItem == null) {
             return [code: 0]
         }
