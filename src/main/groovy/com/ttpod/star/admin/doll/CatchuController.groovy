@@ -164,7 +164,8 @@ class CatchuController extends BaseController {
         if (roomItem == null) {
             return [code: 0]
         }
-        def map = [_id: _id, toy_id: toy_id, room_id: room_id, cate_id: cate_id, tag_id: tag_id, partner: partner, is_replace: is_replace, name: name, type: type, online: online, order: order, timestamp: timestamp] as Map
+        def map = [_id: _id, toy_id: toy_id, room_id: room_id, cate_id: cate_id, tag_id: tag_id, partner: partner, is_replace: is_replace,
+                   name: name, type: type, online: online, order: order, timestamp: System.currentTimeMillis()] as Map
         //如果是代抓，则要设置多个机器群
         if (is_replace) {
             def rids = ServletRequestUtils.getStringParameter(req, 'rids') //多个以逗号隔开
