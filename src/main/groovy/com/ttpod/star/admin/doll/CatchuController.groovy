@@ -320,6 +320,7 @@ class CatchuController extends BaseController {
                 return [code: 30404]
             }
         }
+        map.put('winrate', winrate)
         if (playtime < 5|| playtime > 60) {
             return [code: 30407]
         }

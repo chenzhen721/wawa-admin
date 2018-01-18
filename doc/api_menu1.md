@@ -83,7 +83,6 @@ timestamp|int|true||添加时间
 ---|---|---|---|---
 \_id|int|false||房间ID
 fid|int|false||机器ID
-toy_id|int|false||娃娃ID
 partner|int|false||合作方
 device_type|int|false||设备类型
 
@@ -94,25 +93,15 @@ device_type|int|false||设备类型
     "data": [
         {
             "_id": 12985,
-            "toy_id": 12781,
             "name": "奇异果-zego01",
-            "type": true,
             "partner": 2, 
-            "online": true,
-            "pic": "https://aiimg.sumeme.com/51/3/1515253571187.png",
-            "price": 19,
-            "desc": "http://test-aiimg.sumeme.com/38/6/1516169132838.jpg",
             "order": 0,
             "device_type": 2,
             "timestamp": 1515045861127,
             "fid": "WWJ_ZEGO_22b3cddecebe_No.X022", //机器ID
             "winrate": 1,
             "playtime": 40,
-            "followers": 1,
-            "is_replace": false,
-            "machines": [{"_id": 123, "name": ""}],
-            "tag_id": 123,
-            "cate_id": 123
+            "desc": "" //描述
         }
     ],
     "code": 1,
@@ -129,18 +118,13 @@ device_type|int|false||设备类型
 字段名|类型|是否必须|取值|说明
 ---|---|---|---|---
 \_id|int|false||edit必传
-toy_id|int|true||娃娃ID
 fid|int|true||机器ID
 name|String|true||房间名称
-pic|String|true||房间封面
 desc|String|true||描述
 order|int|true||排序 越小越靠前
 timestamp|int|true||添加时间
-playtime|int|true||游戏时长
-winrate|int|true||命中概率（只做展示用）修改的时候不需要
-price|int|true||抓取价格（只做展示用）修改的时候不需要
-
-type|bool|true|是否备货中
+playtime|int|true||游戏时长 5-60
+winrate|int|true||命中概率 1-888
 partner|int|true||合作方 1-奇异果 2-ZEGO 3-奇异果ZEGO
 
 * 返回
@@ -176,7 +160,6 @@ etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
             "points": 123, //可兑换的积分
             "cost": 12, //娃娃成本
             "price": 12, //抓取单价
-            "winrate": 25, //命中概率
             "channel": 1, //邮寄通道 0-奇异果, 1-活动人工, 2-即构, 3-自营
             "goods_id": 123,
             "stock": {
@@ -208,7 +191,6 @@ desc|String|false|false|描述
 points|int|true||可兑换积分
 cost|int|false||娃娃成本
 price|int|false||抓取单价
-winrate|int|false||命中概率 1-888
 channel|int|false||邮寄通道 0-奇异果, 1-活动人工, 2-即构, 3-自营
 goods_id|int|false||可同步商品ID（邮寄方式为奇异果时必填）
 
