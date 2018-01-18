@@ -116,6 +116,7 @@ class CatchuController extends BaseController {
                     def mids = obj['rids'] as Set
                     if (mids != null) {
                         obj['rooms'] = table().find($$(_id: [$in: mids])).toArray() ?: []
+                        obj['rids'] = mids.join(',')
                     }
                 }
                 def toy = toys().findOne($$(_id: obj['toy_id'] as Integer))
