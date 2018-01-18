@@ -1,5 +1,141 @@
 # 日常运营
 
+## 货架管理
+### 1.货架列表
+
+* API {GET|POST} http://test-apiadmin.17laihou.com/catchu/goods_list.json  
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+\_id|int|false||货架ID
+room_id|int|false||房间ID
+toy_id|int|false||娃娃ID
+cate_id|int|false||类目ID
+partner|int|false||合作方
+is_replace|int|false||是否代抓
+
+
+* 返回
+```json
+{
+    "count": 10, 
+    "data": [
+        {
+            "_id": 100060, 
+            "name": "眯眼熊", //名称
+            "type": "true",  //是否备货中
+            "online": "online",  //是否上架
+            "toy_id": "toy_id",  //娃娃ID
+            "head_pic": "head_pic",  //娃娃封面
+            "price": "price",  //抓取价格
+            "room_id": "room_id", //房间ID
+            "cate_id": "cate_id", //类目ID
+            "cate_name": "cate_name", //类目名称
+            "tag_id": "tag_id", //标签ID
+            "tag_pic": "tag_name", //标签图片
+            "partner": "partner", //合作方
+            "order": "order",  //排序
+            "is_replace": true,  //是否代抓
+            "rids": [123,123,123],  //代抓房间ID
+            "rooms": [{"_id": 123, "name": "名称"}],  //代购房间明细
+            "timestamp": 1510925907864
+        }], 
+    "code": 1, 
+    "all_page": 2
+}
+```
+
+### 2.货架修改
+
+* API 添加 {GET|POST} http://test-apiadmin.17laihou.com/catchu/goods_add.json  
+      编辑 {GET|POST} http://test-apiadmin.17laihou.com/catchu/goods_edit.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+\_id|int|false||edit必传
+name|String|true||商品名称
+type|bool|false|默认为true|备货在页面上能显示
+online|bool|true||是否上线  不在页面上显示
+is_replace|bool|true||是否代抓
+partner|int|true||合作方
+room_id|int|true||房间ID
+toy_id|int|true||商品ID
+cate_id|int|true||商品类型
+tag_id|int|true||标签
+order|int|true||排序 （小在前）
+rids|string|true||代抓房间号 选代抓必填
+timestamp|int|true||添加时间
+
+* 返回
+
+    成功
+```json
+{"code": 1}
+```
+
+## 娃娃机房间管理
+### 1.房间列表
+
+* API {GET|POST} http://test-apiadmin.17laihou.com/catchu/list.json  
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+\_id|int|false||房间ID
+fid|int|false||机器ID
+partner|int|false||合作方
+device_type|int|false||设备类型
+
+* 返回
+```json
+{
+    "count": 1,
+    "data": [
+        {
+            "_id": 12985,
+            "name": "奇异果-zego01",
+            "partner": 2, 
+            "order": 0,
+            "device_type": 2,
+            "timestamp": 1515045861127,
+            "fid": "WWJ_ZEGO_22b3cddecebe_No.X022", //机器ID
+            "winrate": 1,
+            "playtime": 40,
+            "desc": "" //描述
+        }
+    ],
+    "code": 1,
+    "all_page": 1
+}
+```
+
+### 2.房间修改
+
+* API 添加 {GET|POST} http://test-apiadmin.17laihou.com/catchu/add.json  
+      编辑 {GET|POST} http://test-apiadmin.17laihou.com/catchu/edit.json  
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+\_id|int|false||edit必传
+fid|int|true||机器ID
+name|String|true||房间名称
+desc|String|true||描述
+order|int|true||排序 越小越靠前
+timestamp|int|true||添加时间
+playtime|int|true||游戏时长 5-60
+winrate|int|true||命中概率 1-888
+partner|int|true||合作方 1-奇异果 2-ZEGO 3-奇异果ZEGO
+
+* 返回
+
+    成功
+```json
+{"code": 1}
+```
+
 ## 娃娃商品管理
 ### 1.商品列表
 
@@ -23,6 +159,11 @@ etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
             "pic": "https://aiimg.sumeme.com/15/7/1510991024079.png", 
             "head_pic": "https://aiimg.sumeme.com/6/6/1510991028358.png", 
             "desc": "眯眼熊", 
+            "points": 123, //可兑换的积分
+            "cost": 12, //娃娃成本
+            "price": 12, //抓取单价
+            "channel": 1, //邮寄通道 0-奇异果, 1-活动人工, 2-即构, 3-自营
+            "goods_id": 123,
             "stock": {
                 "stock": 123, //库存
                 "total": 123, //进货量
@@ -49,18 +190,17 @@ type|bool|false|默认为true|是否可用
 pic|String|true||详情图
 head_pic|string|true||缩略图
 desc|String|false|false|描述
-tid|string|false||关联娃娃ID，没有不填
-stock|int|false||默认0
+points|int|true||可兑换积分
+cost|int|false||娃娃成本
+price|int|false||抓取单价
+channel|int|false||邮寄通道 0-奇异果, 1-活动人工, 2-即构, 3-自营
+goods_id|int|false||可同步商品ID（邮寄方式为奇异果时必填）
 
 * 返回
 
     成功
 ```json
 {"code": 1}
-```
-    失败
-```json
-{"code": 0, "msg":"失败原因"}
 ```
 
 ### 3.商品库存添加
@@ -82,6 +222,63 @@ stock|int|true||库存可以为负，填错的情况
     失败
 ```json
 {"code": 0, "msg":"失败原因"}
+```
+
+## 类目管理
+### 1.类目列表
+
+* API {GET|POST} http://test-apiadmin.17laihou.com/category/list.json  
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+stime|String|false|yyyy-MM-dd HH: mm:ss|创建时间开始
+etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
+
+* 返回
+```json
+{
+    "count": 10, 
+    "data": [
+        {
+            "_id": 100060, 
+            "name": "眯眼熊",  //类目名称
+            "img": "机器ID",  //图片
+            "type": 0,  //type 0-房间 1-标签
+            "status": 1,  //status 0-上线 1-下线
+            "onshow": true,   //onshow true显示在首页 false不显示在首页
+            "timestamp": 1510925907864,
+            "stime": 123123, //上架时间
+            "etime": 123123123 //下架时间
+        }], 
+    "code": 1, 
+    "all_page": 2
+}
+```
+
+### 2.类目编辑
+
+* API 添加 {GET|POST} http://test-apiadmin.17laihou.com/category/add.json  
+      编辑 {GET|POST} http://test-apiadmin.17laihou.com/category/edit.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+\_id|int|false||edit必传
+name|String|true||商品名称
+img|String|true||标签
+type|int|true||type 0-房间 1-标签
+status|int|true||status 0-上线 1-下线
+onshow|bool|true||true显示在首页 false不显示在首页
+timestamp|int|true||时间
+stime|String|true||上架时间
+etime|String|true||下架时间
+
+* 返回
+
+    成功
+```json
+{"code": 1}
 ```
 
 ## 公告通知 - 消息通知
@@ -449,14 +646,21 @@ size|int|false||每页记录数
             "lastModif": 1506579704416,
             "stime": 1506441600000, //商品生效时间
             "pic": "", //图片
-            "cost_diamond": 50, //花费钻石
+            "cost": 50, //花费金额
             "unit": "个月", //单位描述
             "name": "vip", //商品名称
             "limit": 10, //每日限额
-            "desc": "", //限额描述
+            "desc": "", //描述
             "tag": "90%OFF", //折扣标签
             "status": true, //是否上架
-            "timestamp": 1506579704416 //添加时间
+            "timestamp": 1506579704416, //添加时间
+            "group": 1506579704416, //商品聚类
+            "order": 1506579704416, //排序
+            "award": 1506579704416, //额外奖励钻石数，不影响充值钻石数
+            "after_award_desc": 1506579704416, //充值后激活奖励描述
+            "after_award_diamond": 1506579704416, //充值后激活奖励钻石数
+            "after_award_days": 1506579704416, //充值后激活奖励天数
+            "award_type": 1506579704416 //奖励类型 0-优惠 1-首冲特权 不填无优惠
         }
     ],
     "count": 1
@@ -483,6 +687,12 @@ desc|str|true||描述
 tag|str|true||折扣标签
 stime|str|true||上架时间
 group|str|true||聚类，eg: 钻石列表 diamond
+order|int|true||排序
+award|int|true||额外奖励的钻石数
+after_award_desc|str|false||充值后激活奖励描述
+after_award_diamond|int|false||充值后激活奖励钻石数
+after_award_days|int|false||充值后激活奖励天数
+award_type|int|false||奖励类型0-优惠 1-首冲特权 不填无优惠
 
 * 返回
 ```json
