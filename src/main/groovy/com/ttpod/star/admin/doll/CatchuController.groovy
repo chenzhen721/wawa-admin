@@ -240,11 +240,11 @@ class CatchuController extends BaseController {
      * @return
      */
     def list(HttpServletRequest req) {
-        logger.debug('========================>this is a test!!!')
         def query = Web.fillTimeBetween(req)
         intQuery(query, req, "_id")//房间ID
         stringQuery(query, req, "fid")//对应娃娃机ID
         intQuery(query, req, "partner")//对应合作方
+        booleanQuery(query, req, "online")//对应合作方
         intQuery(query, req, "device_type")//对应娃娃机设备类型
         Crud.list(req, table(), query.get(), ALL_FIELD, $$(order: 1, timestamp: -1))
     }
@@ -256,47 +256,6 @@ class CatchuController extends BaseController {
      */
     def add(HttpServletRequest req) {
         //合作商户 0 catchu 1 奇异果 2 ZEGO 3 奇异果即构  与device_type对应，0 1 是奇异果  2是ZEGO
-        def partner = ServletRequestUtils.getIntParameter(req, 'partner', 1)
-        if (partner == null) {
-            return [code: 0]
-        }
-        def map = [partner: partner] as Map
-        if (partner == 1) { //奇异果
-            return add_qiyiguo(req, map)
-        } else if (partner == 2) { //即构
-            return add_zego(req, map)
-        } else if (partner == 3) { //即构奇异果合作
-            return add_zego(req, map)
-        }
-    }
-
-    //ZEGO动态调整房间
-    private add_zego(HttpServletRequest req, Map map) {
-        def _id = seqKGS.nextId()
-        def fid = ServletRequestUtils.getStringParameter(req, 'fid', '') //对应的机器ID
-        def name = ServletRequestUtils.getStringParameter(req, 'name')
-        def desc = ServletRequestUtils.getStringParameter(req, 'desc', '')
-        //合作商户 0 catchu 1 奇异果 2 ZEGO 3 奇异果即构  与device_type对应，0 1 是奇异果  2是ZEGO
-        def partner = ServletRequestUtils.getIntParameter(req, 'partner', 1)
-        def playtime = ServletRequestUtils.getIntParameter(req, 'playtime', 40) //40s
-        def device_type = ServletRequestUtils.getIntParameter(req, 'device_type', 0) //设备类型 0主板型 1PC型 2即构
-        def winrate = ServletRequestUtils.getIntParameter(req, 'winrate', 0) //
-        def timestamp = new Date().getTime()
-
-        map.putAll([_id: _id, device_type: device_type, name: name, desc: desc, partner: partner, timestamp: timestamp])
-        if (fid != null) {
-            map.put('fid', fid)
-        }
-        map.put('winrate', winrate)
-        map.put('playtime', playtime)
-        if(table().save(new BasicDBObject(map)).getN() == 1){
-            Crud.opLog(table().getName() + "_add", map)
-        }
-        return IMessageCode.OK
-    }
-
-    //添加奇异果房间
-    private add_qiyiguo(HttpServletRequest req, Map map) {
         def _id = seqKGS.nextId()
         def fid = ServletRequestUtils.getStringParameter(req, 'fid', '')
         def name = ServletRequestUtils.getStringParameter(req, 'name')
@@ -308,13 +267,30 @@ class CatchuController extends BaseController {
         def winrate = ServletRequestUtils.getIntParameter(req, 'winrate', 40) //1-888
         def device_type = ServletRequestUtils.getIntParameter(req, 'device_type', 0) //设备类型 0主板型 1PC型 2即构
         def timestamp = new Date().getTime()
-
-        map.putAll([_id: _id, name: name, partner: partner, desc: desc, order: order, device_type: device_type,
-                    timestamp: timestamp])
-
+        def map = [_id: _id, name: name, partner: partner, desc: desc, order: order, device_type: device_type,
+                   timestamp: timestamp] as Map
         if (fid != null) {
             map.put('fid', fid)
         }
+        /*map.put('winrate', winrate)
+        map.put('playtime', playtime)*/
+        if (partner == 1) { //奇异果
+            def result = add_winrate(map, fid, winrate)
+            if (result['code'] != 1) {
+                return result
+            }
+            result = add_playtime(map, fid, playtime)
+            if (result['code'] != 1) {
+                return result
+            }
+        }
+        if(table().save(new BasicDBObject(map)).getN() == 1){
+            Crud.opLog(table().getName() + "_add", map)
+        }
+        return IMessageCode.OK
+    }
+
+    private static Map add_winrate(def map, String fid, Integer winrate) {
         if (fid != null || winrate != null) {
             if (winrate < 1 || winrate > 888) {
                 return [code: 30406]
@@ -327,6 +303,10 @@ class CatchuController extends BaseController {
             }
         }
         map.put('winrate', winrate)
+        return [code: 1]
+    }
+
+    private static Map add_playtime(def map, String fid, Integer playtime) {
         if (playtime < 5|| playtime > 60) {
             return [code: 30407]
         }
@@ -335,12 +315,8 @@ class CatchuController extends BaseController {
             logger.error('change playtime fail.' + fid + ' to: ' + playtime)
             return [code: 30405]
         }
-        //}
         map.put('playtime', playtime)
-        if(table().save(new BasicDBObject(map)).getN() == 1){
-            Crud.opLog(table().getName() + "_add", map)
-        }
-        return IMessageCode.OK
+        return [code: 1]
     }
 
     /**
