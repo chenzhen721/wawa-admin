@@ -124,12 +124,12 @@ class CatchuController extends BaseController {
                     obj['playtime'] = room['playtime']
                 }
                 //tag_pic cate_name
-                if (room['cate_id'] != null) {
-                    def cate = category().findOne(room['cate_id'] as Integer)?: [:]
+                if (obj['cate_id'] != null) {
+                    def cate = category().findOne(obj['cate_id'] as Integer)?: [:]
                     obj['cate_name'] = cate['name']
                 }
-                if (room['tag_id'] != null) {
-                    def cate = category().findOne(room['tag_id'] as Integer)?: [:]
+                if (obj['tag_id'] != null) {
+                    def cate = category().findOne(obj['tag_id'] as Integer)?: [:]
                     obj['tag_pic'] = cate['img']
                 }
             }
