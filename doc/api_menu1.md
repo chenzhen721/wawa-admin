@@ -1,5 +1,78 @@
 # 日常运营
 
+## 货架管理
+### 1.货架列表
+
+* API {GET|POST} http://test-apiadmin.17laihou.com/catchu/goods_list.json  
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+\_id|int|false||货架ID
+room_id|int|false||房间ID
+toy_id|int|false||娃娃ID
+cate_id|int|false||类目ID
+partner|int|false||合作方
+is_replace|int|false||是否代抓
+
+
+* 返回
+```json
+{
+    "count": 10, 
+    "data": [
+        {
+            "_id": 100060, 
+            "name": "眯眼熊", //名称
+            "type": "true",  //是否备货中
+            "online": "online",  //是否上架
+            "toy_id": "toy_id",  //娃娃ID
+            "head_pic": "head_pic",  //娃娃封面
+            "price": "price",  //抓取价格
+            "room_id": "room_id", //房间ID
+            "cate_id": "cate_id", //类目ID
+            "cate_name": "cate_name", //类目名称
+            "tag_id": "tag_id", //标签ID
+            "tag_name": "tag_name", //标签图片
+            "partner": "partner", //合作方
+            "order": "order",  //排序
+            "is_replace": true,  //是否代抓
+            "rids": [123,123,123],  //代抓房间ID
+            "rooms": [{"_id": 123, "name": "名称"}],  //代购房间明细
+            "timestamp": 1510925907864
+        }], 
+    "code": 1, 
+    "all_page": 2
+}
+```
+
+### 2.机器修改
+
+* API 添加 {GET|POST} http://test-apiadmin.17laihou.com/catchu/goods_add.json  
+      编辑 {GET|POST} http://test-apiadmin.17laihou.com/catchu/goods_edit.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+\_id|int|false||edit必传
+name|String|true||商品名称
+type|bool|false|默认为true|备货在页面上能显示
+online|bool|true||是否上线  不在页面上显示
+partner|int|true||合作方
+room_id|int|true||房间ID
+toy_id|int|true||商品ID
+cate_id|int|true||商品类型
+tag_id|int|true||标签
+order|int|true||排序 （小在前）
+timestamp|int|true||添加时间
+
+* 返回
+
+    成功
+```json
+{"code": 1}
+```
+
 ## 娃娃机房间管理
 ### 1.房间列表
 
@@ -37,7 +110,9 @@ device_type|int|false||设备类型
             "playtime": 40,
             "followers": 1,
             "is_replace": false,
-            "machines": [{"_id": 123, "name": ""}]
+            "machines": [{"_id": 123, "name": ""}],
+            "tag_id": 123,
+            "cate_id": 123
         }
     ],
     "code": 1,
@@ -64,8 +139,7 @@ timestamp|int|true||添加时间
 playtime|int|true||游戏时长
 winrate|int|true||命中概率（只做展示用）修改的时候不需要
 price|int|true||抓取价格（只做展示用）修改的时候不需要
-is_replace|bool|true||是否代抓
-mids|String|true||代抓房间ID 多个以,隔开
+
 type|bool|true|是否备货中
 partner|int|true||合作方 1-奇异果 2-ZEGO 3-奇异果ZEGO
 
@@ -145,58 +219,6 @@ goods_id|int|false||可同步商品ID（邮寄方式为奇异果时必填）
 {"code": 1}
 ```
 
-## 娃娃机器管理
-### 1.机器列表
-
-* API {GET|POST} http://test-apiadmin.17laihou.com/catchu/machine_list.json  
-* 参数
-
-字段名|类型|是否必须|取值|说明
----|---|---|---|---
-stime|String|false|yyyy-MM-dd HH: mm:ss|创建时间开始
-etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
-
-* 返回
-```json
-{
-    "count": 10, 
-    "data": [
-        {
-            "_id": 100060, 
-            "name": "眯眼熊", 
-            "type": "true",  //是否可用
-            "device_type": 1,  //设备类型 0主板型 1PC型 2即构
-            "tid": "机器ID",  //关联机器ID
-            "desc": "眯眼熊",  //机器描述
-            "timestamp": 1510925907864
-        }], 
-    "code": 1, 
-    "all_page": 2
-}
-```
-
-### 2.商品修改
-
-* API 添加 {GET|POST} http://test-apiadmin.17laihou.com/catchu/machine_add.json  
-      编辑 {GET|POST} http://test-apiadmin.17laihou.com/catchu/machine_edit.json
-* 参数
-
-字段名|类型|是否必须|取值|说明
----|---|---|---|---
-\_id|int|false||edit必传
-name|String|true||商品名称
-type|bool|false|默认为true|是否可用
-device_type|int|true||设备类型 0主板型 1PC型 2即构
-tid|string|true||关联机器ID
-desc|String|false|false|描述
-
-* 返回
-
-    成功
-```json
-{"code": 1}
-```
-
 ### 3.商品库存添加
 
 * API {GET|POST} http://test-apiadmin.17laihou.com/catchu/toy_stock_add.json  
@@ -216,6 +238,63 @@ stock|int|true||库存可以为负，填错的情况
     失败
 ```json
 {"code": 0, "msg":"失败原因"}
+```
+
+## 类目管理
+### 1.类目列表
+
+* API {GET|POST} http://test-apiadmin.17laihou.com/category/list.json  
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+stime|String|false|yyyy-MM-dd HH: mm:ss|创建时间开始
+etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
+
+* 返回
+```json
+{
+    "count": 10, 
+    "data": [
+        {
+            "_id": 100060, 
+            "name": "眯眼熊",  //类目名称
+            "img": "机器ID",  //图片
+            "type": 0,  //type 0-房间 1-标签
+            "status": 1,  //status 0-上线 1-下线
+            "onshow": true,   //onshow true显示在首页 false不显示在首页
+            "timestamp": 1510925907864,
+            "stime": 123123, //上架时间
+            "etime": 123123123 //下架时间
+        }], 
+    "code": 1, 
+    "all_page": 2
+}
+```
+
+### 2.类目编辑
+
+* API 添加 {GET|POST} http://test-apiadmin.17laihou.com/category/add.json  
+      编辑 {GET|POST} http://test-apiadmin.17laihou.com/category/edit.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+\_id|int|false||edit必传
+name|String|true||商品名称
+img|String|true||标签
+type|int|true||type 0-房间 1-标签
+status|int|true||status 0-上线 1-下线
+onshow|bool|true||true显示在首页 false不显示在首页
+timestamp|int|true||时间
+stime|String|true||上架时间
+etime|String|true||下架时间
+
+* 返回
+
+    成功
+```json
+{"code": 1}
 ```
 
 ## 公告通知 - 消息通知
