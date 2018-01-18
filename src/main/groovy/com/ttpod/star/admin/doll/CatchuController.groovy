@@ -290,7 +290,7 @@ class CatchuController extends BaseController {
         return IMessageCode.OK
     }
 
-    private static Map add_winrate(def map, String fid, Integer winrate) {
+    private static Map add_winrate(Map map, String fid, Integer winrate) {
         if (fid != null || winrate != null) {
             if (winrate < 1 || winrate > 888) {
                 return [code: 30406]
@@ -306,7 +306,7 @@ class CatchuController extends BaseController {
         return [code: 1]
     }
 
-    private static Map add_playtime(def map, String fid, Integer playtime) {
+    private static Map add_playtime(Map map, String fid, Integer playtime) {
         if (playtime < 5|| playtime > 60) {
             return [code: 30407]
         }
@@ -333,14 +333,57 @@ class CatchuController extends BaseController {
         if (room == null) {
             return [code: 30402]
         }
-        def partner = room['partner']
+        def map = [:]
+        def name = ServletRequestUtils.getStringParameter(req, 'name')
+        if (StringUtils.isNotBlank(name)) {
+            map.put('name', name)
+        }
+        def fid = ServletRequestUtils.getStringParameter(req, 'fid')
+        if (StringUtils.isNotBlank(fid)) {
+            map.put('fid', fid)
+        }
+        def type = ServletRequestUtils.getBooleanParameter(req, 'type') //是否备货中
+        if (type != null) {
+            map.put('type', type)
+        }
+        def device_type = ServletRequestUtils.getIntParameter(req, 'device_type') //0 奇异果推流   1奇异果图片流  2 zego
+        if (device_type != null) {
+            map.put('device_type', device_type)
+        }
+        def online = ServletRequestUtils.getBooleanParameter(req, 'online') //是否上架
+        if (online != null) {
+            map.put('online', online)
+        }
+        def pic = ServletRequestUtils.getStringParameter(req, 'pic') //房间图片
+        if (StringUtils.isNotBlank(pic)) {
+            map.put('pic', pic)
+        }
+        def partner = ServletRequestUtils.getIntParameter(req, 'partner') //房间图片
+        if (partner != null) {
+            map.put('partner', partner)
+        } else {
+            partner = room['partner']
+        }
+        def desc = ServletRequestUtils.getStringParameter(req, 'desc')
+        if (StringUtils.isNotBlank(desc)) {
+            map.put('desc', desc)
+        }
+        def order = ServletRequestUtils.getIntParameter(req, 'order')
+        if (order != null) {
+            map.put('order', order)
+        }
+
+        def winrate = ServletRequestUtils.getIntParameter(req, 'winrate', 25) //40s
+        def playtime = ServletRequestUtils.getIntParameter(req, 'playtime', 40) //
+        map.put('winrate', winrate ?: 25)
+        map.put('playtime', playtime ?: 40)
         if (partner == 1) {
             return edit_qiyiguo(req, room)
-        } else if (partner == 2) {
-            return edit_zego(req, room)
-        } else if (partner == 3) {
-
         }
+        if(table().update($$(_id: _id), $$($set: map)).getN() == 1) {
+            Crud.opLog(table().getName() + "_edit", map)
+        }
+        return IMessageCode.OK
     }
 
     def edit_qiyiguo(HttpServletRequest req, DBObject room) {
@@ -410,49 +453,7 @@ class CatchuController extends BaseController {
     }
 
     def edit_zego(HttpServletRequest req, DBObject room) {
-        def _id = room['_id']
-        def map = [:]
-        def name = ServletRequestUtils.getStringParameter(req, 'name')
-        if (StringUtils.isNotBlank(name)) {
-            map.put('name', name)
-        }
-        def fid = ServletRequestUtils.getStringParameter(req, 'fid')
-        if (StringUtils.isNotBlank(fid)) {
-            map.put('fid', fid)
-        }
-        def type = ServletRequestUtils.getBooleanParameter(req, 'type') //是否备货中
-        if (type != null) {
-            map.put('type', type)
-        }
-        def device_type = ServletRequestUtils.getIntParameter(req, 'device_type') //0 奇异果推流   1奇异果图片流  2 zego
-        if (device_type != null) {
-            map.put('device_type', device_type)
-        }
-        def online = ServletRequestUtils.getBooleanParameter(req, 'online') //是否上架
-        if (online != null) {
-            map.put('online', online)
-        }
-        def pic = ServletRequestUtils.getStringParameter(req, 'pic') //房间图片
-        if (StringUtils.isNotBlank(pic)) {
-            map.put('pic', pic)
-        }
-        def desc = ServletRequestUtils.getStringParameter(req, 'desc')
-        if (StringUtils.isNotBlank(desc)) {
-            map.put('desc', desc)
-        }
-        def order = ServletRequestUtils.getIntParameter(req, 'order')
-        if (order != null) {
-            map.put('order', order)
-        }
 
-        def winrate = ServletRequestUtils.getIntParameter(req, 'winrate') //40s
-        def playtime = ServletRequestUtils.getIntParameter(req, 'playtime') //
-        map.put('winrate', winrate ?: 25)
-        map.put('playtime', playtime ?: 40)
-        if(table().update($$(_id: _id), $$($set: map)).getN() == 1) {
-            Crud.opLog(table().getName() + "_edit", map)
-        }
-        return IMessageCode.OK
     }
 
     /**
