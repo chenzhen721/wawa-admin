@@ -104,14 +104,20 @@ class CatchuController extends BaseController {
         intQuery(query, req, "_id")//商品ID
         stringQuery(query, req, "room_id")//对应房间ID
         intQuery(query, req, "partner")//对应合作方，一个合作方只能关联对应的机器
-        booleanQuery(query, req, "is_replace")//是否代抓
-        intQuery(query, req, "cate_id")//是否代抓
-        intQuery(query, req, "is_replace")//是否代抓
+        def is_replace = ServletRequestUtils.getBooleanParameter(req, 'is_replace')
+        if (is_replace != null) {
+            query.put('is_replace').is(is_replace)
+        }
+        intQuery(query, req, "cate_id")//
+        intQuery(query, req, "tag_id")//
         Crud.list(req, goods(), query.get(), ALL_FIELD, $$(order: 1, online: -1, type: -1, timestamp: -1)) {List<BasicDBObject> list->
             for(BasicDBObject obj : list) {
                 if (obj['is_replace'] != null && obj['is_replace'] as Boolean) {
                     def mids = obj['rids'] as Set
-                    obj['rooms'] = table().find($$(_id: [$in: mids]))
+                    if (mids != null) {
+                        obj['rooms'] = table().find($$(_id: [$in: mids])).toArray() ?: []
+                        obj['rids'] = mids.join(',')
+                    }
                 }
                 def toy = toys().findOne($$(_id: obj['toy_id'] as Integer))
                 if (toy != null) {
@@ -227,6 +233,19 @@ class CatchuController extends BaseController {
         if (tag_id != null) {
             map.put('tag_id', tag_id)
         }
+
+        if (is_replace) {
+            def rids = ServletRequestUtils.getStringParameter(req, 'rids') //多个以逗号隔开
+            if (StringUtils.isNotBlank(rids)) {
+                def roomIds = rids.split(',')
+                def ids = roomIds.collect{ it as Integer}
+                if (roomIds == null || roomIds.size() <= 0 || table().find($$(_id: [$in: ids])).size() != roomIds.size()) {
+                    return [code: 0]
+                }
+                map.put('rids', ids)
+            }
+        }
+
         if(goods().update($$(_id: _id), $$($set: map)).getN() == 1) {
             Crud.opLog(goods().getName() + "_edit", map)
         }
@@ -240,11 +259,14 @@ class CatchuController extends BaseController {
      * @return
      */
     def list(HttpServletRequest req) {
-        logger.debug('========================>this is a test!!!')
         def query = Web.fillTimeBetween(req)
         intQuery(query, req, "_id")//房间ID
         stringQuery(query, req, "fid")//对应娃娃机ID
         intQuery(query, req, "partner")//对应合作方
+        def online = ServletRequestUtils.getBooleanParameter(req, 'online')
+        if (online != null) {
+            query.put('online').is(online)
+        }
         intQuery(query, req, "device_type")//对应娃娃机设备类型
         Crud.list(req, table(), query.get(), ALL_FIELD, $$(order: 1, timestamp: -1))
     }
@@ -256,47 +278,6 @@ class CatchuController extends BaseController {
      */
     def add(HttpServletRequest req) {
         //合作商户 0 catchu 1 奇异果 2 ZEGO 3 奇异果即构  与device_type对应，0 1 是奇异果  2是ZEGO
-        def partner = ServletRequestUtils.getIntParameter(req, 'partner', 1)
-        if (partner == null) {
-            return [code: 0]
-        }
-        def map = [partner: partner] as Map
-        if (partner == 1) { //奇异果
-            return add_qiyiguo(req, map)
-        } else if (partner == 2) { //即构
-            return add_zego(req, map)
-        } else if (partner == 3) { //即构奇异果合作
-            return add_zego(req, map)
-        }
-    }
-
-    //ZEGO动态调整房间
-    private add_zego(HttpServletRequest req, Map map) {
-        def _id = seqKGS.nextId()
-        def fid = ServletRequestUtils.getStringParameter(req, 'fid', '') //对应的机器ID
-        def name = ServletRequestUtils.getStringParameter(req, 'name')
-        def desc = ServletRequestUtils.getStringParameter(req, 'desc', '')
-        //合作商户 0 catchu 1 奇异果 2 ZEGO 3 奇异果即构  与device_type对应，0 1 是奇异果  2是ZEGO
-        def partner = ServletRequestUtils.getIntParameter(req, 'partner', 1)
-        def playtime = ServletRequestUtils.getIntParameter(req, 'playtime', 40) //40s
-        def device_type = ServletRequestUtils.getIntParameter(req, 'device_type', 0) //设备类型 0主板型 1PC型 2即构
-        def winrate = ServletRequestUtils.getIntParameter(req, 'winrate', 0) //
-        def timestamp = new Date().getTime()
-
-        map.putAll([_id: _id, device_type: device_type, name: name, desc: desc, partner: partner, timestamp: timestamp])
-        if (fid != null) {
-            map.put('fid', fid)
-        }
-        map.put('winrate', winrate)
-        map.put('playtime', playtime)
-        if(table().save(new BasicDBObject(map)).getN() == 1){
-            Crud.opLog(table().getName() + "_add", map)
-        }
-        return IMessageCode.OK
-    }
-
-    //添加奇异果房间
-    private add_qiyiguo(HttpServletRequest req, Map map) {
         def _id = seqKGS.nextId()
         def fid = ServletRequestUtils.getStringParameter(req, 'fid', '')
         def name = ServletRequestUtils.getStringParameter(req, 'name')
@@ -308,13 +289,30 @@ class CatchuController extends BaseController {
         def winrate = ServletRequestUtils.getIntParameter(req, 'winrate', 40) //1-888
         def device_type = ServletRequestUtils.getIntParameter(req, 'device_type', 0) //设备类型 0主板型 1PC型 2即构
         def timestamp = new Date().getTime()
-
-        map.putAll([_id: _id, name: name, partner: partner, desc: desc, order: order, device_type: device_type,
-                    timestamp: timestamp])
-
+        def map = [_id: _id, name: name, partner: partner, desc: desc, order: order, device_type: device_type,
+                   timestamp: timestamp] as Map
         if (fid != null) {
             map.put('fid', fid)
         }
+        /*map.put('winrate', winrate)
+        map.put('playtime', playtime)*/
+        if (partner == 1) { //奇异果
+            def result = add_winrate(map, fid, winrate)
+            if (result['code'] != 1) {
+                return result
+            }
+            result = add_playtime(map, fid, playtime)
+            if (result['code'] != 1) {
+                return result
+            }
+        }
+        if(table().save(new BasicDBObject(map)).getN() == 1){
+            Crud.opLog(table().getName() + "_add", map)
+        }
+        return IMessageCode.OK
+    }
+
+    private static Map add_winrate(Map map, String fid, Integer winrate) {
         if (fid != null || winrate != null) {
             if (winrate < 1 || winrate > 888) {
                 return [code: 30406]
@@ -327,6 +325,10 @@ class CatchuController extends BaseController {
             }
         }
         map.put('winrate', winrate)
+        return [code: 1]
+    }
+
+    private static Map add_playtime(Map map, String fid, Integer playtime) {
         if (playtime < 5|| playtime > 60) {
             return [code: 30407]
         }
@@ -335,12 +337,8 @@ class CatchuController extends BaseController {
             logger.error('change playtime fail.' + fid + ' to: ' + playtime)
             return [code: 30405]
         }
-        //}
         map.put('playtime', playtime)
-        if(table().save(new BasicDBObject(map)).getN() == 1){
-            Crud.opLog(table().getName() + "_add", map)
-        }
-        return IMessageCode.OK
+        return [code: 1]
     }
 
     /**
@@ -357,18 +355,6 @@ class CatchuController extends BaseController {
         if (room == null) {
             return [code: 30402]
         }
-        def partner = room['partner']
-        if (partner == 1) {
-            return edit_qiyiguo(req, room)
-        } else if (partner == 2) {
-            return edit_zego(req, room)
-        } else if (partner == 3) {
-
-        }
-    }
-
-    def edit_qiyiguo(HttpServletRequest req, DBObject room) {
-        def _id = room['_id']
         def map = [:]
         def name = ServletRequestUtils.getStringParameter(req, 'name')
         if (StringUtils.isNotBlank(name)) {
@@ -377,72 +363,7 @@ class CatchuController extends BaseController {
         def fid = ServletRequestUtils.getStringParameter(req, 'fid')
         if (StringUtils.isNotBlank(fid)) {
             map.put('fid', fid)
-        }
-        def device_type = ServletRequestUtils.getIntParameter(req, 'device_type') //0 奇异果推流   1奇异果图片流  2 zego
-        if (device_type != null) {
-            map.put('device_type', device_type)
-        }
-        def desc = ServletRequestUtils.getStringParameter(req, 'desc')
-        if (StringUtils.isNotBlank(desc)) {
-            map.put('desc', desc)
-        }
-        def partner = ServletRequestUtils.getIntParameter(req, 'partner')
-        if (partner != null) {
-            map.put('partner', partner)
-        }
-        def order = ServletRequestUtils.getIntParameter(req, 'order')
-        if (order != null) {
-            map.put('order', order)
-        }
-        Integer winrate = ServletRequestUtils.getIntParameter(req, 'winrate')
-        if (fid != null && fid != (room['fid'] as String)) {
-            map.put('fid', fid)
-        }
-
-        if (room['online'] == Boolean.TRUE) {
-            if (fid != null || winrate != null) {
-                if (winrate < 1 || winrate > 888) {
-                    return [code: 30406]
-                }
-                QiygRespDTO respDTO = Qiyiguo.winning_rate(fid as String, winrate as Integer)
-                logger.info('respdto: ' + respDTO)
-                if (respDTO == null || !respDTO.getDone()) {
-                    logger.error('change winning rate fail.' + fid + ' to: ' + winrate)
-                    return [code: 30404]
-                }
-            }
-            def playtime = ServletRequestUtils.getIntParameter(req, 'playtime') //40s
-            if (room['fid'] != null && playtime != room['playtime']) {
-                def machine = table().findOne($$(_id: room['fid']))
-                def device_id = machine['fid'] as String
-                if (playtime < 5 || playtime > 60) {
-                    return [code: 30407]
-                }
-                def respDTO = Qiyiguo.playtime(device_id, playtime)
-                if (respDTO == null || !respDTO.getDone()) {
-                    logger.error('change playtime fail.' + device_id + ' to: ' + playtime)
-                    return [code: 30405]
-                }
-            }
-            map.put('winrate', winrate)
-            map.put('playtime', playtime)
-        }
-        if(table().update($$(_id: _id), $$($set: map)).getN() == 1) {
-            Crud.opLog(table().getName() + "_edit", map)
-        }
-        return IMessageCode.OK
-    }
-
-    def edit_zego(HttpServletRequest req, DBObject room) {
-        def _id = room['_id']
-        def map = [:]
-        def name = ServletRequestUtils.getStringParameter(req, 'name')
-        if (StringUtils.isNotBlank(name)) {
-            map.put('name', name)
-        }
-        def fid = ServletRequestUtils.getStringParameter(req, 'fid')
-        if (StringUtils.isNotBlank(fid)) {
-            map.put('fid', fid)
+            room['fid'] = fid
         }
         def type = ServletRequestUtils.getBooleanParameter(req, 'type') //是否备货中
         if (type != null) {
@@ -469,14 +390,58 @@ class CatchuController extends BaseController {
             map.put('order', order)
         }
 
-        def winrate = ServletRequestUtils.getIntParameter(req, 'winrate') //40s
-        def playtime = ServletRequestUtils.getIntParameter(req, 'playtime') //
+        def winrate = ServletRequestUtils.getIntParameter(req, 'winrate', 25) //40s
+        def playtime = ServletRequestUtils.getIntParameter(req, 'playtime', 40) //
         map.put('winrate', winrate ?: 25)
         map.put('playtime', playtime ?: 40)
+        def partner = room['partner']
+        if (partner == 1) {
+            def result = edit_qiyiguo(req, room)
+            if (result['code'] != 1) {
+                return result
+            }
+        }
         if(table().update($$(_id: _id), $$($set: map)).getN() == 1) {
             Crud.opLog(table().getName() + "_edit", map)
         }
         return IMessageCode.OK
+    }
+
+    def edit_qiyiguo(HttpServletRequest req, DBObject room) {
+        def fid = room['fid'] as String
+        Integer winrate = ServletRequestUtils.getIntParameter(req, 'winrate')
+
+        if (room['online'] == Boolean.TRUE) {
+            if (fid != null || winrate != null) {
+                if (winrate < 1 || winrate > 888) {
+                    return [code: 30406]
+                }
+                QiygRespDTO respDTO = Qiyiguo.winning_rate(fid as String, winrate as Integer)
+                logger.info('respdto: ' + respDTO)
+                if (respDTO == null || !respDTO.getDone()) {
+                    logger.error('change winning rate fail.' + fid + ' to: ' + winrate)
+                    return [code: 30404]
+                }
+            }
+            def playtime = ServletRequestUtils.getIntParameter(req, 'playtime') //40s
+            if (room['fid'] != null && playtime != room['playtime']) {
+                def machine = table().findOne($$(_id: room['fid']))
+                def device_id = machine['fid'] as String
+                if (playtime < 5 || playtime > 60) {
+                    return [code: 30407]
+                }
+                def respDTO = Qiyiguo.playtime(device_id, playtime)
+                if (respDTO == null || !respDTO.getDone()) {
+                    logger.error('change playtime fail.' + device_id + ' to: ' + playtime)
+                    return [code: 30405]
+                }
+            }
+        }
+        return [code: 1]
+    }
+
+    def edit_zego(HttpServletRequest req, DBObject room) {
+
     }
 
     /**

@@ -85,6 +85,7 @@ timestamp|int|true||添加时间
 ---|---|---|---|---
 \_id|int|false||房间ID
 fid|int|false||机器ID
+online|bool|false||上线状态
 partner|int|false||合作方
 device_type|int|false||设备类型
 
@@ -103,6 +104,7 @@ device_type|int|false||设备类型
             "fid": "WWJ_ZEGO_22b3cddecebe_No.X022", //机器ID
             "winrate": 1,
             "playtime": 40,
+            "online": true,
             "desc": "" //描述
         }
     ],
@@ -128,6 +130,7 @@ timestamp|int|true||添加时间
 playtime|int|true||游戏时长 5-60
 winrate|int|true||命中概率 1-888
 partner|int|true||合作方 1-奇异果 2-ZEGO 3-奇异果ZEGO
+online|bool|true||是否上线
 
 * 返回
 
