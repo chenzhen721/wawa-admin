@@ -46,7 +46,7 @@ is_replace|int|false||是否代抓
 }
 ```
 
-### 2.机器修改
+### 2.货架修改
 
 * API 添加 {GET|POST} http://test-apiadmin.17laihou.com/catchu/goods_add.json  
       编辑 {GET|POST} http://test-apiadmin.17laihou.com/catchu/goods_edit.json
