@@ -189,7 +189,7 @@ class CatchuController extends BaseController {
             if (roomIds == null || roomIds.size() <= 0 || table().find($$(_id: [$in: ids])).size() != roomIds.size()) {
                 return [code: 555]
             }
-            map.put('rids', roomIds)
+            map.put('rids', ids)
         }
         if(goods().save(new BasicDBObject(map)).getN() == 1){
             Crud.opLog(goods().getName() + "_add", map)
