@@ -90,6 +90,7 @@ class CatchuController extends BaseController {
     DBCollection apply_post_logs() {
         return logMongo.getCollection('apply_post_logs')
     }
+    DBCollection category(){return adminMongo.getCollection('category')}
 
     @Resource
     KGS seqKGS
@@ -123,6 +124,14 @@ class CatchuController extends BaseController {
                     obj['playtime'] = room['playtime']
                 }
                 //tag_pic cate_name
+                if (room['cate_id'] != null) {
+                    def cate = category().findOne(room['cate_id'] as Integer)?: [:]
+                    obj['cate_name'] = cate['name']
+                }
+                if (room['tag_id'] != null) {
+                    def cate = category().findOne(room['tag_id'] as Integer)?: [:]
+                    obj['tag_pic'] = cate['img']
+                }
             }
         }
     }
