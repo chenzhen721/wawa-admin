@@ -223,14 +223,20 @@ class CatchuController extends BaseController {
         def order = ServletRequestUtils.getIntParameter(req, 'order', 0) //排序
         map.put('order', order)
         def toy_id = ServletRequestUtils.getIntParameter(req, 'toy_id') //商品ID
-        def toyItem = toys().findOne(toy_id)
-        if (toyItem == null) {
-            return [code: 0]
+        if (toy_id != null) {
+            def toyItem = toys().findOne(toy_id)
+            if (toyItem == null) {
+                return [code: 0]
+            }
+            map.put('toy_id', toy_id)
         }
         def room_id = ServletRequestUtils.getIntParameter(req, 'room_id') //房间ID
-        def roomItem = table().findOne(room_id)
-        if (roomItem == null) {
-            return [code: 0]
+        if (room_id != null) {
+            def roomItem = table().findOne(room_id)
+            if (roomItem == null) {
+                return [code: 0]
+            }
+            map.put('room_id', room_id)
         }
         def cate_id = ServletRequestUtils.getIntParameter(req, 'cate_id')
         if (cate_id != null) {
