@@ -108,8 +108,8 @@ class CatchuController extends BaseController {
         if (is_replace != null) {
             query.put('is_replace').is(is_replace)
         }
-        intQuery(query, req, "cate_id")//是否代抓
-        intQuery(query, req, "is_replace")//是否代抓
+        intQuery(query, req, "cate_id")//
+        intQuery(query, req, "tag_id")//
         Crud.list(req, goods(), query.get(), ALL_FIELD, $$(order: 1, online: -1, type: -1, timestamp: -1)) {List<BasicDBObject> list->
             for(BasicDBObject obj : list) {
                 if (obj['is_replace'] != null && obj['is_replace'] as Boolean) {
