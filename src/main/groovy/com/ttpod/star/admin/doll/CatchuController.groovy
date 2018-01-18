@@ -110,7 +110,7 @@ class CatchuController extends BaseController {
             for(BasicDBObject obj : list) {
                 if (obj['is_replace'] != null && obj['is_replace'] as Boolean) {
                     def mids = obj['rids'] as Set
-                    obj['rooms'] = machine().find($$(_id: [$in: mids]))
+                    obj['rooms'] = table().find($$(_id: [$in: mids]))
                 }
                 def toy = toys().findOne($$(_id: obj['toy_id'] as Integer))
                 if (toy != null) {
