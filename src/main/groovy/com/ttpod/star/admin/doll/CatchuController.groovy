@@ -347,6 +347,7 @@ class CatchuController extends BaseController {
         def fid = ServletRequestUtils.getStringParameter(req, 'fid')
         if (StringUtils.isNotBlank(fid)) {
             map.put('fid', fid)
+            room['fid'] = fid
         }
         def type = ServletRequestUtils.getBooleanParameter(req, 'type') //是否备货中
         if (type != null) {
@@ -379,7 +380,10 @@ class CatchuController extends BaseController {
         map.put('playtime', playtime ?: 40)
         def partner = room['partner']
         if (partner == 1) {
-            return edit_qiyiguo(req, room)
+            def result = edit_qiyiguo(req, room)
+            if (result['code'] != 1) {
+                return result
+            }
         }
         if(table().update($$(_id: _id), $$($set: map)).getN() == 1) {
             Crud.opLog(table().getName() + "_edit", map)
@@ -388,10 +392,8 @@ class CatchuController extends BaseController {
     }
 
     def edit_qiyiguo(HttpServletRequest req, DBObject room) {
+        def fid = room['fid'] as String
         Integer winrate = ServletRequestUtils.getIntParameter(req, 'winrate')
-        if (fid != null && fid != (room['fid'] as String)) {
-            map.put('fid', fid)
-        }
 
         if (room['online'] == Boolean.TRUE) {
             if (fid != null || winrate != null) {
@@ -418,13 +420,8 @@ class CatchuController extends BaseController {
                     return [code: 30405]
                 }
             }
-            map.put('winrate', winrate)
-            map.put('playtime', playtime)
         }
-        if(table().update($$(_id: _id), $$($set: map)).getN() == 1) {
-            Crud.opLog(table().getName() + "_edit", map)
-        }
-        return IMessageCode.OK
+        return [code: 1]
     }
 
     def edit_zego(HttpServletRequest req, DBObject room) {
