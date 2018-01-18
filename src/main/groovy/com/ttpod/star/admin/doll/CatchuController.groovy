@@ -126,7 +126,7 @@ class CatchuController extends BaseController {
                     obj['winrate'] = room['winrate']
                     obj['playtime'] = room['playtime']
                 }
-                //tag_name cate_name
+                //tag_pic cate_name
             }
         }
     }

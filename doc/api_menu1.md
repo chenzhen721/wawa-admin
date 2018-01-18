@@ -33,7 +33,7 @@ is_replace|int|false||是否代抓
             "cate_id": "cate_id", //类目ID
             "cate_name": "cate_name", //类目名称
             "tag_id": "tag_id", //标签ID
-            "tag_name": "tag_name", //标签图片
+            "tag_pic": "tag_name", //标签图片
             "partner": "partner", //合作方
             "order": "order",  //排序
             "is_replace": true,  //是否代抓
