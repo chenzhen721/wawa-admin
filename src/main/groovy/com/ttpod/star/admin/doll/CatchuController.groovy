@@ -395,7 +395,7 @@ class CatchuController extends BaseController {
             map.put('order', order)
         }
         Integer winrate = ServletRequestUtils.getIntParameter(req, 'winrate')
-        if (fid != null && fid != (room['fid'] as Integer)) {
+        if (fid != null && fid != (room['fid'] as String)) {
             map.put('fid', fid)
         }
 
