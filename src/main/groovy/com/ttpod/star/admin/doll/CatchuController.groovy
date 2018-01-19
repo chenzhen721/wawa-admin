@@ -557,8 +557,8 @@ class CatchuController extends BaseController {
             map.put('price', price)
         }
         // 添加邮寄类型 0-奇异果, 1-活动人工, 2-即构, 3-自营
-        def channel = ServletRequestUtils.getStringParameter(req, 'channel')
-        if (StringUtils.isNotBlank(channel)) {
+        def channel = ServletRequestUtils.getIntParameter(req, 'channel')
+        if (channel != null) {
             map.put('channel', channel)
         }
         if(toys().update($$(_id: _id), new BasicDBObject($set: map)).getN() == 1){
@@ -869,8 +869,8 @@ class CatchuController extends BaseController {
         if (records == null) {
             return Web.missParam()
         }
-        def goods_id = records['goods_id']
-        if (records['goods_id'] == null) {
+        //def goods_id = records['goods_id']
+        /*if (records['goods_id'] == null) {
             //查询相同的商品对应的goods_id
             def toyId = records['toy']['_id'] as Integer
             def list = catch_records().find($$('toy._id': toyId, device_type: [$ne: 2], goods_id: [$exists: true])).sort($$(timestamp: -1)).toArray()
@@ -879,7 +879,7 @@ class CatchuController extends BaseController {
             }
             goods_id = list[0]['goods_id'] as Integer
             catch_records().update($$(_id: records['_id']), $$($set: [goods_id: goods_id]), false, false, writeConcern)
-        }
+        }*/
         if (records['channel'] == null) {
             return [code: 0]
         }
@@ -891,7 +891,7 @@ class CatchuController extends BaseController {
                 coin: records['coin'],
                 timestamp: records['timestamp'],
                 replay_url: records['replay_url'],
-                goods_id: goods_id,
+                //goods_id: goods_id,
                 relative_record: _id, //对应的补单记录
                 channel: records['channel'],
                 is_delete: false,
