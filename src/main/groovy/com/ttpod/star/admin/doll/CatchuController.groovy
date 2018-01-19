@@ -438,8 +438,7 @@ class CatchuController extends BaseController {
             }
             def playtime = ServletRequestUtils.getIntParameter(req, 'playtime') //40s
             if (room['fid'] != null && playtime != room['playtime']) {
-                def machine = table().findOne($$(_id: room['fid']))
-                def device_id = machine['fid'] as String
+                def device_id = room['fid'] as String
                 if (playtime < 5 || playtime > 60) {
                     return [code: 30407]
                 }
