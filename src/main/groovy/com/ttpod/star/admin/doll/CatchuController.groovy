@@ -880,6 +880,9 @@ class CatchuController extends BaseController {
             goods_id = list[0]['goods_id'] as Integer
             catch_records().update($$(_id: records['_id']), $$($set: [goods_id: goods_id]), false, false, writeConcern)
         }
+        if (records['channel'] == null) {
+            return [code: 0]
+        }
         def success_log = $$(_id: '' + records['_id'] + '_supplement',
                 room_id: records['room_id'],
                 user_id: records['user_id'],
@@ -890,7 +893,7 @@ class CatchuController extends BaseController {
                 replay_url: records['replay_url'],
                 goods_id: goods_id,
                 relative_record: _id, //对应的补单记录
-                channel: CatchPostChannel.奇异果.ordinal(),
+                channel: records['channel'],
                 is_delete: false,
                 is_award: false
         )

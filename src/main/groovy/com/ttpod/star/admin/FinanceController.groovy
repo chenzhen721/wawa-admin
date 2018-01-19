@@ -200,8 +200,8 @@ class FinanceController extends BaseController {
         }*/
         Integer id = req.getInt(_id)
         Long num = req['num'] as Long
-        if (num <= 0) {
-            return [code: 0, msg: 'num must > 0']
+        if (num >= 0) {
+            return [code: 0, msg: 'num must < 0']
         }
         def remark = req['remark'] as String
         if (users().update(new BasicDBObject(_id, id).append('finance.diamond_count', [$gte: num])
