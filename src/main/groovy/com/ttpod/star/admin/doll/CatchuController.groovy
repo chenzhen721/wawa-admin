@@ -463,6 +463,7 @@ class CatchuController extends BaseController {
      */
     def toy_list(HttpServletRequest req) {
         def query = Web.fillTimeBetween(req)
+        query.and('is_delete').is(false)
         Crud.list(req, toys(), query.get(), ALL_FIELD, SJ_DESC)
     }
 
@@ -489,7 +490,7 @@ class CatchuController extends BaseController {
         }
         def stock = [stock: total_stock, count: 0, total: total_stock, timestamp: System.currentTimeMillis()]
         def map = [_id: _id, name: name, type: type, tid: tid, stock: stock, points: points, cost: cost, pic: pic,
-                   head_pic: head_pic, channel: channel, desc: desc, price: price, timestamp: timestamp]
+                   head_pic: head_pic, channel: channel, desc: desc, price: price, timestamp: timestamp, is_delete: false]
         def goods_id = ServletRequestUtils.getIntParameter(req, 'goods_id')
         if (goods_id != null) {
             map.put('goods_id', goods_id)
@@ -522,6 +523,10 @@ class CatchuController extends BaseController {
         def type = ServletRequestUtils.getBooleanParameter(req, 'type') //是否开放
         if (type != null) {
             map.put('type', type as String)
+        }
+        def goods_id = ServletRequestUtils.getIntParameter(req, 'goods_id')
+        if (goods_id != null) {
+            map.put('goods_id', goods_id)
         }
         def pic = ServletRequestUtils.getStringParameter(req, 'pic') //房间图片
         def head_pic = ServletRequestUtils.getStringParameter(req, 'head_pic') //缩略图
