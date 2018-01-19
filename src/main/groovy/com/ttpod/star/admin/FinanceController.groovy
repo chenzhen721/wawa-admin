@@ -200,12 +200,12 @@ class FinanceController extends BaseController {
         }*/
         Integer id = req.getInt(_id)
         Long num = req['num'] as Long
-        if (num <= 0) {
-            return [code: 0, msg: 'num must > 0']
+        if (num >= 0) {
+            return [code: 0, msg: 'num must < 0']
         }
         def remark = req['remark'] as String
-        if (users().update(new BasicDBObject(_id, id).append('finance.diamond_count', [$gte: num])
-                , new BasicDBObject('$inc', ['finance.diamond_count': 0 - num]), false, false, writeConcern).getN() == 1) {
+        if (users().update(new BasicDBObject(_id, id).append('finance.diamond_count', [$gte: 0 - num])
+                , new BasicDBObject('$inc', ['finance.diamond_count': num]), false, false, writeConcern).getN() == 1) {
             Crud.opLog(OpType.finance_cut_coin, [user_id: id, coin: num, remark: remark])
             return [code: 1]
         }
