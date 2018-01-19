@@ -557,8 +557,8 @@ class CatchuController extends BaseController {
             map.put('price', price)
         }
         // 添加邮寄类型 0-奇异果, 1-活动人工, 2-即构, 3-自营
-        def channel = ServletRequestUtils.getStringParameter(req, 'channel')
-        if (StringUtils.isNotBlank(channel)) {
+        def channel = ServletRequestUtils.getIntParameter(req, 'channel')
+        if (channel != null) {
             map.put('channel', channel)
         }
         if(toys().update($$(_id: _id), new BasicDBObject($set: map)).getN() == 1){
