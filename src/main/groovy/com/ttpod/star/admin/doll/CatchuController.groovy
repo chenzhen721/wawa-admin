@@ -880,7 +880,10 @@ class CatchuController extends BaseController {
             goods_id = list[0]['goods_id'] as Integer
             catch_records().update($$(_id: records['_id']), $$($set: [goods_id: goods_id]), false, false, writeConcern)
         }*/
-        if (records['channel'] == null) {
+        if (records['toy'] == null || records['toy']['channel'] == null) {
+            return [code: 0]
+        }
+        if (records['toy']['channel'] == 0 && records['toy']['goods_id'] == null) {
             return [code: 0]
         }
         def success_log = $$(_id: '' + records['_id'] + '_supplement',
