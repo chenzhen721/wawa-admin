@@ -1152,18 +1152,17 @@ class CatchuController extends BaseController {
                     }
                     toys_record.each { BasicDBObject toy ->
                         if (toy['channel'] != CatchPostChannel.奇异果.ordinal()) {
-                            return
-                        }
-                        def goods_id = toy['goods_id'] as Integer
-                        if (toy['goods_id'] == null) {
-                            def catchu_toy = toys().findOne($$(_id: toy['_id']))
-                            goods_id = catchu_toy['goods_id'] as Integer
-                        }
-                        if (goods_id != null) {
-                            goods.put(goods_id, goods.get(goods_id) + 1)
-                        } else {
-                            logger.error('========>goods_id witch relate to toy not found, in apply_post_log by id:' + toy['goods_id'])
-                            missing_goods.add(toy)
+                            def goods_id = toy['goods_id'] as Integer
+                            if (toy['goods_id'] == null) {
+                                def catchu_toy = toys().findOne($$(_id: toy['_id']))
+                                goods_id = catchu_toy['goods_id'] as Integer
+                            }
+                            if (goods_id != null) {
+                                goods.put(goods_id, goods.get(goods_id) + 1)
+                            } else {
+                                logger.error('========>goods_id witch relate to toy not found, in apply_post_log by id:' + toy['goods_id'])
+                                missing_goods.add(toy)
+                            }
                         }
                     }
                     if (missing_goods.size() > 0) {
