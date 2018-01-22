@@ -101,7 +101,7 @@ class PhotoController extends BaseController {
     }
 
 
-    private final static String DEFAULT_PIC = "https://aiimg.sumeme.com/49/1/1500964546481.png";
+    private final static String DEFAULT_PIC = "https://img.lezhuale.com/49/1/1500964546481.png";
 
     def handle_user_pic(HttpServletRequest req) {
         Integer status = req['status'] as Integer
