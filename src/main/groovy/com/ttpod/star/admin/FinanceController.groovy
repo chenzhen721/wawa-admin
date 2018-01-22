@@ -77,7 +77,7 @@ class FinanceController extends BaseController {
         def ids = idStr.split(',')
         ids.each {String str ->
             if (StringUtils.isNotBlank(str)) {
-                Integer id = Integer.valueOf(str)
+                Integer id = Integer.valueOf(str.trim())
                 Long num = req['num'] as Long
                 String remark = req['remark'] as String
                 def orderId = "${id}_${num}_Admin_${System.currentTimeMillis()}".toString()
