@@ -186,6 +186,9 @@ class StatController extends BaseController {
     def doll_report(HttpServletRequest req){
         def query = Web.fillTimeBetween(req)
         query.put('type').is(req['type'])
+        if (req['_id'] != null) {
+            query.put('toy_id').is(req['_id'] as Integer)
+        }
         Crud.list(req, adminMongo.getCollection('stat_doll'), query.get(), $$(users:0), $$(timestamp: -1, toy_id: -1)){ List<BasicDBObject> data ->
             for (BasicDBObject obj : data) {
                 def toy = catchMongo.getCollection("catch_toy").findOne($$([_id:obj.get("toy_id") as Long]))
