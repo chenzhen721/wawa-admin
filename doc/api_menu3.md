@@ -51,6 +51,103 @@ etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
 }
 ```
 
+## 新增付费用户统计表
+### 列表
+
+* API {GET|POST} http://test-apiadmin.17laihou.com/stat/regpay_report.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+stime|String|false|yyyy-MM-dd HH: mm:ss|创建时间开始
+etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
+qd|String|false||查询对应渠道号
+type|String|false|total-总计 qd-渠道数据|如果输入渠道号查询默认type为qd
+
+* 返回
+
+```json
+{
+    "count": 11, 
+    "data": [{
+                 "_id" : "20171120_wawa_default_regpay",
+                 "type" : "qd", //qd或total
+                 "qd" : "wawa_default",
+                 "timestamp" : 1511107200000, //日期
+                 "reg_count" : 501,  //注册人数
+                 "pay_user_count1" : 5, //次日新增付费人数
+                 "pay_total1" : 60.0,   //次日新增付费金额
+                 "pay_user_count3" : 8, //3日新增付费人数
+                 "pay_total3" : 115.0, //3日新增付费金额
+                 "pay_user_count7" : 5, //7日新增付费人数
+                 "pay_total7" : 69.0, //7日新增付费金额
+                 "pay_user_count30" : 1, //30日新增付费人数
+                 "pay_total30" : 4.0,  //30日新增付费金额
+                 "pay_user_count" : 5, //当日新增付费人数
+                 "pay_total" : 30.0,  //当日新增付费金额
+                 "pay_last5" : 3,  // 近5日新增付费人数
+                 "payuser_current" : 53, // 截止到今天付费总人数
+                 "paytotal_current" : 2183.0, //截止到今天付费总金额
+                 "paycount_current" : 343, //截止到今天付费总次数
+                 "payuserlogin_rate_current" : 38.4339622642, //当日注册用户中付费的 平均登录天数
+                 "复购次数": 123, // paycount_current/payuser_current
+                 "diamond_add_current": 123, //到目前为止领取钻石数
+                 "diamond_user_current": 123, //到目前为止获得赠送的人数
+                 "invite_user_current": 123, //到目前为止邀请好友数
+                 "invite_diamond_current": 123, //到目前为止邀请好友获得的钻石数
+                 "diamond_cost_current": 123, //到目前为止消耗的钻石数
+                 "charge_award_current": 123, //充值优惠钻石
+                 "admin_add_current admin": 123 //补单
+                 
+             }],
+    "code": 1,
+    "all_page": 12
+}
+```
+
+## 娃娃统计
+### 列表
+
+* API {GET|POST} http://test-apiadmin.17laihou.com/stat/doll_report.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+stime|String|false|yyyy-MM-dd HH: mm:ss|创建时间开始
+etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
+type|String|false|day-每日 total-总计|类型
+_id|int|false||商品ID
+
+* 返回
+
+```json
+{
+    "count": 11, 
+    "data": [{
+         "_id" : "20171120_wawa_default_regpay",
+         "type" : "qd", //qd或total
+         "qd" : "wawa_default",
+         "timestamp" : 1511107200000, //日期
+         "toy_id": "", //娃娃编号
+         "name": "", //娃娃名称
+         "head_pic":"", //娃娃图片 //"进入次数": （目前没有）
+         "count": 123, //抓取次数
+         "bingo_count": 123, //抓中次数 //"下抓率（没有 依赖进入次数）
+         "rate": 123, // 实际抓中概率
+         "winrate": 123, //设定概率
+         "price": 123, //单次抓取价格
+         "cost": 123, // 娃娃成本
+         "post_count": 123, // 已寄出数量
+         "post_total": 123, //已申请数量(需要计算)
+         "stock": 123, // 库存
+         "exchange_count": 123, // 兑换积分数量(需要计算)
+         "remaining": 123 // 剩余商品个数(需要计算)
+     }],
+    "code": 1,
+    "all_page": 12
+}
+```
+
 ## 登录日统计 （同线上）
 
 ## 钻石日报表

@@ -37,12 +37,13 @@ class ShopController extends BaseController{
     @Resource
     KGS seqKGS
 
-    //award_type: 0 优惠 award_type 1 首冲特权 不填无优惠
+    //award_type: 0 优惠 award_type 1 首冲特权 不填无优惠, award: 统计用 充值时不产生影响
     private Map props = [_id             :{seqKGS.nextId()}, item_id:Str, name:Str, pic:Str, status:Bool, cost:Int, count:Int,
                  unit            :Str, limit:Int, desc:Str, tag:Str, timestamp:Timestamp, lastModif:Timestamp, group:Str,
-                 after_award_desc:Str, after_award_diamond:IntNullable,
+                 after_award_desc:Str, after_award_diamond:IntNullable, award: Int,
                  after_award_days:IntNullable, award_type:IntNullable,
-                 stime           :{String str->  (str == null || str.isEmpty()) ? null : Web.getTime(str).getTime()}
+                 stime           :{String str->  (str == null || str.isEmpty()) ? null : Web.getTime(str).getTime()},
+                 order:{String str->  (str == null || str.isEmpty()) ? 1 : Integer.valueOf(str)  }
     ]
 
     private CrudExt crudExt = new CrudExt(table(), props, true)
@@ -56,13 +57,17 @@ class ShopController extends BaseController{
                     return super.query(req)
                 }
                 public DBObject sortby(HttpServletRequest req) {
-                    return new BasicDBObject([status: 1, "stime":-1])
+                    return new BasicDBObject([order: 1, status: 1, "stime":-1])
                 }
             }
     )
 
     private static final Map vip = [_id: 'vip', name: 'vip', pic: ''] //TODO
     private static final Map coin = [_id: 'coin', name: '金币', pic: ''] //TODO
+
+    def add(HttpServletRequest req) {
+        return crudExt.add(req)
+    }
 
     def edit(HttpServletRequest req) {
         return crudExt.edit(req)
