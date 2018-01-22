@@ -855,9 +855,7 @@ class CatchuController extends BaseController {
         }
         //客户端是否显示此记录，是否删除 true 删除 无字段或false正常
         def is_delete = ServletRequestUtils.getBooleanParameter(req, 'is_delete')
-        if (is_delete == null || !is_delete) {
-            query.put('is_delete', [$ne: true])
-        } else {
+        if (is_delete != null) {
             query.put('is_delete', is_delete)
         }
         Crud.list(req, catch_success_logs(), query, ALL_FIELD, SJ_DESC)
@@ -917,7 +915,7 @@ class CatchuController extends BaseController {
         //todo 如果这条记录包含在已邮寄包裹内则无法回退
 
         //如果逻辑删除这条记录，需要把对应的快递申请回退
-        def post_log = apply_post_logs().findOne($$('toys.record_id': _id, is_delete: [$ne: true]))
+        def post_log = apply_post_logs().findOne($$('toys.record_id': _id, is_delete: false))
         if (post_log != null) {
             apply_post_logs().update($$(_id: post_log['_id']), $$($set: [is_delete: true, status: 2, desc: desc]))
             def toys = post_log['toys'] as List
@@ -931,7 +929,7 @@ class CatchuController extends BaseController {
                 }
             }
         }
-        if (1 == catch_success_logs().update($$(_id: _id, is_delete: [$ne: true]), $$($set: [is_delete: true]), false, false, writeConcern).getN()) {
+        if (1 == catch_success_logs().update($$(_id: _id, is_delete: false), $$($set: [is_delete: true]), false, false, writeConcern).getN()) {
             Crud.opLog(catch_success_logs().getName() + '_success_record_refuse', [is_delete: true])
             return [code: 1]
         }
@@ -965,11 +963,7 @@ class CatchuController extends BaseController {
         //客户端是否显示此订单，是否删除 true 删除 无字段或false正常
         def is_delete = ServletRequestUtils.getBooleanParameter(req, 'is_delete')
         if (is_delete != null) {
-            if (!is_delete) {
-                query.put('is_delete', [$ne: true])
-            } else {
-                query.put('is_delete', is_delete)
-            }
+            query.put('is_delete', is_delete)
         }
         //正常情况下的，邮寄状态 0,未处理, 1待发货, 2已发货, 3已同步订单
         def post_type = ServletRequestUtils.getIntParameter(req, 'post_type')
@@ -1127,8 +1121,8 @@ class CatchuController extends BaseController {
         if (end != null) {
             timestamp.put('$lt', end)
         }
-        def query = $$(channel: CatchPostChannel.奇异果.ordinal(), push_time: [$exists: false], status: CatchPostStatus.审核通过.ordinal(),
-                is_delete: [$ne: true], post_type: CatchPostType.已发货.ordinal(), is_pay_postage: [$ne: false])
+        def query = $$(push_time: [$exists: false], status: CatchPostStatus.审核通过.ordinal(),
+                is_delete: false, post_type: CatchPostType.已发货.ordinal(), is_pay_postage: [$ne: false])
         if (timestamp.size() > 0) {
             query.put('timestamp', timestamp)
         }
@@ -1151,18 +1145,25 @@ class CatchuController extends BaseController {
                     def tel = address['tel'] as String
                     def name = address['name'] as String
 
-                    def toys = obj['toys']
+                    def toys_record = obj['toys']
                     def missing_goods = [] as List
                     def goods = MapWithDefault.<Integer, Integer> newInstance(new HashMap<Integer, Integer>()) {
                         return 0
                     }
-                    toys.each { BasicDBObject toy ->
-                        if (toy['goods_id'] == null) {
-                            logger.error('========>goods_id witch relate to toy not found, in apply_post_log by id:' + toy['goods_id'])
-                            missing_goods.add(toy)
+                    toys_record.each { BasicDBObject toy ->
+                        if (toy['channel'] != CatchPostChannel.奇异果.ordinal()) {
+                            def goods_id = toy['goods_id'] as Integer
+                            if (toy['goods_id'] == null) {
+                                def catchu_toy = toys().findOne($$(_id: toy['_id']))
+                                goods_id = catchu_toy['goods_id'] as Integer
+                            }
+                            if (goods_id != null) {
+                                goods.put(goods_id, goods.get(goods_id) + 1)
+                            } else {
+                                logger.error('========>goods_id witch relate to toy not found, in apply_post_log by id:' + toy['goods_id'])
+                                missing_goods.add(toy)
+                            }
                         }
-                        def goods_id = toy['goods_id'] as Integer
-                        goods.put(goods_id, goods.get(goods_id) + 1)
                     }
                     if (missing_goods.size() > 0) {
                         set.put('missing_goods', missing_goods)
