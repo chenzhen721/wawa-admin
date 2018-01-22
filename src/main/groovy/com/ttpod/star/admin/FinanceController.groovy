@@ -70,20 +70,29 @@ class FinanceController extends BaseController {
             return [code: 30419, msg: '验证码错误']
 
         }*/
-        Integer id = req.getInt(_id)
-        Long num = req['num'] as Long
-        String remark = req['remark'] as String
-        def orderId = "${id}_${num}_Admin_${System.currentTimeMillis()}".toString()
-        def logWithId = new BasicDBObject(
-                _id: orderId,//订单号
-                user_id: id,
-                diamond: num,
-                via: 'Admin',
-                session: Web.getSession(),
-                remark: remark
-        )
-        if (addDiamond(id, num, logWithId)) {
-            Crud.opLog(OpType.finance_add, [user_id: id, order_id: orderId, coin: num, remark: remark])
+        String idStr = req.getParameter(_id)
+        if (StringUtils.isBlank(idStr)) {
+            return [code: 0]
+        }
+        def ids = idStr.split(',')
+        ids.each {String str ->
+            if (StringUtils.isNotBlank(str)) {
+                Integer id = Integer.valueOf(str)
+                Long num = req['num'] as Long
+                String remark = req['remark'] as String
+                def orderId = "${id}_${num}_Admin_${System.currentTimeMillis()}".toString()
+                def logWithId = new BasicDBObject(
+                        _id: orderId,//订单号
+                        user_id: id,
+                        diamond: num,
+                        via: 'Admin',
+                        session: Web.getSession(),
+                        remark: remark
+                )
+                if (addDiamond(id, num, logWithId)) {
+                    Crud.opLog(OpType.finance_add, [user_id: id, order_id: orderId, coin: num, remark: remark])
+                }
+            }
         }
         [code: 1]
     }
