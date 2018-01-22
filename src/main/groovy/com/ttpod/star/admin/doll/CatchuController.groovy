@@ -980,7 +980,7 @@ class CatchuController extends BaseController {
         }
         def channel = ServletRequestUtils.getIntParameter(req, 'channel')
         if (channel != null) {
-            query.put('channel', channel)
+            query.put('toys.channel', channel)
         }
         def need_postage = ServletRequestUtils.getBooleanParameter(req, 'need_postage')
         if (need_postage != null) {//需要邮费 true   不需要邮费false
