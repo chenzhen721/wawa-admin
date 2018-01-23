@@ -544,8 +544,8 @@ class CatchuController extends BaseController {
         if (StringUtils.isNotBlank(tid)) {
             map.put('tid', tid)
         }
-        def points = ServletRequestUtils.getStringParameter(req, 'points')
-        if (StringUtils.isNotBlank(points)) {
+        def points = ServletRequestUtils.getIntParameter(req, 'points')
+        if (points != null) {
             map.put('points', points)
         }
         def cost = ServletRequestUtils.getStringParameter(req, 'cost')
