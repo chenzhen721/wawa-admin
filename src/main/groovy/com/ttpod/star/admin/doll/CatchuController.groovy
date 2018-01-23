@@ -882,9 +882,15 @@ class CatchuController extends BaseController {
             return [code: 0]
         }
         if (records['toy']['channel'] == 0 && records['toy']['goods_id'] == null) {
-            return [code: 0]
+            //查询相同的商品对应的goods_id
+            def toyId = records['toy']['_id'] as Integer
+            def toy = toys().findOne($$(_id: toyId))
+            if (toy == null || toy['goods_id'] == null) {
+                return [code: 0]
+            }
+            records['toy']['goods_id'] = toy['goods_id']
         }
-        def success_log = $$(_id: '' + records['_id'] + '_supplement',
+        def success_log = $$(_id: '' + records['_id'] + '_' + System.currentTimeMillis(),
                 room_id: records['room_id'],
                 user_id: records['user_id'],
                 toy: records['toy'],
