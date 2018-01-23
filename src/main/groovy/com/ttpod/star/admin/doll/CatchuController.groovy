@@ -1122,7 +1122,7 @@ class CatchuController extends BaseController {
             timestamp.put('$lt', end)
         }
         def query = $$(push_time: [$exists: false], status: CatchPostStatus.审核通过.ordinal(),
-                is_delete: false, post_type: CatchPostType.已发货.ordinal(), is_pay_postage: [$ne: false])
+                is_delete: false, 'toys.channel': CatchPostChannel.奇异果.ordinal(), post_type: CatchPostType.已发货.ordinal(), is_pay_postage: [$ne: false])
         if (timestamp.size() > 0) {
             query.put('timestamp', timestamp)
         }
@@ -1151,7 +1151,7 @@ class CatchuController extends BaseController {
                         return 0
                     }
                     toys_record.each { BasicDBObject toy ->
-                        if (toy['channel'] != CatchPostChannel.奇异果.ordinal()) {
+                        if (toy['channel'] == CatchPostChannel.奇异果.ordinal()) {
                             def goods_id = toy['goods_id'] as Integer
                             if (toy['goods_id'] == null) {
                                 def catchu_toy = toys().findOne($$(_id: toy['_id']))
