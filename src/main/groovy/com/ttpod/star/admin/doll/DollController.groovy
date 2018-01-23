@@ -50,6 +50,10 @@ class DollController extends BaseController {
         return catchMongo.getCollection('catch_toy')
     }
 
+    DBCollection catch_records() {
+        return catchMongo.getCollection('catch_record')
+    }
+
     @Resource
     KGS seqKGS
 
@@ -67,7 +71,12 @@ class DollController extends BaseController {
         if (status != null) {
             query.put('status', status)
         }
-        Crud.list(req, catch_observe_logs(), query, ALL_FIELD, SJ_DESC)
+        Crud.list(req, catch_observe_logs(), query, ALL_FIELD, SJ_DESC) {List<BasicDBObject> list->
+            for(BasicDBObject obj : list) {
+                def record = catch_records().findOne($$(_id: obj['_id']))
+                obj['toy'] = record['toy']
+            }
+        }
     }
 
     /**
