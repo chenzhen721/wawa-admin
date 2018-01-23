@@ -1151,7 +1151,7 @@ class CatchuController extends BaseController {
                         return 0
                     }
                     toys_record.each { BasicDBObject toy ->
-                        if (toy['channel'] != CatchPostChannel.奇异果.ordinal()) {
+                        if (toy['channel'] == CatchPostChannel.奇异果.ordinal()) {
                             def goods_id = toy['goods_id'] as Integer
                             if (toy['goods_id'] == null) {
                                 def catchu_toy = toys().findOne($$(_id: toy['_id']))
