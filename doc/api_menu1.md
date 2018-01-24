@@ -592,7 +592,27 @@ etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
 }
 ```
 
-### 4.订单统计表
+### 4.订单拉取
+
+* API {GET|POST} http://test-apiadmin.17laihou.com/catchu/pull_order.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+stime|String|false|yyyy-MM-dd HH: mm:ss|创建时间开始
+etime|String|false|yyyy-MM-dd HH: mm:ss|创建时间结束
+channel|int|true||邮寄渠道
+
+
+* 返回
+```json
+{
+    "code": 1,
+    "data": "" //csv 前端原样展示
+}
+```
+
+### 5.订单统计表
 
 * API {GET|POST} http://test-apiadmin.17laihou.com/stat/order_report.json
 * 参数

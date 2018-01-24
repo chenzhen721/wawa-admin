@@ -22,6 +22,7 @@ import com.ttpod.star.web.api.play.dto.QiygOrderResultDTO
 import com.ttpod.star.web.api.play.dto.QiygRespDTO
 import groovy.json.JsonSlurper
 import org.apache.commons.lang.StringUtils
+import org.apache.commons.lang.time.DateUtils
 import org.apache.http.HttpResponse
 import org.apache.http.HttpStatus
 import org.slf4j.Logger
@@ -1027,6 +1028,7 @@ class CatchuController extends BaseController {
     }
 
     /**
+     * //todo 增加channel
      * 修改快递信息
      * @param req
      * @return
@@ -1051,6 +1053,7 @@ class CatchuController extends BaseController {
         if (StringUtils.isNotBlank(shipping_name)) {
             set.put('shipping_name', shipping_name)
         }
+        //todo 放到post_info中
         if (1 == apply_post_logs().update(query, $$($set: set), false, false, writeConcern).getN()) {
             Crud.opLog(apply_post_logs().getName() + '_edit_post_info', set)
             return [code: 1]
@@ -1103,13 +1106,56 @@ class CatchuController extends BaseController {
 
         //更新成功
         def query = $$(_id: [$in: postIdList], post_type: CatchPostType.待发货.ordinal(), is_delete: [$ne: true], status: CatchPostStatus.未审核.ordinal(), is_pay_postage: [$ne: false])
-        def set = [post_type: CatchPostType.已发货.ordinal(), status: CatchPostStatus.审核通过.ordinal()]
+        def set = [post_type: CatchPostType.已发货.ordinal(), status: CatchPostStatus.审核通过.ordinal(), apply_time: System.currentTimeMillis()]
         if (1 <= apply_post_logs().update(query, $$($set: set), false, true, writeConcern).getN()) {
             Crud.opLog(catch_records().getName() + '_batch_post', set)
             return [code: 1]
         }
         //有不符合条件的记录
         return [code: 0]
+    }
+
+    /**
+     * id 姓名 收货地址 手机号 商品名称 商品ID 发货渠道 分类 商品单价 运费 快递公司 快递编号 创建时间 记录ID
+     * //todo 拉取订单
+     * @param req
+     */
+    def pull_order(HttpServletRequest req) {
+        def channel = ServletRequestUtils.getIntParameter(req, 'channel')
+        if (channel == null) {
+            return [code: 0]
+        }
+        def stime = Web.getStime(req)
+        if (stime == null) {
+            stime = new Date().clearTime()
+        }
+        def etime = Web.getEtime(req)
+        if (etime == null) {
+            etime = DateUtils.addDays(stime, 1)
+        }
+        def query = $$(apply_time: [$gte: stime, $lt: etime])
+        query.put('toys.channel', channel)
+        def sb = new StringBuffer()
+        apply_post_logs().find(query).toArray().each {BasicDBObject obj ->
+            def pre = new StringBuffer()
+            pre.append(obj['user_id']).append(',')//用户id
+            def address = obj['address'] as BasicDBObject
+            pre.append(address['name'] ?: '').append(',')//姓名
+            def addr = address['province'] ?: '' + address['city'] ?: '' + address['region'] ?: '' + address['address'] ?: ''
+            pre.append(addr).append(',').append(address['tel'] ?: '').append(',') //收货地址 手机号
+            def toyList = obj['toys'] as List<BasicDBObject>
+            for(BasicDBObject toy : toyList) {
+                if (toy['channel'] == channel) {
+                    sb.append(pre).append(toy['name'] ?: '').append(',').append(toy['_id'] ?: '').append(',') //商品名称 商品ID
+                    .append(',').append(',') //发货渠道 分类(货架分类 暂时没有)
+                    def toyDB = toys().findOne($$(_id: toy['_id'])) ?: [:]
+                    sb.append(toyDB['price']).append(',').append(',,,')  //单价 运费 快递 编号
+                    sb.append(obj['timestamp']).append(',').append(obj['_id']).append(System.lineSeparator()) //创建时间 记录ID
+
+                }
+            }
+        }
+        return [code: 1, data: sb.toString()]
     }
 
     /**
