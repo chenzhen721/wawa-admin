@@ -526,7 +526,7 @@ class CatchuController extends BaseController {
         }
         def type = ServletRequestUtils.getBooleanParameter(req, 'type') //是否开放
         if (type != null) {
-            map.put('type', type as String)
+            map.put('type', type)
         }
         def goods_id = ServletRequestUtils.getIntParameter(req, 'goods_id')
         if (goods_id != null) {
