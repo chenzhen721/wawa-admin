@@ -1146,6 +1146,7 @@ class CatchuController extends BaseController {
         query.put('toys.channel', channel)
         def sb = new StringBuffer()
         apply_post_logs().find(query).toArray().each {BasicDBObject obj ->
+            logger.info('===============>:' + obj['_id'])
             def pre = new StringBuffer()
             pre.append(obj['user_id']).append(',')//用户id
             def address = obj['address'] as BasicDBObject
