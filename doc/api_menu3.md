@@ -130,9 +130,11 @@ _id|int|false||商品ID
          "timestamp" : 1511107200000, //日期
          "toy_id": "", //娃娃编号
          "name": "", //娃娃名称
-         "head_pic":"", //娃娃图片 //"进入次数": （目前没有）
+         "head_pic":"", //娃娃图片 
+         "enter_count": 123,//"进入次数"
          "count": 123, //抓取次数
-         "bingo_count": 123, //抓中次数 //"下抓率（没有 依赖进入次数）
+         "bingo_count": 123, //抓中次数 
+         "count/enter_count": 0.01,//下抓率(需要计算)
          "rate": 123, // 实际抓中概率
          "winrate": 123, //设定概率
          "price": 123, //单次抓取价格
