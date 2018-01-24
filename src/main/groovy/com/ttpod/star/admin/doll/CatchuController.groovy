@@ -1142,7 +1142,7 @@ class CatchuController extends BaseController {
             etime = DateUtils.addDays(stime, 1)
         }
         int n = 0
-        def query = $$(apply_time: [$gte: stime, $lt: etime])
+        def query = $$(apply_time: [$gte: stime.getTime(), $lt: etime.getTime()])
         query.put('toys.channel', channel)
         def sb = new StringBuffer()
         apply_post_logs().find(query).toArray().each {BasicDBObject obj ->
