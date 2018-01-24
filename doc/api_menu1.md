@@ -612,7 +612,24 @@ channel|int|true||邮寄渠道
 }
 ```
 
-### 5.订单统计表
+### 5.编辑快递信息
+* API {GET|POST} http://test-apiadmin.17laihou.com/catchu/edit_post_info.json
+* 参数
+
+字段名|类型|是否必须|取值|说明
+---|---|---|---|---
+_id|String|true||记录ID
+channel|int|true||邮寄渠道 0-奇异果 1-活动 2-ZEGO 3-自营
+shipping_no|String|true||快递编号
+shipping_com|String|true||公司编码
+shipping_name|String|false||公司名称
+
+* 返回
+```json
+{ "code": 1 }
+```
+
+### 6.订单统计表
 
 * API {GET|POST} http://test-apiadmin.17laihou.com/stat/order_report.json
 * 参数

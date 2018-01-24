@@ -1028,7 +1028,6 @@ class CatchuController extends BaseController {
     }
 
     /**
-     * //todo 增加channel
      * 修改快递信息
      * @param req
      * @return
@@ -1039,10 +1038,14 @@ class CatchuController extends BaseController {
         if (StringUtils.isBlank(_id)) {
             return Web.missParam()
         }
+        def channel = ServletRequestUtils.getIntParameter(req, 'channel')
         def shipping_no = ServletRequestUtils.getStringParameter(req, 'shipping_no')
         def shipping_com = ServletRequestUtils.getStringParameter(req, 'shipping_com')
         def shipping_name = ServletRequestUtils.getStringParameter(req, 'shipping_name')
         def query = new BasicDBObject(_id: _id)
+        if (channel == null) {
+            return [code: 0]
+        }
         def set = new BasicDBObject()
         if (StringUtils.isNotBlank(shipping_no)) {
             set.put('shipping_no', shipping_no)
@@ -1053,8 +1056,8 @@ class CatchuController extends BaseController {
         if (StringUtils.isNotBlank(shipping_name)) {
             set.put('shipping_name', shipping_name)
         }
-        //todo 放到post_info中
-        if (1 == apply_post_logs().update(query, $$($set: set), false, false, writeConcern).getN()) {
+        def update = $$('post_info.' + channel, set)
+        if (1 == apply_post_logs().update(query, $$($set: update), false, false, writeConcern).getN()) {
             Crud.opLog(apply_post_logs().getName() + '_edit_post_info', set)
             return [code: 1]
         }
