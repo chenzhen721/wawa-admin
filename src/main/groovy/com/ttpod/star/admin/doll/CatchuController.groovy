@@ -11,6 +11,7 @@ import com.ttpod.rest.persistent.KGS
 import com.ttpod.rest.web.Crud
 import com.ttpod.star.admin.BaseController
 import com.ttpod.star.admin.Web
+import com.ttpod.star.common.util.ExportUtils
 import com.ttpod.star.common.util.HttpClientUtils
 import com.ttpod.star.common.util.JSONUtil
 import com.ttpod.star.model.CatchPostChannel
@@ -31,7 +32,9 @@ import org.springframework.web.bind.ServletRequestUtils
 
 import javax.annotation.Resource
 import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 import java.nio.charset.Charset
+import java.text.SimpleDateFormat
 
 import static com.ttpod.rest.common.doc.MongoKey.ALL_FIELD
 import static com.ttpod.rest.common.doc.MongoKey.SJ_DESC
@@ -1118,12 +1121,14 @@ class CatchuController extends BaseController {
         return [code: 0]
     }
 
+    private static SimpleDateFormat sf = new SimpleDateFormat('yyyy-MM-dd HH:mm:ss')
+
     /**
+     * 导出文件
      * id 姓名 收货地址 手机号 商品名称 商品ID 发货渠道 分类 商品单价 运费 快递公司 快递编号 创建时间 记录ID
-     * //todo 拉取订单
      * @param req
      */
-    def pull_order(HttpServletRequest req) {
+    def pull_order(HttpServletRequest req, HttpServletResponse res) {
         def channel = ServletRequestUtils.getIntParameter(req, 'channel')
         if (channel == null) {
             return [code: 0]
@@ -1136,6 +1141,7 @@ class CatchuController extends BaseController {
         if (etime == null) {
             etime = DateUtils.addDays(stime, 1)
         }
+        int n = 0
         def query = $$(apply_time: [$gte: stime, $lt: etime])
         query.put('toys.channel', channel)
         def sb = new StringBuffer()
@@ -1149,6 +1155,7 @@ class CatchuController extends BaseController {
             def toyList = obj['toys'] as List<BasicDBObject>
             for(BasicDBObject toy : toyList) {
                 if (toy['channel'] == channel) {
+                    n = n + 1
                     sb.append(pre).append(toy['name'] ?: '').append(',').append(toy['_id'] ?: '').append(',') //商品名称 商品ID
                     .append(',').append(',') //发货渠道 分类(货架分类 暂时没有)
                     def toyDB = toys().findOne($$(_id: toy['_id'])) ?: [:]
@@ -1158,7 +1165,13 @@ class CatchuController extends BaseController {
                 }
             }
         }
-        return [code: 1, data: sb.toString()]
+        if (n == 0) {
+            return [code: 0]
+        }
+        StringBuffer buf = ExportUtils.generateTitle([stime, etime] as Date[], '' + n, null)
+        String filename = ExportUtils.generateFilename([new Date(), new Date()] as Date[],  "数据导出");
+        ExportUtils.response(res, filename, buf.append(sb).toString())
+        return [code: 1]
     }
 
     /**
