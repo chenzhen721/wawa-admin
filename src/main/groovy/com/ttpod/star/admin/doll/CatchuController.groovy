@@ -526,7 +526,7 @@ class CatchuController extends BaseController {
         }
         def type = ServletRequestUtils.getBooleanParameter(req, 'type') //是否开放
         if (type != null) {
-            map.put('type', type as String)
+            map.put('type', type)
         }
         def goods_id = ServletRequestUtils.getIntParameter(req, 'goods_id')
         if (goods_id != null) {
@@ -552,12 +552,12 @@ class CatchuController extends BaseController {
         if (points != null) {
             map.put('points', points)
         }
-        def cost = ServletRequestUtils.getStringParameter(req, 'cost')
-        if (StringUtils.isNotBlank(cost)) {
+        def cost = ServletRequestUtils.getIntParameter(req, 'cost')
+        if (cost != null) {
             map.put('cost', cost)
         }
-        def price = ServletRequestUtils.getStringParameter(req, 'price')
-        if (StringUtils.isNotBlank(price)) {
+        def price = ServletRequestUtils.getIntParameter(req, 'price')
+        if (price != null) {
             map.put('price', price)
         }
         // 添加邮寄类型 0-奇异果, 1-活动人工, 2-即构, 3-自营
