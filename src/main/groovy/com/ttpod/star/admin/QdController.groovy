@@ -134,7 +134,7 @@ class QdController extends BaseController {
         }
         def query = new BasicDBObject('qd', [$in: channel.find(qdQuery).toArray()
                 .collect { it.getAt(_id) }])
-        BasicDBObject desc = $$(reg: -1)
+        BasicDBObject desc = $$(logins: -1, regs: -1)
         if (qid) { // 按照id查询  日期排序
             def my_query = Web.fillTimeBetween(req).and('qd').is(qid)
             if (child_qd)
