@@ -57,10 +57,10 @@ class QdController extends BaseController {
 
     Map reg_pay_list_service(DBObject query, BasicDBObject desc, HttpServletRequest req) {
         if (desc == null) {
-            desc = $$(reg: -1)
+            desc = $$(logins: -1)
         }
         Crud.list(req, table(), query, $$(pays: 0), desc) { List<BasicDBObject> qd_list ->
-            fillQdList(qd_list);
+            fillQdList(qd_list)
         }
     }
 
@@ -69,48 +69,6 @@ class QdController extends BaseController {
         for (BasicDBObject obj : qd_list) {
             def id = obj['qd']
             obj.put('name', channel.findOne(id, $$('name', 1))?.get('name'))
-            def stay = obj.remove("stay") as Map
-            def stay1 = stay?.get("1_day") as Long
-            def stay3 = stay?.get("3_day") as Long
-            def stay7 = stay?.get("7_day") as Long
-            def stay30 = stay?.get("30_day") as Long
-            obj.put("1_day", (stay1 != null ? stay1 : 0))
-            obj.put("3_day", (stay3 != null ? stay3 : 0))
-            obj.put("7_day", (stay7 != null ? stay7 : 0))
-            obj.put("30_day", (stay30 != null ? stay30 : 0))
-            def active = obj.get("active") as Integer
-            def reg = obj.get("reg") as Integer
-
-            // 统计发言率 新增发言率，新增消费率
-
-            def speechs = obj.get("speechs")  as Integer
-            def first_speechs = obj.get("first_speechs") as Integer
-            def first_cost = obj.get('first_cost') as Integer
-            def login_count = obj.get("login_count") as Integer
-
-            def reg_rate = 0,first_speech_rate = 0, speech_rate = 0, first_cost_rate = 0
-            if (active != null && active != 0 && reg != null && reg != 0) {
-                reg_rate = reg / active
-            }
-            obj.put("reg_rate", reg_rate)
-
-            // 发言率
-            if (login_count != null && login_count != 0 && speechs != null && speechs != 0) {
-                speech_rate = speechs / login_count
-            }
-            obj.put("speech_rate", speech_rate)
-
-            // 新增发言率
-            if (active != null && active != 0 && first_speechs != null && first_speechs != 0) {
-                first_speech_rate = first_speechs / active
-            }
-            obj.put("first_speech_rate", first_speech_rate)
-
-            // 新增消费率
-            if (active != null && active != 0 && first_cost != null && first_cost != 0) {
-                first_cost_rate = first_cost / active
-            }
-            obj.put("first_cost_rate", first_cost_rate)
         }
     }
 
