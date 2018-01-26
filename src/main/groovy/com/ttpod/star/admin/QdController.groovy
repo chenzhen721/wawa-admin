@@ -59,7 +59,7 @@ class QdController extends BaseController {
         if (desc == null) {
             desc = $$(reg: -1)
         }
-        Crud.list(req, table(), query, $$(pays: 0, regs: 0), desc) { List<BasicDBObject> qd_list ->
+        Crud.list(req, table(), query, $$(pays: 0), desc) { List<BasicDBObject> qd_list ->
             fillQdList(qd_list);
         }
     }
