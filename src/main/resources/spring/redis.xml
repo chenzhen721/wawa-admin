@@ -37,20 +37,20 @@
 
     <bean id="kgsUniqueRedis" class="org.springframework.data.redis.core.StringRedisTemplate"
           p:connectionFactory-ref="kgsConnectionFactory" />
-    <bean id="posterKGS" class="com.ttpod.rest.persistent.SimpleKGS"
+    <bean id="posterKGS" class="com.wawa.base.persistent.SimpleKGS"
           p:nameSpace="poster" p:kgsRedis-ref="kgsUniqueRedis" p:offset="100"/>
-    <bean id="noticeKGS" class="com.ttpod.rest.persistent.SimpleKGS"
+    <bean id="noticeKGS" class="com.wawa.base.persistent.SimpleKGS"
           p:nameSpace="notice" p:kgsRedis-ref="kgsUniqueRedis" p:offset="100"/>
-    <bean id="giftKGS" class="com.ttpod.rest.persistent.SimpleKGS"
+    <bean id="giftKGS" class="com.wawa.base.persistent.SimpleKGS"
           p:nameSpace="gift" p:kgsRedis-ref="kgsUniqueRedis" p:offset="100"/>
-    <bean id="msgKGS" class="com.ttpod.rest.persistent.SimpleKGS"
+    <bean id="msgKGS" class="com.wawa.base.persistent.SimpleKGS"
           p:nameSpace="msg" p:kgsRedis-ref="kgsUniqueRedis" p:offset="100"/>
-    <bean id="sysPushKGS" class="com.ttpod.rest.persistent.SimpleKGS"
+    <bean id="sysPushKGS" class="com.wawa.base.persistent.SimpleKGS"
           p:nameSpace="syspush" p:kgsRedis-ref="kgsUniqueRedis" p:offset="100"/>
-    <bean id="productKGS" class="com.ttpod.rest.persistent.SimpleKGS"
+    <bean id="productKGS" class="com.wawa.base.persistent.SimpleKGS"
           p:nameSpace="product" p:kgsRedis-ref="kgsUniqueRedis" p:offset="100"/>
 
-    <bean id="seqKGS" class="com.ttpod.rest.persistent.SimpleKGS" p:nameSpace="seq"
+    <bean id="seqKGS" class="com.wawa.base.persistent.SimpleKGS" p:nameSpace="seq"
           p:offset="12780"
           p:kgsRedis-ref="kgsUniqueRedis"/>
 

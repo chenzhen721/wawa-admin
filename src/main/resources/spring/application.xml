@@ -17,7 +17,7 @@
 
     <context:property-placeholder  location="classpath*:*.properties" ignore-unresolvable="true" />
     <util:properties id="application" location="classpath:application.properties" />
-    <bean id="sessionInterceptor" class="com.ttpod.star.web.interceptor.SessionInterceptor"/>
+    <bean id="sessionInterceptor" class="com.wawa.api.interceptor.SessionInterceptor"/>
 
     <!--<bean id="ehcache" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean"-->
           <!--p:configLocation="classpath:ehcache.xml"/>-->

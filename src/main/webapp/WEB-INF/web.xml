@@ -29,7 +29,7 @@
 	</listener>
 
     <listener>
-        <listener-class>com.ttpod.rest.web.StaticSpring</listener-class>
+        <listener-class>com.wawa.base.StaticSpring</listener-class>
     </listener>
 
     <filter>
