@@ -87,7 +87,7 @@ class UnionPermController extends BaseController {
 
     def set_cpa(HttpServletRequest req) {
         permCheck(req) { String qid, List<String> ids, Map user ->
-            def _id = req[_id] as String
+            def _id = req.getParameter(_id) as String
             logger.debug("set_cpa params _id: {}", _id)
             if(StringUtils.isBlank(_id)||_id.length() < 9){
                 return [code:0,msg:"参数不足"]
@@ -98,9 +98,9 @@ class UnionPermController extends BaseController {
                 logger.debug("set_cpa params error  qd: {}, qid:{}", qd, qid)
                 return [code: 0, msg: "权限不足"]
             }
-            def cpa1 = req['cpa1'] as Integer
-            def cpa2 = req['cpa2'] as Integer
-            def cpa3 = req['cpa3'] as Integer
+            def cpa1 = req.getParameter('cpa1') as Integer
+            def cpa2 = req.getParameter('cpa2') as Integer
+            def cpa3 = req.getParameter('cpa3') as Integer
             def update = new BasicDBObject()
             if (cpa1 != null) {
                 update.append('cpa1', cpa1)
@@ -125,11 +125,11 @@ class UnionPermController extends BaseController {
             def inId = []
             ids.collect { if (!qid.equals(it)) inId.add(it) }
             query.append('_id', [$in: inId])
-            def id = req[_id] as String
+            def id = req.getParameter(_id) as String
             if (StringUtils.isNotBlank(id)) {
                 query.put(_id, id)
             }
-            def name = req['name'] as String
+            def name = req.getParameter('name') as String
             if (StringUtils.isNotBlank(name)) {
                 query.put("name", name)
             }
@@ -158,13 +158,13 @@ class UnionPermController extends BaseController {
      */
     def add_channel(HttpServletRequest req) {
         permCheck(req) { String qid, List<String> ids, Map user ->
-            def _id = req['_id'] as String
-            def name = req['name'] as String
-            def comment = req['comment'] as String
-            def type = req['type'] as String
-            def reg_discount = req['reg_discount'] as String
-            def active_discount = req['active_discount'] as String
-            def client = (req['client'] ?: "2") as String
+            def _id = req.getParameter('_id') as String
+            def name = req.getParameter('name') as String
+            def comment = req.getParameter('comment') as String
+            def type = req.getParameter('type') as String
+            def reg_discount = req.getParameter('reg_discount') as String
+            def active_discount = req.getParameter('active_discount') as String
+            def client = (req.getParameter('client') ?: "2") as String
             //只能添加子渠道用户
             if (StringUtils.isBlank(_id)) {
                 return [code: 0, msg: "请输入渠道号"]
@@ -207,15 +207,15 @@ class UnionPermController extends BaseController {
      */
     def update_channel(HttpServletRequest req) {
         permCheck(req) { String qid, List<String> ids, Map user ->
-            def _id = req['_id'] as String
+            def _id = req.getParameter('_id') as String
             if (StringUtils.isBlank(_id) || _id.equals(qid) || ids == null || !ids.contains(_id)) {
                 return [code: 0, msg: "权限不足"]
             }
-            def name = req['name'] as String
-            def comment = req['comment'] as String
-            def type = req['type'] as String
-            def reg_discount = req['reg_discount'] as String
-            def active_discount = req['active_discount'] as String
+            def name = req.getParameter('name') as String
+            def comment = req.getParameter('comment') as String
+            def type = req.getParameter('type') as String
+            def reg_discount = req.getParameter('reg_discount') as String
+            def active_discount = req.getParameter('active_discount') as String
             def prop = new HashMap()
             if (StringUtils.isNotBlank(name)) prop.put('name', name)
             if (StringUtils.isNotBlank(type)) prop.put('type', type)
@@ -249,10 +249,10 @@ class UnionPermController extends BaseController {
      */
     def add_user(HttpServletRequest req) {
         permCheck(req) { String qid, List<String> ids, Map user ->
-            def _id = req['name'] as String
-            def nick_name = req['nick_name'] as String
-            def pwd = req['password'] as String
-            def qd = req['qd'] as String
+            def _id = req.getParameter('name') as String
+            def nick_name = req.getParameter('nick_name') as String
+            def pwd = req.getParameter('password') as String
+            def qd = req.getParameter('qd') as String
             //只能添加子渠道用户
             if (StringUtils.isBlank(qd) || qd.equals(qid) || ids == null || !ids.contains(qd)) {
                 return [code: 0, msg: '权限不足']
@@ -283,7 +283,7 @@ class UnionPermController extends BaseController {
      */
     def list_user(HttpServletRequest req) {
         permCheck(req) { String qid, List<String> ids, Map user ->
-            def _id = req['qd'] as String
+            def _id = req.getParameter('qd') as String
             def query = new BasicDBObject()
             //默认查询渠道下所有用户信息
             if (StringUtils.isNotBlank(_id)) {
@@ -304,7 +304,7 @@ class UnionPermController extends BaseController {
 
     def del_user(HttpServletRequest req) {
         permCheck(req) { String qid, List<String> ids, Map user ->
-            def _id = req[_id] as String
+            def _id = req.getParameter(_id) as String
             if (StringUtils.isBlank(_id)) {
                 return [code: 0, msg: '渠道号为空']
             }
@@ -315,7 +315,7 @@ class UnionPermController extends BaseController {
             if (remove == null) {
                 return [code: 0, msg: "无此用户"]
             }
-            operation(OpType.channel_del_user.name(), [_id: req[_id]],
+            operation(OpType.channel_del_user.name(), [_id: req.getParameter(_id)],
                     [_id: user['_id'], nick_name: user['nick_name'], qd: user['qd']])
             [code: 1]
         }

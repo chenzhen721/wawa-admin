@@ -34,15 +34,15 @@ class WeixinTemplateController extends BaseController {
 
     def add(HttpServletRequest req) {
         logger.debug("Recv event_callback params : {}", req.getParameterMap())
-        def msgType = req['msg_type'] // 客服消息类型 news 图文信息,text 文字信息
-        def title = req['title']
-        def url = req['url']
-        def picUrl = req['pic_url']
-        def description = req['description']
-        def content = req['content']
-        def begin = req['begin'] as Long
-        def end = req['end'] as Long
-        def fire = req['fire'] as String //执行时间 HH:mm:ss
+        def msgType = req.getParameter('msg_type') // 客服消息类型 news 图文信息,text 文字信息
+        def title = req.getParameter('title')
+        def url = req.getParameter('url')
+        def picUrl = req.getParameter('pic_url')
+        def description = req.getParameter('description')
+        def content = req.getParameter('content')
+        def begin = req.getParameter('begin') as Long
+        def end = req.getParameter('end') as Long
+        def fire = req.getParameter('fire') as String //执行时间 HH:mm:ss
         String[] times = fire.split(":")
         String hour = times[0]
         String minute = times[1]

@@ -30,8 +30,8 @@ class HeroLinksController extends BaseController{
             ],
              new Crud.QueryCondition(){
                 public DBObject query(HttpServletRequest req) {
-                    if (req['status']){
-                        return QueryBuilder.start().and('status').is(req['status'] as Boolean).get()
+                    if (req.getParameter('status')){
+                        return QueryBuilder.start().and('status').is(req.getParameter('status') as Boolean).get()
                     }
                     return super.query(req)
                 }

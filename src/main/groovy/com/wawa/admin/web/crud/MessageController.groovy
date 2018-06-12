@@ -85,7 +85,7 @@ class MessageController extends BaseController{
         }
         if(messages().save(new BasicDBObject(map)).getN() == 1){
             crud.opLog(messages().getName() + "_add", map);
-            if(req['send'] && req['send'].equals("1")){
+            if(req.getParameter('send') && req.getParameter('send').equals("1")){
                 sendMsgById(id);
             }
         }
@@ -94,8 +94,8 @@ class MessageController extends BaseController{
 
     public edit(HttpServletRequest req) {
         if(crud.edit(req) == IMessageCode.OK){
-            if(req['send'] && req['send'].equals("1")){
-                def id = req[_id];
+            if(req.getParameter('send') && req.getParameter('send').equals("1")){
+                def id = req.getParameter(_id);
                 sendMsgById(id);
             }
             return IMessageCode.OK;
@@ -104,7 +104,7 @@ class MessageController extends BaseController{
     }
 
     def send(HttpServletRequest req){
-        def id = req[_id];
+        def id = req.getParameter(_id);
         return sendMsgById(id)
     }
 
@@ -281,12 +281,12 @@ class MessageController extends BaseController{
 
     private final static List<String> FIELDS = ['title', 'content', 'img_url', 'link']
     def push_msg(HttpServletRequest req){
-        def stime = req['stime']  as String
-        def etime = req['etime']  as String
+        def stime = req.getParameter('stime')  as String
+        def etime = req.getParameter('etime')  as String
         def msg = new HashMap();
         FIELDS.each {String field ->
-            if(StringUtils.isNotEmpty(req[field] as String)){
-                msg.put(field, req[field])
+            if(StringUtils.isNotEmpty(req.getParameter(field) as String)){
+                msg.put(field, req.getParameter(field))
             }
         }
         if(StringUtils.isNotEmpty(stime)){
@@ -354,13 +354,13 @@ class MessageController extends BaseController{
         ts	Number	true	-	消息的时间戳(毫秒)
         expireTime	Number	true	-	过期时间
         text*/
-//        Integer platform = req['platform'] as Integer ?: 0
-        String filter = req['filter']
-        String userIds = req['userIds'] as String
-        String title = req['title']
-        String text = req['title']
-        String link = req['link']
-        String image = req['image']
+//        Integer platform = req.getParameter('platform'] as Integer ?: 0
+        String filter = req.getParameter('filter')
+        String userIds = req.getParameter('userIds') as String
+        String title = req.getParameter('title')
+        String text = req.getParameter('title')
+        String link = req.getParameter('link')
+        String image = req.getParameter('image')
         Date stime = new Date();
 
         if (StringUtils.isEmpty(userIds) && StringUtils.isEmpty(filter)) {
@@ -389,8 +389,8 @@ class MessageController extends BaseController{
         ]
 
         //update
-        if(req["_id"]) {
-            def id = req["_id"] as Integer
+        if(req.getParameter("_id")) {
+            def id = req.getParameter("_id") as Integer
             def one = sys_push().findOne($$("_id": id))
             if (one) {
                 sys_push().update(one, $$(obj))
@@ -406,7 +406,7 @@ class MessageController extends BaseController{
     }
 
     def push(HttpServletRequest req){
-        Integer id = req["_id"] as Integer;
+        Integer id = req.getParameter("_id") as Integer;
 
         def one = sys_push().findOne($$("_id": id))
 
@@ -503,7 +503,7 @@ class MessageController extends BaseController{
     }
 
     def del(HttpServletRequest req) {
-        Integer id = req["_id"] as Integer;
+        Integer id = req.getParameter("_id") as Integer;
 
         sys_push().remove($$("_id", id));
         Crud.opLog(OpType.push_del, ['_id': id]);

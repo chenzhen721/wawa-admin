@@ -122,7 +122,7 @@ class DiamondController extends BaseController {
             return Web.notAllowed()
         }
         Long timestamp = new Date().getTime()
-        String remark = req['remark'] as String
+        String remark = req.getParameter('remark') as String
         def obj = $$('finance.diamond_count', num);
         def type = num > 0 ? DiamondActionType.后台加钻.actionName : DiamondActionType.后台减钻.actionName
         def diamondId = userId + '_' + type + '_' + timestamp

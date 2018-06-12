@@ -32,8 +32,8 @@ class AdminController extends BaseController{
 
             new Crud.QueryCondition(){
                 public DBObject query(HttpServletRequest req) {
-                    if (req['nick_name']){
-                        return QueryBuilder.start().and('nick_name').regex(Pattern.compile("/"+req['nick_name']+"/")).get()
+                    if (req.getParameter('nick_name')){
+                        return QueryBuilder.start().and('nick_name').regex(Pattern.compile("/"+req.getParameter('nick_name')+"/")).get()
                     }
                     return super.query(req)
                 }
@@ -44,7 +44,7 @@ class AdminController extends BaseController{
     )
 
     def show(HttpServletRequest req){
-        table().findOne(req[_id] as Integer,new BasicDBObject("password",0))
+        table().findOne(req.getParameter(_id) as Integer,new BasicDBObject("password",0))
     }
 
 }

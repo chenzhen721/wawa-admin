@@ -71,25 +71,26 @@ class UserController extends BaseController {
 
     def list(HttpServletRequest req) {
         def query = Web.fillTimeBetween(req)
-        final Integer priv = (req['priv'] ?: 0) as Integer
+        final Integer priv = (req.getParameter('priv') ?: 0) as Integer
         intQuery(query, req, 'priv')
         stringQuery(query, req, 'nick_name')
         stringQuery(query, req, 'qd')
         stringQuery(query, req, 'tuid')
-        if (req['status']) {
-            query.and('status').is(!'0'.equals(req['status']))
+        String status = req.getParameter('status')
+        if (status) {
+            query.and('status').is(!'0'.equals(status))
         }
 
-        if (req['mm_no']) {
+        if (req.getParameter('mm_no')) {
             query.and('mm_no').is(ServletRequestUtils.getIntParameter(req, 'mm_no'))
         }
-        if (req[_id]) {
+        if (req.getParameter(_id)) {
             query.and(_id).is(ServletRequestUtils.getIntParameter(req, _id))
         }
 
         [bean: 'finance.bean_count_total', coin: "finance.coin_spend_total"].each { String type, String field ->
-            def start = req['s' + type]
-            def end = req['e' + type]
+            def start = req.getParameter('s' + type)
+            def end = req.getParameter('e' + type)
             if (start || end) {
                 query.and(field)
                 if (start) {
@@ -138,9 +139,9 @@ class UserController extends BaseController {
     static final String FREEZE_CONTENT = '管理员冻结账户,请联系客户人员'
 
     def freeze(HttpServletRequest req) {
-        def id = req[_id] as Integer
-        Boolean status = !'0'.equals(req['status'])
-        def reason = req['reason'] as String
+        def id = req.getParameter(_id) as Integer
+        Boolean status = !'0'.equals(req.getParameter('status'))
+        def reason = req.getParameter('reason') as String
         Integer days = ServletRequestUtils.getIntParameter(req, 'days', -1) //封禁日期
         def set = $$(status: status);
         def updateInfo = $$('$set', set)
@@ -185,9 +186,9 @@ class UserController extends BaseController {
     static final String BAN_CONTENT = '管理员封杀设备,请联系客服人员'
 
     def ban(HttpServletRequest req) {
-        def id = req[_id] as Integer
+        def id = req.getParameter(_id) as Integer
         String uid = getClientId(req, id)
-        def comment = req['comment'] as String
+        def comment = req.getParameter('comment') as String
         if (uid) {
             Integer hour = Math.max(1, ServletRequestUtils.getIntParameter(req, 'hour', 48))
             String token = userRedis.opsForValue().get(KeyUtils.USER.token(id))
@@ -286,7 +287,7 @@ class UserController extends BaseController {
 
     private String getClientId(HttpServletRequest req, Integer id) {
         for (String f : clients) {
-            String val = (String) req[f]
+            String val = req.getParameter(f)
             if (StringUtils.isNotBlank(val)) {
                 return val
             }
@@ -305,7 +306,7 @@ class UserController extends BaseController {
     }
 
     def unban(HttpServletRequest req) {
-        def id = req[_id] as Integer
+        def id = req.getParameter(_id) as Integer
         String uid = getClientId(req, id)
         if (uid) {
             liveRedis.delete(KeyUtils.USER.blackClient(uid))
@@ -317,8 +318,8 @@ class UserController extends BaseController {
 
 
     def gm(HttpServletRequest req) {
-        def id = req[_id] as Integer
-        def priv = req['priv'] as Integer
+        def id = req.getParameter(_id) as Integer
+        def priv = req.getParameter('priv') as Integer
         if (priv == UserType.运营人员.ordinal() || priv == UserType.普通用户.ordinal()
                 || priv == UserType.经纪人.ordinal()
                 || priv == UserType.客服人员.ordinal()
@@ -331,8 +332,8 @@ class UserController extends BaseController {
             if (priv == UserType.经纪人.ordinal()) {
                 set.put('broker.' + timestamp, System.currentTimeMillis())
 
-                Integer partnership = req["partnership"] as Integer
-                Integer special = req['special'] as Integer
+                Integer partnership = req.getParameter("partnership") as Integer
+                Integer special = req.getParameter('special') as Integer
                 set.put("broker.partnership", partnership)
                 set.put("broker.special", special)
             }
@@ -351,7 +352,7 @@ class UserController extends BaseController {
 
 
     def ban_list(HttpServletRequest req) {
-        String uid = req[_id]
+        String uid = req.getParameter(_id)
         def keys = liveRedis.keys(KeyUtils.USER.blackClient("*"))
         def list = new ArrayList(keys.size())
         def valOp = liveRedis.opsForValue()
@@ -375,7 +376,7 @@ class UserController extends BaseController {
 
 
     def show(HttpServletRequest req) {
-        def user = table().findOne(req[_id] as Integer)
+        def user = table().findOne(req.getParameter(_id) as Integer)
         def myroom = rooms().findOne(new BasicDBObject('xy_star_id', user.get(_id)))
         user.put('baidu_active', myroom?.get("baidu_active"))
         user.put('time_slot', myroom?.get("time_slot"))
@@ -388,8 +389,8 @@ class UserController extends BaseController {
 
     def cost_log(HttpServletRequest req) {
         def query = Web.fillTimeBetween(req)
-        if (req[_id]) {
-            query.and('session._id').is(req[_id])
+        if (req.getParameter(_id)) {
+            query.and('session._id').is(req.getParameter(_id))
         }
         stringQuery(query, req, 'type')
         def room_db = logMongo.getCollection('room_cost')
@@ -399,7 +400,7 @@ class UserController extends BaseController {
 
 
     def cost_log_export(HttpServletRequest req, HttpServletResponse res) {
-        def type = req['type'] as String
+        def type = req.getParameter('type') as String
         if (type == null) {
             return [code: 0, msg: '请输入道具类型type']
         }
@@ -422,8 +423,8 @@ class UserController extends BaseController {
 
     def cost_log_history(HttpServletRequest req) {
         def query = Web.fillTimeBetween(req)
-        if (req[_id]) {
-            def user_id = req[_id] as Integer
+        if (req.getParameter(_id)) {
+            def user_id = req.getParameter(_id) as Integer
             query.and('user_id').is(user_id)
         }
         stringQuery(query, req, 'type')
@@ -434,7 +435,7 @@ class UserController extends BaseController {
 
 
     def union_photo(HttpServletRequest req) {
-        Crud.list(req, adminMongo.getCollection("union_photos"), $$("user_id", req[_id] as Integer), ALL_FIELD, SJ_DESC)
+        Crud.list(req, adminMongo.getCollection("union_photos"), $$("user_id", req.getParameter(_id) as Integer), ALL_FIELD, SJ_DESC)
     }
 
     static final Long SIX_HUNDRED_SECONDS = 600L
@@ -446,7 +447,7 @@ class UserController extends BaseController {
     static final String HTTP_FORM_KEY = "bl37fSAQyZ0ZMcF/cZMGjwWNuQU="
 
     def token(HttpServletRequest req) {
-        def uid = req[_id] as Integer
+        def uid = req.getParameter(_id) as Integer
         def json = "{\"bucket\":\"showphoto\"," +
                 "\"expiration\":${System.currentTimeMillis() + SIX_HUNDRED_SECONDS}," +
                 "\"save-key\":\"/${uid}/{mon}{day}/{filemd5}{.suffix}\"," +
@@ -468,9 +469,9 @@ class UserController extends BaseController {
     String pic_domain = "https://aiimg.sumeme.com/"
 
     def add_union(HttpServletRequest req) {
-        def path = req['path']
-        def pic_url = req['pic_url']
-        def uid = req[_id] as Integer
+        def path = req.getParameter('path')
+        def pic_url = req.getParameter('pic_url')
+        def uid = req.getParameter(_id) as Integer
         //if(URL_PATT.matcher(path.clean()).matches() && path.startsWith("/"+uid+"/")){
         if (adminMongo.getCollection("union_photos").count($$('user_id', uid)) <= 5) {
             if (adminMongo.getCollection("union_photos").save(new BasicDBObject(
@@ -505,7 +506,7 @@ class UserController extends BaseController {
         def req = parse.resolveMultipart(request)
 
         try {
-            Integer id = req['_id'] as Integer  //用户ID
+            Integer id = req.getParameter('_id') as Integer  //用户ID
             Integer type = req.getParameter(Param.first) as Integer //1:正面 0:反面 2 手持
             logger.debug("type {} id {}", type, id)
             if (type != 1 && type != 0 && type != 2) {
@@ -519,7 +520,7 @@ class UserController extends BaseController {
                 file.transferTo(target)
                 break
             }
-            String iframeCallBack = req["icallback"]
+            String iframeCallBack = req.getParameter("icallback")
             if (StringUtils.isNotBlank(iframeCallBack)) {
                 def out = response.getWriter()
                 out.println("<script>top.${iframeCallBack}({\"code\":1,\"data\":{\"pic_url\":\"${pic_domain}${filePath}\"}});</script>")
@@ -538,7 +539,7 @@ class UserController extends BaseController {
 
     def edit(HttpServletRequest req) {
         def update = new HashMap()
-        Integer userId = req[_id] as Integer
+        Integer userId = req.getParameter(_id) as Integer
         String v = req.getParameter("pic")
         if (StringUtils.isNotBlank(v))
             update.put('pic', v)
@@ -578,11 +579,11 @@ class UserController extends BaseController {
      * @return
      */
     def refresh_user_token(HttpServletRequest req) {
-        refresh_token(req[_id] as Integer)
+        refresh_token(req.getParameter(_id) as Integer)
 
         /*if (mainRedis.hasKey(old_token_key))
             mainRedis.rename(old_token_key, new_token_key)*/
-        Crud.opLog(OpType.refresh_token, [user_id: req[_id] as Integer])
+        Crud.opLog(OpType.refresh_token, [user_id: req.getParameter(_id) as Integer])
 
         OK()
     }
@@ -622,14 +623,14 @@ class UserController extends BaseController {
      * @return
      */
     def set_user_mobile(HttpServletRequest req) {
-        def mobile = req['mobile']
-        def sms_code = req["sms_code"]
+        def mobile = req.getParameter('mobile')
+        def sms_code = req.getParameter("sms_code")
         //获得tuid
-        def user = table().findOne(req[_id] as Integer, $$(tuid: 1))
+        def user = table().findOne(req.getParameter(_id) as Integer, $$(tuid: 1))
         String tuid = user['tuid'] as String
         def sign = MD5.digest2HEX("${PRIV_KEY}&userId=${tuid}".toString())
 
-        Crud.opLog(OpType.set_user_mobile, [user_id: req[_id] as Integer, mobile: mobile])
+        Crud.opLog(OpType.set_user_mobile, [user_id: req.getParameter(_id) as Integer, mobile: mobile])
 
         //获得用户token
         Map userResult = Web.userApi("pwd/token_by_id?_id=${tuid}&sign=${sign}")
@@ -658,11 +659,11 @@ class UserController extends BaseController {
      * @return
      */
     def set_user_name(HttpServletRequest req) {
-        def user_name = req['user_name'] as String
-        def pwd = req["pwd"] as String
+        def user_name = req.getParameter('user_name') as String
+        def pwd = req.getParameter("pwd") as String
 
         //获得tuid
-        def user = table().findOne(req[_id] as Integer, $$(tuid: 1))
+        def user = table().findOne(req.getParameter(_id) as Integer, $$(tuid: 1))
 
         if (user == null || StringUtils.isEmpty(user_name) || StringUtils.isEmpty(pwd)) {
             return Web.missParam()
@@ -686,7 +687,7 @@ class UserController extends BaseController {
         if (((Number) apiResult.get("code")).intValue() != 1) {
             return [code: apiResult.get("code")]
         }
-        Crud.opLog(OpType.set_user_name_pwd, [user_id: req[_id] as Integer, user_name: user_name])
+        Crud.opLog(OpType.set_user_name_pwd, [user_id: req.getParameter(_id) as Integer, user_name: user_name])
         OK()
     }
 
@@ -697,7 +698,7 @@ class UserController extends BaseController {
      */
     def unbind_mobile(HttpServletRequest req) {
         //获得tuid
-        Integer uid = req[_id] as Integer
+        Integer uid = req.getParameter(_id) as Integer
         def user = table().findOne(uid, $$(tuid: 1))
         String tuid = user['tuid'] as String
         def sign = MD5.digest2HEX("${PRIV_KEY}&userId=${tuid}".toString())
@@ -721,7 +722,7 @@ class UserController extends BaseController {
      */
     def unbind_weixin(HttpServletRequest req) {
         //获得tuid
-        Integer uid = req[_id]  as Integer
+        Integer uid = req.getParameter(_id)  as Integer
         def user = table().findOne(uid, $$(tuid: 1))
         /*String tuid = user['tuid'] as String
         def sign = MD5.digest2HEX("${PRIV_KEY}&userId=${tuid}".toString())*/
@@ -737,7 +738,7 @@ class UserController extends BaseController {
      * @return
      */
     def send_mobile(HttpServletRequest req) {
-        def mobile = req['mobile']
+        def mobile = req.getParameter('mobile')
         def sign = MD5.digest2HEX("${PRIV_KEY}&mobile=${mobile}".toString())
         Integer type = ServletRequestUtils.getIntParameter(req, "type", 1)
         Map userResult = Web.userApi("pwd/send_mobile?mobile=${mobile}&type=${type}&sign=${sign}")
@@ -756,7 +757,7 @@ class UserController extends BaseController {
      * @return
      */
     def get_mobile_code(HttpServletRequest req) {
-        def mobile = req['mobile']
+        def mobile = req.getParameter('mobile')
         def sign = MD5.digest2HEX("${PRIV_KEY}&mobile=${mobile}".toString())
         Integer type = ServletRequestUtils.getIntParameter(req, "type", 1)
         //获得用户token
@@ -779,7 +780,7 @@ class UserController extends BaseController {
      */
     def reset_pwd(HttpServletRequest req) {
         //获得tuid
-        def user = table().findOne(req[_id] as Integer, $$(tuid: 1))
+        def user = table().findOne(req.getParameter(_id) as Integer, $$(tuid: 1))
         String tuid = user['tuid'] as String
         def sign = MD5.digest2HEX("${PRIV_KEY}&userId=${tuid}".toString())
         Map result = Web.userApi("pwd/reset_pwd?_id=${tuid}&sign=${sign}")
@@ -791,7 +792,7 @@ class UserController extends BaseController {
         final Map data = (Map) result.get("data");
         String pwd = (String) data.get("pwd");
 
-        Crud.opLog(OpType.reset_pwd, [user_id: req[_id] as Integer])
+        Crud.opLog(OpType.reset_pwd, [user_id: req.getParameter(_id) as Integer])
 
         return [code: 1, data: [pwd: pwd]]
     }
@@ -803,7 +804,7 @@ class UserController extends BaseController {
      */
     def reset_pwd_url(HttpServletRequest req) {
         //获得tuid
-        def user = table().findOne(req[_id] as Integer, $$(tuid: 1))
+        def user = table().findOne(req.getParameter(_id) as Integer, $$(tuid: 1))
         String tuid = user['tuid'] as String
         def sign = MD5.digest2HEX("${PRIV_KEY}&userId=${tuid}".toString())
         Map result = Web.userApi("pwd/generate_pwd_url?_id=${tuid}&sign=${sign}")
@@ -815,7 +816,7 @@ class UserController extends BaseController {
         final Map data = (Map) result.get("data");
         String url = (String) data.get("url");
 
-        Crud.opLog(OpType.reset_pwd_url, [user_id: req[_id] as Integer])
+        Crud.opLog(OpType.reset_pwd_url, [user_id: req.getParameter(_id) as Integer])
 
         return [code: 1, data: [url: url]]
     }

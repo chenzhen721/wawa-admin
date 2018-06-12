@@ -95,7 +95,7 @@ class StatController extends BaseController {
     }
 
     /*def daily_log(HttpServletRequest req) {
-        def type = req['type']
+        def type = req.getParameter('type']
         if (StringUtils.isBlank(type)) return [code: 0, msg: 'type为空']
         super.list(req, Web.fillTimeBetween(req).and('type').is(type).get())
     }*/
@@ -187,9 +187,9 @@ class StatController extends BaseController {
      */
     def doll_report(HttpServletRequest req){
         def query = Web.fillTimeBetween(req)
-        query.put('type').is(req['type'])
-        if (req['_id'] != null) {
-            query.put('toy_id').is(req['_id'] as Integer)
+        query.put('type').is(req.getParameter('type'))
+        if (req.getParameter('_id') != null) {
+            query.put('toy_id').is(req.getParameter('_id') as Integer)
         }
         Crud.list(req, adminMongo.getCollection('stat_doll'), query.get(), $$(users:0), $$(timestamp: -1, toy_id: -1)){ List<BasicDBObject> data ->
             for (BasicDBObject obj : data) {

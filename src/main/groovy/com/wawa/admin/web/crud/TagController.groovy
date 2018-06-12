@@ -30,8 +30,8 @@ class TagController extends BaseController
     }
 
     def add(HttpServletRequest req){
-        def cat = req['cat'] as String
-        def tags = req['tags'] as String
+        def cat = req.getParameter('cat') as String
+        def tags = req.getParameter('tags') as String
         if(table().count($$(cat:cat)) > 0){
             return [code: 30442]
         }
@@ -49,9 +49,9 @@ class TagController extends BaseController
     }
 
     def edit(HttpServletRequest req){
-        def _id = req['_id'] as Integer
-        def cat = req['cat'] as String
-        def tags = req['tags'] as String
+        def _id = req.getParameter('_id') as Integer
+        def cat = req.getParameter('cat') as String
+        def tags = req.getParameter('tags') as String
         if(_id <= 0){
             return [code: 30441]
         }
@@ -71,7 +71,7 @@ class TagController extends BaseController
     }
 
     def del(HttpServletRequest req){
-        def _id = req['_id'] as Integer
+        def _id = req.getParameter('_id') as Integer
         if(_id <= 0){
             return [code: 30441]
         }

@@ -32,12 +32,12 @@ class AppPropController extends BaseController{
     }
 
     def add(HttpServletRequest req){
-        def id = req[_id] as String
+        def id = req.getParameter(_id) as String
         if(StringUtils.isEmpty(id))
             return [code:0]
 
-        def desc =  req['desc']
-        def content =  req['content']
+        def desc =  req.getParameter('desc')
+        def content =  req.getParameter('content')
         def type = ServletRequestUtils.getIntParameter(req, 'type', AppPropType.android.ordinal())
         def prop = [
                 _id:id,
@@ -53,7 +53,7 @@ class AppPropController extends BaseController{
     }
 
     def del(HttpServletRequest req){
-        String id = req[_id]
+        String id = req.getParameter(_id)
         if(StringUtils.isEmpty(id))
             return [code:0]
 

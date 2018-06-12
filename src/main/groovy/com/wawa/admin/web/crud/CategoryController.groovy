@@ -4,11 +4,11 @@ import com.mongodb.BasicDBObject
 import com.mongodb.DBCollection
 import com.mongodb.DBObject
 import com.mongodb.QueryBuilder
+import com.wawa.api.Web
+import com.wawa.base.BaseController
+import com.wawa.base.Crud
 import com.wawa.base.anno.RestWithSession
 import com.wawa.base.persistent.KGS
-import com.wawa.base.Crud
-import com.wawa.base.BaseController
-import com.wawa.api.Web
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -40,8 +40,8 @@ class CategoryController extends BaseController
             ],
             new Crud.QueryCondition(){
                 public DBObject query(HttpServletRequest req) {
-                    if (req['status']){
-                        return QueryBuilder.start().and('status').is(req['status'] as Integer).get()
+                    if (req.getParameter('status')){
+                        return QueryBuilder.start().and('status').is(req.getParameter('status') as Integer).get()
                     }
                     return super.query(req)
                 }

@@ -48,11 +48,11 @@ class UnionPicController extends BaseController {
     def uphoto_list(HttpServletRequest req) {
         QueryBuilder query = QueryBuilder.start();
 
-        String uid = req[_id]
+        String uid = req.getParameter(_id)
         if (StringUtils.isNotBlank(uid))
             query.and("user_id").is(Integer.parseInt(uid))
 
-        String status = req['status']
+        String status = req.getParameter('status')
         if (StringUtils.isNotBlank(status))
             query.and("status").is(Integer.parseInt(status))
 
@@ -68,7 +68,7 @@ class UnionPicController extends BaseController {
     static final String HTTP_FORM_KEY = "bl37fSAQyZ0ZMcF/cZMGjwWNuQU="
 
     def token(HttpServletRequest req) {
-        def uid = req[_id] as Integer;
+        def uid = req.getParameter(_id) as Integer;
         def json = "{\"bucket\":\"showphoto\"," +
                 "\"expiration\":${System.currentTimeMillis() + SIX_HUNDRED_SECONDS}," +
                 "\"save-key\":\"/${uid}/{mon}{day}/{filemd5}{.suffix}\"," +
@@ -90,9 +90,9 @@ class UnionPicController extends BaseController {
     String pic_domain = "https://aiimg.sumeme.com/"
 
     def add_union(HttpServletRequest req) {
-        def path = req['path']
-        def pic_url = req['pic_url']
-        def uid = req[_id] as Integer
+        def path = req.getParameter('path')
+        def pic_url = req.getParameter('pic_url')
+        def uid = req.getParameter(_id) as Integer
         //if(URL_PATT.matcher(path.clean()).matches() && path.startsWith("/"+uid+"/")){
         if (adminMongo.getCollection("union_photos").count($$('user_id', uid)) <= 5) {
             if (adminMongo.getCollection("union_photos").save(new BasicDBObject(
@@ -113,8 +113,8 @@ class UnionPicController extends BaseController {
      * @return
      */
     def edit_union(HttpServletRequest req) {
-        def path = req['path'] as String
-        def status = req['status'] as String
+        def path = req.getParameter('path') as String
+        def status = req.getParameter('status') as String
         adminMongo.getCollection("union_photos").update($$(_id, path), $$($set, $$('status', Integer.valueOf(status))))
         return IMessageCode.OK
     }
@@ -130,8 +130,8 @@ class UnionPicController extends BaseController {
     }
 
     def del_union_photo(HttpServletRequest req) {
-        def path = req['path'] as String
-        Integer uid = req[_id] as Integer
+        def path = req.getParameter('path') as String
+        Integer uid = req.getParameter(_id) as Integer
 //            users().update($$([_id : Web.currentUserId() as Integer]),
 //                    $$($pull, $$('union_pic.stars', $$(["path": path,"status": 0])))
 //                ,false,false,writeConcern)
@@ -153,8 +153,8 @@ class UnionPicController extends BaseController {
 
     def cover_list(HttpServletRequest req) {
         QueryBuilder query = QueryBuilder.start();
-        String room_id = req[_id]
-        String leader_id = req['leader_id']
+        String room_id = req.getParameter(_id)
+        String leader_id = req.getParameter('leader_id')
         if (StringUtils.isNotBlank(room_id))
             query.and("_id").is(Integer.parseInt(room_id))
         if (StringUtils.isNotBlank(leader_id))
@@ -174,7 +174,7 @@ class UnionPicController extends BaseController {
     def pic_audit(HttpServletRequest req) {
         //def familys = familyMongo.getCollection('familys')
         /*def status = req.getInt('status')
-        def room_id = req[_id] as Integer
+        def room_id = req.getParameter(_id] as Integer
         if (status == ApplyType.通过.ordinal() || status == ApplyType.未通过.ordinal()) {
             Long time = System.currentTimeMillis()
             def record = rooms().findAndModify(new BasicDBObject(_id: room_id),

@@ -65,7 +65,7 @@ class FinanceController extends BaseController {
     }
 
     def add(HttpServletRequest req) {
-        String input = req[auth_code]
+        String input = req.getParameter(auth_code)
         /*if (codeVerifError(req, input)) {
             return [code: 30419, msg: '验证码错误']
 
@@ -78,8 +78,8 @@ class FinanceController extends BaseController {
         ids.each {String str ->
             if (StringUtils.isNotBlank(str)) {
                 Integer id = Integer.valueOf(str.trim())
-                Long num = req['num'] as Long
-                String remark = req['remark'] as String
+                Long num = req.getParameter('num') as Long
+                String remark = req.getParameter('remark') as String
                 def orderId = "${id}_${num}_Admin_${System.currentTimeMillis()}".toString()
                 def logWithId = new BasicDBObject(
                         _id: orderId,//订单号
@@ -101,15 +101,15 @@ class FinanceController extends BaseController {
      * 支付补单
      */
     def repair_order(HttpServletRequest req) {
-        def order_id = req['order_id']
-        def userId = req['user_id'] as Integer
-        def target = req['target'] as Integer
-        def cny = req['cny'] as Integer
-        def diamond = req['coin'] as Long
-        def via = req['via']
-        def shop = req['shop']
-        def broker = req['broker']
-        def transaction_id = req['transaction_id']
+        def order_id = req.getParameter('order_id')
+        def userId = req.getParameter('user_id') as Integer
+        def target = req.getParameter('target') as Integer
+        def cny = req.getParameter('cny') as Integer
+        def diamond = req.getParameter('coin') as Long
+        def via = req.getParameter('via')
+        def shop = req.getParameter('shop')
+        def broker = req.getParameter('broker')
+        def transaction_id = req.getParameter('transaction_id')
 
         if (adminMongo.getCollection('finance_log').count(new BasicDBObject("_id", order_id)) == 1) {
             return [code: 30414]
@@ -147,7 +147,7 @@ class FinanceController extends BaseController {
      * @return
      */
     def query_delay_order(HttpServletRequest req) {
-        def order_id = req['order_id'] as String
+        def order_id = req.getParameter('order_id') as String
         if (StringUtils.isEmpty(order_id)) {
             return Web.missParam();
         }
@@ -203,16 +203,16 @@ class FinanceController extends BaseController {
     }
 
     def cut_coin(HttpServletRequest req) {
-        String input = req[auth_code]
+        String input = req.getParameter(auth_code)
         /*if (codeVerifError(req, input)) {
             return [code: 30419, msg: '验证码错误']
         }*/
-        Integer id = req[_id] as Integer
-        Long num = req['num'] as Long
+        Integer id = req.getParameter(_id) as Integer
+        Long num = req.getParameter('num') as Long
         if (num >= 0) {
             return [code: 0, msg: 'num must < 0']
         }
-        def remark = req['remark'] as String
+        def remark = req.getParameter('remark') as String
         if (users().update(new BasicDBObject(_id, id).append('finance.diamond_count', [$gte: 0 - num])
                 , new BasicDBObject('$inc', ['finance.diamond_count': num]), false, false, writeConcern).getN() == 1) {
             Crud.opLog(OpType.finance_cut_coin, [user_id: id, coin: num, remark: remark])
@@ -295,7 +295,7 @@ class FinanceController extends BaseController {
     }
 
     def pay_all_delta(HttpServletRequest req) {
-        if (StringUtils.isBlank((String) req['stime'])) {
+        if (StringUtils.isBlank((String) req.getParameter('stime'))) {
             return [code: 0, msg: 'stime is must.']
         }
         def timeQuery = Web.fillTimeBetween(req)
@@ -334,11 +334,11 @@ class FinanceController extends BaseController {
     static final Long DAY_MILL = 24 * 3600 * 1000L
 
     def change_vip(HttpServletRequest req) {
-        def day = req['day'] as Integer
-        def userId = req[_id] as Integer
+        def day = req.getParameter('day') as Integer
+        def userId = req.getParameter(_id) as Integer
         Long delta_mills = day * DAY_MILL
 
-        Integer vip_type = "2".equals(req['type']) ? 2 : 1
+        Integer vip_type = "2".equals(req.getParameter('type')) ? 2 : 1
 
         def users = users()
         def query = new BasicDBObject(_id, userId)
@@ -384,9 +384,9 @@ class FinanceController extends BaseController {
 
 
     def donate_car(HttpServletRequest req) {
-        def day = req['day'] as Integer
-        def userId = req[_id] as Integer
-        def carId = req['car_id'] as String
+        def day = req.getParameter('day') as Integer
+        def userId = req.getParameter(_id) as Integer
+        def carId = req.getParameter('car_id') as String
         def carIdInt = Integer.valueOf(carId)
         Long delta_mills = day * DAY_MILL
 
@@ -414,9 +414,9 @@ class FinanceController extends BaseController {
 
     def donate_medal(HttpServletRequest req) {
         def medal_award_logs = logMongo.getCollection('medal_award_logs')
-        def day = req['day'] as Integer
+        def day = req.getParameter('day') as Integer
         def userIds = req.getParameter('ids')
-        def medalId = Integer.valueOf(req['medal_id'] as String)
+        def medalId = Integer.valueOf(req.getParameter('medal_id') as String)
         Long delta_mills = day * DAY_MILL
         String entryKey = "medals." + medalId
         def users = users()
@@ -441,8 +441,8 @@ class FinanceController extends BaseController {
     }
 
     def donate_horn(HttpServletRequest req) {
-        def num = req['num'] as Integer
-        def userId = req[_id] as Integer
+        def num = req.getParameter('num') as Integer
+        def userId = req.getParameter(_id) as Integer
         def row = users().update($$(_id, userId), $$($inc, $$('horn', num)), false, false, writeConcern).getN()
         if (1 == row) {
             Crud.opLog(OpType.finance_donate_horn, [user_id: userId, num: num])
@@ -454,8 +454,8 @@ class FinanceController extends BaseController {
     MessageController messageController
 
     def donate_exp(HttpServletRequest req) {
-        def num = req['num'] as Integer
-        def userId = req[_id] as Integer
+        def num = req.getParameter('num') as Integer
+        def userId = req.getParameter(_id) as Integer
         def query = $$(_id, userId)
         def update = $$($inc, $$('exp', num))
         def user = users().findAndModify(query, null, null, false, update, true, false)

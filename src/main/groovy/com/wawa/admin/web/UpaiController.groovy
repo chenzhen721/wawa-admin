@@ -29,14 +29,13 @@ class UpaiController extends BaseController{
     static final String STAR_PHOTO_BUCKET = "img-album"
 
     def notify(HttpServletRequest req){
-//        def code = req['code'] // 200
-        def message = req['message'] as String
-        def path = req['url'] as String
-        def time = req['time'] as String
+        def message = req.getParameter('message') as String
+        def path = req.getParameter('url') as String
+        def time = req.getParameter('time') as String
         def url = DOMAIN + path
         println "map:${req.getParameterMap()}"
         def sign = MsgDigestUtil.MD5.digest2HEX("200&${message}&${path}&${time}&${HTTP_FORM_KEY}")
-        if(sign.equals(req['sign'])){
+        if(sign.equals(req.getParameter('sign'))){
             def notifys = adminMongo.getCollection(UPAI_NOTIFY_COLLECTION)
             def obj = new BasicDBObject(_id,path)
             if(notifys.count(obj) == 0){

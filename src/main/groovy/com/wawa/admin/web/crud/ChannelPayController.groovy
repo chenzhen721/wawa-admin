@@ -30,16 +30,16 @@ class ChannelPayController extends BaseController {
             new Crud.QueryCondition() {
                 public DBObject query(HttpServletRequest req) {
                     def query = new BasicDBObject()
-                    def id = req[_id] as String
+                    def id = req.getParameter(_id) as String
                     if (StringUtils.isNotBlank(id)) {
                         query.put(_id, id)
                     }
-                    def client = req['client'] as String
+                    def client = req.getParameter('client') as String
                     if (StringUtils.isNotBlank(client)) {
                         query.put("client", client)
                     }
 
-                    def name = req['name'] as String
+                    def name = req.getParameter('name') as String
                     if (StringUtils.isNotBlank(name)) {
                         query.put("name", name)
                     }

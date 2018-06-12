@@ -22,7 +22,7 @@ class FeedbackController extends BaseController{
             [_id:Str,status:Int],
             new Crud.QueryCondition(){
                 public DBObject query(HttpServletRequest req) {
-                    if ('1' == req['status']){
+                    if ('1' == req.getParameter('status')){
                        return new BasicDBObject('status',1)
                     }
                     return new BasicDBObject('status',$$($ne,1))

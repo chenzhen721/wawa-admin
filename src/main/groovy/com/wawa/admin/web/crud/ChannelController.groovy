@@ -41,37 +41,37 @@ class ChannelController extends BaseController {
     private BasicDBObject query(HttpServletRequest req) {
         logger.debug("Recv event_callback params : {}", req.getParameterMap())
 
-        def id = req[_id] as String
+        def id = req.getParameter(_id) as String
         def query = new BasicDBObject()
         if (id != null && !id.isEmpty()) {
             query.put(_id, id)
         }
-        def client = req['client'] as String
+        def client = req.getParameter('client') as String
         if (client != null && !client.isEmpty()) {
             query.put("client", client)
         }
 
-        def name = req['name'] as String
+        def name = req.getParameter('name') as String
         if (name != null && !name.isEmpty()) {
             query.put("name", name)
         }
 
-        def appId = req['app_id'] as String
+        def appId = req.getParameter('app_id') as String
         if (appId != null && !appId.isEmpty()) {
             query.put("app_id", appId)
         }
 
-        def appSecret = req['app_secret'] as String
+        def appSecret = req.getParameter('app_secret') as String
         if (appSecret != null && !appSecret.isEmpty()) {
             query.put("app_secret", appSecret)
         }
 
-        def appName = req['app_name'] as String
+        def appName = req.getParameter('app_name') as String
         if (appName != null && !appName.isEmpty()) {
             query.put("app_name", appName)
         }
 
-        def parent_flag = req['parent_flag'] as String
+        def parent_flag = req.getParameter('parent_flag') as String
         if (StringUtils.isNotBlank(parent_flag)) {
             if ("1".equals(parent_flag))//查子渠道
                 query.append("parent_qd", new BasicDBObject($ne: null))
@@ -79,12 +79,12 @@ class ChannelController extends BaseController {
                 query.append("parent_qd", null)
         }
 
-        def parent_qd = req['parent_qd'] as String//根据父渠道ID查询子渠道
+        def parent_qd = req.getParameter('parent_qd') as String//根据父渠道ID查询子渠道
         if (StringUtils.isNotBlank(parent_qd)) {
             query.append("parent_qd", parent_qd)
         }
         //查询是否关闭同步
-        def is_close = req['is_close'] as String
+        def is_close = req.getParameter('is_close') as String
         if (StringUtils.isNotBlank(is_close)) {
             if ('0'.equals(is_close)) {//未关闭
                 query.append('is_close', false)
@@ -99,21 +99,21 @@ class ChannelController extends BaseController {
     Crud crud = new Crud(table(), props, new Crud.QueryCondition() {
         public DBObject query(HttpServletRequest req) {
             def query = new BasicDBObject()
-            def id = req[_id] as String
+            def id = req.getParameter(_id) as String
             if (id != null && !id.isEmpty()) {
                 query.put(_id, id)
             }
-            def client = req['client'] as String
+            def client = req.getParameter('client') as String
             if (client != null && !client.isEmpty()) {
                 query.put("client", client)
             }
 
-            def name = req['name'] as String
+            def name = req.getParameter('name') as String
             if (name != null && !name.isEmpty()) {
                 query.put("name", name)
             }
 
-            def parent_flag = req['parent_flag'] as String
+            def parent_flag = req.getParameter('parent_flag') as String
             if (StringUtils.isNotBlank(parent_flag)) {
                 if ("1".equals(parent_flag))
                     query.append("parent_qd", new BasicDBObject($ne: null))//查子渠道
@@ -121,7 +121,7 @@ class ChannelController extends BaseController {
                     query.append("parent_qd", null)//查父渠道
             }
 
-            def parent_qd = req['parent_qd'] as String//根据父渠道ID查询子渠道
+            def parent_qd = req.getParameter('parent_qd') as String//根据父渠道ID查询子渠道
             if (StringUtils.isNotBlank(parent_qd)) {
                 query.append("parent_qd", parent_qd)
             }
@@ -149,9 +149,9 @@ class ChannelController extends BaseController {
     def add(HttpServletRequest req) {
         String id = req.getParameter("_id") as String
         logger.debug("Recv event_callback params : {}", req.getParameterMap())
-        String appId = req['app_id']
-        String appSecret = req['app_secret']
-        String appName = req['app_name']
+        String appId = req.getParameter('app_id')
+        String appSecret = req.getParameter('app_secret')
+        String appName = req.getParameter('app_name')
 
         if (id == null || table().count($$("_id", id)) != 0)
             return ['code': 30442]
@@ -200,9 +200,9 @@ class ChannelController extends BaseController {
 
     def edit(HttpServletRequest req) {
         logger.debug("Recv event_callback params : {}", req.getParameterMap())
-        String appId = req['app_id']
-        String appSecret = req['app_secret']
-        String appName = req['app_name']
+        String appId = req.getParameter('app_id')
+        String appSecret = req.getParameter('app_secret')
+        String appName = req.getParameter('app_name')
         Object id = parseId(req);
         if (null == id) {
             return IMessageCode.CODE0;
@@ -222,8 +222,8 @@ class ChannelController extends BaseController {
             }
         }
 
-        def reg_discount = req['reg_discount'] as String
-        def active_discount = req['active_discount'] as String
+        def reg_discount = req.getParameter('reg_discount') as String
+        def active_discount = req.getParameter('active_discount') as String
         def currentDay = new Date().clearTime().getTime()
         if (StringUtils.isNotBlank(reg_discount) && reg_discount.isInteger()) {
             map.put("reg_discount.${currentDay}".toString(), reg_discount as Integer)
@@ -252,14 +252,14 @@ class ChannelController extends BaseController {
     }
 
     def add_user(HttpServletRequest req) {
-        String pwd = req['password']
+        String pwd = req.getParameter('password')
         def prop = [
                 //_id:seqKGS.nextId(),
-                nick_name : req['nick_name'],
-                _id       : req['name'],
+                nick_name : req.getParameter('nick_name'),
+                _id       : req.getParameter('name'),
                 timestamp : System.currentTimeMillis(),
-                qd        : req['qd'],
-                permission: "1".equals(req['permission'] as String)
+                qd        : req.getParameter('qd'),
+                permission: "1".equals(req.getParameter('permission') as String)
         ]
         if (pwd) {
             prop.put('password', MsgDigestUtil.SHA.digest2HEX(pwd.toString()))
@@ -297,7 +297,7 @@ class ChannelController extends BaseController {
     //生成微信渠道二维码
     def add_weixin_qrcode(HttpServletRequest req) {
         Object id = parseId(req);
-        String appId = req['app_id']
+        String appId = req.getParameter('app_id')
         if (null == id || !StringUtils.endsWith(id.toString(), '_h5')) {
             return IMessageCode.CODE0;
         }
@@ -328,16 +328,16 @@ class ChannelController extends BaseController {
         int p = Web.getPage(req)
         int size = Web.getPageSize(req)
         def query = new BasicDBObject()
-        if (req['qd']) {
-            query['qd'] = req['qd']
+        if (req.getParameter('qd')) {
+            query['qd'] = req.getParameter('qd')
         }
         Crud.list(req, adminMongo.getCollection('channel_users'), query, ALL_FIELD, SJ_DESC)
     }
 
 
     def del_user(HttpServletRequest req) {
-        adminMongo.getCollection('channel_users').remove(new BasicDBObject(_id, req[_id]))
-        Crud.opLog(OpType.channel_del_user, [_id: req[_id]])
+        adminMongo.getCollection('channel_users').remove(new BasicDBObject(_id, req.getParameter(_id)))
+        Crud.opLog(OpType.channel_del_user, [_id: req.getParameter(_id)])
         [code: 1]
     }
 
@@ -349,9 +349,9 @@ class ChannelController extends BaseController {
 
     def syn_umeng_data(HttpServletRequest req) {
         //static_channels(req)
-        def channel = req['channel'] as String
-        def date_str = req['date'] as String
-        if (StringUtils.isEmpty(req['date']  as String)) {
+        def channel = req.getParameter('channel') as String
+        def date_str = req.getParameter('date') as String
+        if (StringUtils.isEmpty(req.getParameter('date')  as String)) {
             return [code: 0]
         }
         def date = Date.parse("yyyy-MM-dd", date_str)
@@ -374,7 +374,7 @@ class ChannelController extends BaseController {
                 if (data != null && data.size() > 0) {
                     // def mongo  = new Mongo(new com.mongodb. MongoURI('mongodb://10.0.5.32:10000,10.0.5.33:10000,10.0.5.34:10000/?w=1&slaveok=true'))
                     data.each { Map row ->
-                        if (StringUtils.isEmpty(req['channel'] as String) || channel.equals(row['channel'] as String)) {
+                        if (StringUtils.isEmpty(req.getParameter('channel') as String) || channel.equals(row['channel'] as String)) {
                             //查询umeng自定义事件三日发言
                             def update = new BasicDBObject([active     : row['install'] as Integer,//新增用户
                                                             active_user: row['active_user'] as Integer,//日活
@@ -465,8 +465,8 @@ class ChannelController extends BaseController {
      * 同步某天的数据,只支持单个渠道的同步操作
      */
     def static_channels(HttpServletRequest req) {
-        def channelId = req['channel'] as String
-        def date_str = req['date'] as String
+        def channelId = req.getParameter('channel') as String
+        def date_str = req.getParameter('date') as String
         if (StringUtils.isEmpty(date_str) || StringUtils.isBlank(channelId)) {
             return [code: 0]
         }
@@ -519,8 +519,8 @@ class ChannelController extends BaseController {
      */
     def static_parent(HttpServletRequest req) {
         def stat_channels = adminMongo.getCollection('stat_channels')
-        def channelId = req['channel'] as String
-        def date_str = req['date'] as String
+        def channelId = req.getParameter('channel') as String
+        def date_str = req.getParameter('date') as String
         if (StringUtils.isEmpty(date_str)) {
             return [code: 0]
         }

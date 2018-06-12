@@ -25,7 +25,7 @@ class PcController extends BaseController{
     static final String PC_PARTNER_DOWNLOAD = 'pc_partner_download'
     static final String[] PC_PARTNER_DOWNLOAD_FIELDS=["version","down_url"]
     def save_download_info(HttpServletRequest req){
-        String id = req[_id]
+        String id = req.getParameter(_id)
         if (StringUtils.isBlank(id))
             id =  PC_PARTNER_DOWNLOAD
 

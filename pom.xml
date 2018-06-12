@@ -17,8 +17,6 @@
         <maven-jar-plugin-version>2.4</maven-jar-plugin-version>
         <maven-compiler-plugin-version>3.1</maven-compiler-plugin-version>
 
-        <groovy-scope>provided</groovy-scope>
-
         <spring-version>4.3.14.RELEASE</spring-version>
         <aspectj-version>1.7.2</aspectj-version>
         <slf4j-version>1.7.5</slf4j-version>
@@ -77,8 +75,8 @@
                 <pic.folder>c:/upload/</pic.folder>
                 <static.folder>c:/upload/static/</static.folder>
                 <groovy-scope>provided</groovy-scope>
-                <api.domain>http://test-api.17laihou.com/</api.domain>
-                <user.domain>http://test-user.17laihou.com/</user.domain>
+                <api.domain>http://test-api.doll520.com/</api.domain>
+                <user.domain>http://test-user.doll520.com/</user.domain>
                 <im.domain>http://test-im.17laihou.com:6070</im.domain>
 
             </properties>
@@ -101,15 +99,15 @@
             <id>test</id>
             <properties>
 
-                <redis.host>192.168.2.27</redis.host>
+                <redis.host>172.18.78.183</redis.host>
                 <redis.mem.host>${redis.host}</redis.mem.host>
                 <redis.mem.port>6379</redis.mem.port>
                 <redis.chat.host>${redis.host}</redis.chat.host>
                 <redis.chat.port>6379</redis.chat.port>
                 <redis.user.host>${redis.host}</redis.user.host>
-                <redis.user.port>6380</redis.user.port>
+                <redis.user.port>6379</redis.user.port>
                 <!-- replset-->
-                <mongo.uri>192.168.2.27:10000</mongo.uri>
+                <mongo.uri>172.18.78.183:27017</mongo.uri>
                 <mongo.cost.write>ACKNOWLEDGED</mongo.cost.write>
                 <mongo_history.uri>${mongo.uri}</mongo_history.uri>
                 <pic.folder>/empty/upload/</pic.folder>
@@ -119,8 +117,8 @@
                 <groovy-scope>provided</groovy-scope>
                 <aspectj-scope>provided</aspectj-scope>
                 <pic.domain>http://test-aiimg.sumeme.com/</pic.domain>
-                <api.domain>http://test-api.17laihou.com/</api.domain>
-                <user.domain>http://test-user.17laihou.com/</user.domain>
+                <api.domain>http://test-api.doll520.com/</api.domain>
+                <user.domain>http://test-user.doll520.com/</user.domain>
                 <im.domain>http://test-im.17laihou.com:6070</im.domain>
                 <ws.domain>http://test-ws.17laihou.com:7010</ws.domain>
                 <dev>test</dev>
@@ -290,7 +288,7 @@
                     <groupId>org.codehaus.groovy</groupId>
                     <artifactId>groovy-all</artifactId>
                     <version>${groovy-all-compiler-version}</version>
-                    <scope>${groovy-scope}</scope>
+                    <scope>compile</scope>
                     <classifier>indy</classifier>
                 </dependency>
                 <dependency>

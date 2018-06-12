@@ -117,7 +117,7 @@ class AudioController extends BaseController {
                 return [code: 0]
             }
 
-            String iframeCallBack = req["icallback"]
+            String iframeCallBack = req.getParameter("icallback")
             if (StringUtils.isNotBlank(iframeCallBack)){
                 def out = resp.getWriter()
                 out.println("<script>top.${iframeCallBack}({\"code\":1,\"data\":{\"pic_url\":\"${pic_domain}${filePath}\"}});</script>")
@@ -143,11 +143,11 @@ class AudioController extends BaseController {
             new Crud.QueryCondition(){
                 public DBObject query(HttpServletRequest req) {
                     def query = super.query(req)
-                    if (req['status']) {
-                        query.put('query', req['status'])
+                    if (req.getParameter('status')) {
+                        query.put('query', req.getParameter('status'))
                     }
-                    if (req['name']){
-                        query.put('name', Pattern.compile("/"+req['name']+"/"))
+                    if (req.getParameter('name')){
+                        query.put('name', Pattern.compile("/"+req.getParameter('name')+"/"))
                     }
                     return query
                 }

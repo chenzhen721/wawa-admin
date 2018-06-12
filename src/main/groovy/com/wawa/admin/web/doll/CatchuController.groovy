@@ -4,16 +4,16 @@ import com.mongodb.BasicDBObject
 import com.mongodb.DBCollection
 import com.mongodb.DBObject
 import com.mongodb.QueryBuilder
-import com.wawa.base.anno.RestWithSession
-import com.wawa.common.doc.IMessageCode
-import com.wawa.common.util.http.HttpStatusException
-import com.wawa.base.persistent.KGS
-import com.wawa.base.Crud
-import com.wawa.base.BaseController
 import com.wawa.api.Web
+import com.wawa.base.BaseController
+import com.wawa.base.Crud
+import com.wawa.base.anno.RestWithSession
+import com.wawa.base.persistent.KGS
+import com.wawa.common.doc.IMessageCode
 import com.wawa.common.util.ExportUtils
 import com.wawa.common.util.HttpClientUtils
 import com.wawa.common.util.JSONUtil
+import com.wawa.common.util.http.HttpStatusException
 import com.wawa.model.CatchPostChannel
 import com.wawa.model.CatchPostStatus
 import com.wawa.model.CatchPostType
@@ -589,215 +589,6 @@ class CatchuController extends BaseController {
         }
         return [code: 0]
     }
-
-    /**
-     * API 获取房间详情
-     * status表示房间状态， null表示房间未打开， "None"或者"Prepare"表示设备启动中， "Ready","Play","
-     * Error",分别表示 准备就绪（⽆⼈）、游戏中、出错
-     * @param roomId
-     * @return
-     */
-    /*static Map room_detail(String roomId) {
-        if (roomId == null) {
-            return null
-        }
-        def url = "${HOST}/open_api/${VERSION}/rooms/${roomId}?app_id=${APP_ID}&room_id=${roomId}".toString()
-        try {
-            String value = null
-            if (url.startsWith('http://')) {
-                value = HttpClientUtils.get(url, null)
-            } else if (url.startsWith('https://')) {
-                value = HttpsClientUtils.get(url, null)
-            }
-            if (StringUtils.isNotBlank(value)) {
-                def result = jsonSlurper.parseText(value)
-                return result['room'] as Map
-            }
-        } catch (Exception e) {
-            logger.error("Get ${url} error.", e)
-        }
-        return null
-    }*/
-
-    /**
-     * 商品列表
-     * @param req
-     * @return
-     */
-    /*def toys_list(HttpServletRequest req) {
-        def page = Web.getPage(req)
-        def size = Web.getPageSize(req)
-        def url = "${HOST}/open_api/${VERSION}/toys?app_id=${APP_ID}&limit=${size}&page=${page}".toString()
-        String value = null
-        if (url.startsWith('http://')) {
-            value = HttpClientUtils.get(url, null)
-        } else if (url.startsWith('https://')) {
-            value = HttpsClientUtils.get(url, null)
-        }
-        if (StringUtils.isBlank(value)) {
-            return [code: 0]
-        }
-        def result = jsonSlurper.parseText(value)
-        return [code: 1, data: result]
-    }*/
-
-    /**
-     * 商品详情
-     * @param req
-     * @return
-     */
-    /*Map toy(Integer toyId) {
-        def url = "${HOST}/open_api/${VERSION}/toys/${toyId}?app_id=${APP_ID}&toy_id=${toyId}".toString()
-        String value = null
-        if (url.startsWith('http://')) {
-            value = HttpClientUtils.get(url, null)
-        } else if (url.startsWith('https://')) {
-            value = HttpsClientUtils.get(url, null)
-        }
-        if (StringUtils.isBlank(value)) {
-            return null
-        }
-        return jsonSlurper.parseText(value) as Map
-    }*/
-
-    /**
-     * 修改房间信息
-     * @param req
-     *//*
-    def edit(HttpServletRequest req) {
-        def roomId = Web.roomId(req)
-        def url = "${HOST}/open_api/${VERSION}/rooms/${roomId}".toString()
-        def params = [app_id: APP_ID, room_id: roomId] as Map
-        if (req['price'] != null) {
-            params.put('price', req['price'])
-        }
-        if (req['autostart'] != null) {
-            params.put('autostart', req['autostart'])
-        }
-        if (req['stock'] != null) {
-            params.put('stock', req['stock'])
-        }
-        if (req['warning_stock'] != null) {
-            params.put('warning_stock', req['warning_stock'])
-        }
-        String value = HttpClientUtils.put(url, params, null)
-        if (StringUtils.isBlank(value)) {
-            return [code: Code.ERROR]
-        }
-        return [code: 1, data: jsonSlurper.parseText(value)]
-    }
-
-    *//**
-     * 创建商品
-     * @param req
-     */
-    /*def add_toy(Map props) {
-        def url = "${HOST}/open_api/${VERSION}/toys".toString()
-        def params = [app_id: APP_ID] as Map
-        if (props['name'] != null) {
-            params.put('name', props['name'])
-        }
-        if (props['url'] != null) {
-            params.put('url', props['url'])
-        }
-        if (props['price'] != null) {
-            params.put('price', props['price'])
-        }
-        if (props['desc'] != null) {
-            params.put('desc', props['desc'])
-        }
-        String value = null
-        if (url.startsWith('http://')) {
-            value = HttpClientUtils.post(url, params, null, postHandler)
-        } else if (url.startsWith('https://')) {
-            value = HttpsClientUtils.post(url, params, null, postHandler)
-        }
-        if (StringUtils.isBlank(value)) {
-            return null
-        }
-        return jsonSlurper.parseText(value) as Map
-    }*/
-
-    /**
-     * 修改商品
-     * @param req
-     */
-    /*def edit_toy(Integer toyId, Map props) {
-        def url = "${HOST}/open_api/${VERSION}/toys/${toyId}".toString()
-        def params = [app_id: APP_ID] as Map
-        if (props['name'] != null) {
-            params.put('name', props['name'])
-        }
-        if (props['url'] != null) {
-            params.put('url', props['url'])
-        }
-        if (props['price'] != null) {
-            params.put('price', props['price'])
-        }
-        if (props['desc'] != null) {
-            params.put('desc', props['desc'])
-        }
-        String value = null
-        if (url.startsWith('http://')) {
-            value = HttpClientUtils.put(url, params, null, putHandler)
-        } else if (url.startsWith('https://')) {
-            value = HttpsClientUtils.put(url, params, null, putHandler)
-        }
-        if (StringUtils.isBlank(value)) {
-            return null
-        }
-        return jsonSlurper.parseText(value) as Map
-    }*/
-
-    /**
-     * 绑定商品
-     * @param req
-     * @return
-     */
-    /*def bind_toy(String roomId, Integer toyId) {
-        def url = "${HOST}/open_api/${VERSION}/rooms/${roomId}/bind/${toyId}".toString()
-        def params = [app_id: APP_ID, room_id: roomId as String, toy_id: toyId as String] as Map
-        String value = null
-        if (url.startsWith('http://')) {
-            value = HttpClientUtils.put(url, params, null, putHandler)
-        } else if (url.startsWith('https://')) {
-            value = HttpsClientUtils.put(url, params, null, putHandler)
-        }
-        if (StringUtils.isBlank(value)) {
-            return null
-        }
-        return jsonSlurper.parseText(value) as Map
-    }*/
-
-    /**
-     * 关闭服务器
-     * @param req
-     * @return
-     *//*
-    def stop(HttpServletRequest req) {
-        def roomId = Web.roomId(req)
-        def url = "${HOST}/open_api/${VERSION}/rooms/${roomId}/stop?app_id=${APP_ID}&room_id=${roomId}".toString()
-        String value = HttpClientUtils.get(url, null)
-        if (StringUtils.isBlank(value)) {
-            return [code: Code.ERROR]
-        }
-        return [code: 1, data: jsonSlurper.parseText(value)]
-    }
-
-    *//**
-     * 重置库存
-     * @param req
-     *//*
-    def reset_stock(HttpServletRequest req) {
-        def roomId = Web.roomId(req)
-        def url = "${HOST}/open_api/${VERSION}/rooms/${roomId}/reset_stock".toString()
-        def params = [app_id: APP_ID, room_id: roomId] as Map
-        String value = HttpClientUtils.put(url, params, null)
-        if (StringUtils.isBlank(value)) {
-            return [code: Code.ERROR]
-        }
-        return [code: 1, data: jsonSlurper.parseText(value)]
-    }*/
 
     /**
      * 根据 房间、用户查询

@@ -42,13 +42,13 @@ class UnionController extends BaseController {
     private static final Map<String, Map<String, String>> MENUS_LIST = ['1' : CPA_PERM_API, '2' : CPS_PERM_API]
 
     def login(HttpServletRequest request) {
-        String input = request[auth_code]
+        String input = request.getParameter(auth_code)
         if (codeVerifError(request, input)) {
             return [code: 30419, msg: '验证码错误']
         }
 
-        String name = request["name"]
-        String password = MsgDigestUtil.SHA.digest2HEX(request["password"].toString())
+        String name = request.getParameter("name")
+        String password = MsgDigestUtil.SHA.digest2HEX(request.getParameter("password"))
         logger.info("password: {}", password)
         def user = adminMongo.getCollection("channel_users").findOne(
                 new BasicDBObject(_id: name, password: password), new BasicDBObject('password', 0)) as Map
@@ -89,7 +89,7 @@ class UnionController extends BaseController {
         if (null == user) {
             return [code: 0]
         }
-        String pwd = MsgDigestUtil.SHA.digest2HEX(req['password'].toString())
+        String pwd = MsgDigestUtil.SHA.digest2HEX(req.getParameter('password').toString())
         adminMongo.getCollection('channel_users')
                 .update(new BasicDBObject(_id, user.get(_id)), new BasicDBObject('$set', [password: pwd]))
         [code: 1]

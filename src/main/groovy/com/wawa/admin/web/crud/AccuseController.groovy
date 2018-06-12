@@ -30,8 +30,8 @@ class AccuseController extends BaseController{
             [_id:Str,status:Int],
             new Crud.QueryCondition(){
                 public DBObject query(HttpServletRequest req) {
-                    if(req['status'])
-                        return new BasicDBObject('status',req['status'] as Integer)
+                    if(req.getParameter('status'))
+                        return new BasicDBObject('status',req.getParameter('status') as Integer)
                 }
                 public DBObject sortby(HttpServletRequest req) {ID_DESC}
             }
@@ -42,8 +42,8 @@ class AccuseController extends BaseController{
     private static final String[] TYPES = ["教唆传销","低俗色情","政治违规","暴力犯罪","外站拉人"]
 
     public Map edit(HttpServletRequest req) {
-        Long _id =  req['_id'] as Long
-        Integer status =  req['status'] as Integer
+        Long _id =  req.getParameter('_id') as Long
+        Integer status =  req.getParameter('status') as Integer
         def accuse = adminMongo.getCollection('accuse').findAndModify($$(_id:_id, status: AccuseStatus.未处理.ordinal()),
                 $$($set,$$('status':status)));
         if(accuse != null){

@@ -29,15 +29,15 @@ class BlacklistController extends BaseController{
 
         QueryBuilder query = QueryBuilder.start();
 
-        String _id = req[_id] as String
+        String _id = req.getParameter(_id) as String
         if (StringUtils.isNotBlank(_id))
             query.and("_id").is(_id)
 
-        def user_id = req['user_id'] as String
+        def user_id = req.getParameter('user_id') as String
         if (StringUtils.isNotBlank(user_id))
             query.and("user_id").is(Integer.parseInt(user_id))
 
-        String type = req['type']
+        String type = req.getParameter('type')
         if (StringUtils.isNotBlank(type))
             query.and("type").is(Integer.parseInt(type))
 
@@ -54,9 +54,9 @@ class BlacklistController extends BaseController{
     }
 
     def add(HttpServletRequest req){
-        def _id = req[_id] as String
-        def txt_id = req['txt_id'] as String
-        def type =  Integer.parseInt(req['type'] as String)
+        def _id = req.getParameter(_id) as String
+        def txt_id = req.getParameter('txt_id') as String
+        def type =  Integer.parseInt(req.getParameter('type') as String)
         Integer user_id = null;
         if(NumberUtils.isNumber(_id) && users().count($$(_id : Integer.parseInt(_id))) == 1){
             user_id = Integer.parseInt(_id)
@@ -74,7 +74,7 @@ class BlacklistController extends BaseController{
     }
 
     def del(HttpServletRequest req){
-        String id = req[_id]
+        String id = req.getParameter(_id)
         adminMongo.getCollection('blacklist').remove(new BasicDBObject(_id,id))
         Crud.opLog(OpType.blacklist_del,[del:id])
         OK()

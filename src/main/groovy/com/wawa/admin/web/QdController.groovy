@@ -41,16 +41,16 @@ class QdController extends BaseController {
      */
     def set_cpa(HttpServletRequest req) {
         def updateInfo = new BasicDBObject();
-        if (req['cpa1']) {
-            updateInfo.append('cpa1', new Integer(req['cpa1'] as String))
+        if (req.getParameter('cpa1')) {
+            updateInfo.append('cpa1', new Integer(req.getParameter('cpa1') as String))
         }
-        if (req['cpa2']) {
-            updateInfo.append('cpa2', new Integer(req['cpa2'] as String))
+        if (req.getParameter('cpa2')) {
+            updateInfo.append('cpa2', new Integer(req.getParameter('cpa2') as String))
         }
-        if (req['cpa3']) {
-            updateInfo.append('cpa3', new Integer(req['cpa3'] as String))
+        if (req.getParameter('cpa3')) {
+            updateInfo.append('cpa3', new Integer(req.getParameter('cpa3') as String))
         }
-        [code: table().update($$(_id, req[_id]), $$($set, updateInfo)).getN()]
+        [code: table().update($$(_id, req.getParameter(_id)), $$($set, updateInfo)).getN()]
     }
 
     Map reg_pay_list_service(DBObject query, HttpServletRequest req) {
@@ -79,11 +79,11 @@ class QdController extends BaseController {
         logger.debug('Received reg_pay_list params is {}', req.getParameterMap())
         def channel = adminMongo.getCollection('channels')
 
-        def qid = req[_id]
-        def child_qd = req["child_qd"]
-        def parent_qd = req["parent_qd"]
-        def qdQuery = $$('client', req['client'])
-        def type = req['type'] ?: 0//0:全部；1：父渠道；2：子渠道
+        def qid = req.getParameter(_id)
+        def child_qd = req.getParameter("child_qd")
+        def parent_qd = req.getParameter("parent_qd")
+        def qdQuery = $$('client', req.getParameter('client'))
+        def type = req.getParameter('type') ?: 0//0:全部；1：父渠道；2：子渠道
         if ('1'.equals(type)) {
             qdQuery.append("parent_qd", null)
         }
@@ -104,7 +104,7 @@ class QdController extends BaseController {
             desc = $$(timestamp, -1);
         } else {
             //按注册数排序
-            def day = req[stime]
+            def day = req.getParameter(stime)
             if (day) {
                 query[timestamp] = new SimpleDateFormat('yyyy-MM-dd HH:mm:ss').parse(day as String).clearTime().getTime()
             }
@@ -114,12 +114,12 @@ class QdController extends BaseController {
 
     def reg_pay_export(HttpServletRequest req, HttpServletResponse res) {
         def query = new BasicDBObject()
-        def day = req[stime]
-        def client = [1: 'PC', 2: 'Android', 4: 'iOS', 5: 'H5', 6: 'RIA'].get(req["client"] as Integer)
+        def day = req.getParameter(stime)
+        def client = [1: 'PC', 2: 'Android', 4: 'iOS', 5: 'H5', 6: 'RIA'].get(req.getParameter("client") as Integer)
         Date date = new SimpleDateFormat('yyyy-MM-dd').parse(day as String).clearTime()
         query[timestamp] = date.getTime();
 
-        def qdQuery = $$('client', req['client'])
+        def qdQuery = $$('client', req.getParameter('client'))
         query.put('qd', [$in: adminMongo.getCollection('channels').find(qdQuery).toArray()
                 .collect { it.getAt(_id) }])
 
@@ -163,14 +163,14 @@ class QdController extends BaseController {
     }
 
     def reg_list(HttpServletRequest req) {
-        def query = Web.fillTimeBetween(req).and('qd').is(req[_id] as String).get()
+        def query = Web.fillTimeBetween(req).and('qd').is(req.getParameter(_id) as String).get()
         reg_list_service(query, req)
     }
 
 
     def pay_list(HttpServletRequest req) {
         QueryBuilder query = Web.fillTimeBetween(req)
-        query = query.and('qd').is(req[_id] as String)
+        query = query.and('qd').is(req.getParameter(_id) as String)
         pay_list_service(query.get(), req)
 
     }
@@ -195,16 +195,16 @@ class QdController extends BaseController {
     def pay_rate(HttpServletRequest req) {
         def channel = adminMongo.getCollection('channels')
 
-        def qid = req[_id]
+        def qid = req.getParameter(_id)
         def query
         BasicDBObject desc = REG_DESC
         if (qid) { // 按照id查询
             query = Web.fillTimeBetween(req).and('qd').is(qid).get()
             desc = new BasicDBObject('timestamp', -1);
         } else {
-            query = new BasicDBObject('qd', [$in: channel.find($$('client', req['client'])).toArray()
+            query = new BasicDBObject('qd', [$in: channel.find($$('client', req.getParameter('client'))).toArray()
                     .collect { it.getAt(_id) }])
-            def day = req[stime]
+            def day = req.getParameter(stime)
             if (day) {
                 query[timestamp] = new SimpleDateFormat('yyyy-MM-dd HH:mm:ss').parse(day as String).clearTime().getTime()
             }
@@ -245,16 +245,16 @@ class QdController extends BaseController {
     def login_rate(HttpServletRequest req) {
         def channel = adminMongo.getCollection('channels')
         def query
-        def qid = req[_id]
+        def qid = req.getParameter(_id)
         BasicDBObject desc = REG_DESC
         if (qid) { // 按照id查询
             query = Web.fillTimeBetween(req).and('qd').is(qid).get()
             desc = new BasicDBObject('timestamp', -1);
         } else {
-            query = $$('qd', [$in: channel.find($$('client': req['client'], _id: [$ne: 'wfk'])).toArray().collect {
+            query = $$('qd', [$in: channel.find($$('client': req.getParameter('client'), _id: [$ne: 'wfk'])).toArray().collect {
                 it[_id]
             }])
-            def day = req[stime]
+            def day = req.getParameter(stime)
             if (day) {
                 query[timestamp] = new SimpleDateFormat('yyyy-MM-dd HH:mm:ss').parse(day as String).clearTime().getTime()
             }
@@ -287,7 +287,7 @@ class QdController extends BaseController {
 
 
     def login_total(HttpServletRequest req) {
-        login_total_service((String) req[_id], req)
+        login_total_service((String) req.getParameter(_id), req)
     }
 
     private static
@@ -316,7 +316,7 @@ class QdController extends BaseController {
             return list
         } else {
             def stat_daily = adminMongo.getCollection('stat_daily')
-            def client = req['client'] as String
+            def client = req.getParameter('client') as String
             query.put("type").is("alllogin")
             Crud.list(req, stat_daily, query.get(), ALL_FIELD, $$(timestamp, -1)) { List<BasicDBObject> data ->
                 for (BasicDBObject obj : data) {
@@ -351,7 +351,7 @@ class QdController extends BaseController {
         if (StringUtils.isNotBlank(parent_qd)) {
             query.and('parent_qd').is(parent_qd)
         }
-        def type = req['type'] ?: 0//0:全部；1：父渠道；2：子渠道
+        def type = req.getParameter('type') ?: 0//0:全部；1：父渠道；2：子渠道
         if ('1'.equals(type as String)) {
             query.and($$("parent_qd", null))
         }
@@ -372,7 +372,7 @@ class QdController extends BaseController {
     def reg_pay_period(HttpServletRequest req) {
 
         def uQ = Web.fillTimeBetween(req)
-        def qd = req[_id] as String
+        def qd = req.getParameter(_id) as String
 
         if (StringUtils.isNotBlank(qd) && qd.equals("f101")) {
             return km_reg_pay_period(req)
@@ -380,7 +380,7 @@ class QdController extends BaseController {
         if (StringUtils.isNotBlank(qd)) {
             uQ.and('qd').is(qd)
         } else {
-            def client = req['client'] as String
+            def client = req.getParameter('client') as String
             if (StringUtils.isNotBlank(client)) {
                 def qds = adminMongo.getCollection('channels').find($$('client', client),
                         $$(_id, 1)).toArray().collect { DBObject it -> it.get(_id) }
@@ -420,11 +420,11 @@ class QdController extends BaseController {
     private km_reg_pay_period(HttpServletRequest req) {
 
         def uQ = Web.fillTimeBetween(req)
-        def qd = req[_id] as String
+        def qd = req.getParameter(_id) as String
         if (StringUtils.isNotBlank(qd)) {
             uQ.and('qd').is(qd)
         } else {
-            def client = req['client'] as String
+            def client = req.getParameter('client') as String
             if (StringUtils.isNotBlank(client)) {
                 def qds = adminMongo.getCollection('channels').find($$('client', client),
                         $$(_id, 1)).toArray().collect { DBObject it -> it.get(_id) }

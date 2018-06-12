@@ -58,7 +58,7 @@ class Controller extends BaseController{
                 break
             }
 
-            String iframeCallBack = req["icallback"]
+            String iframeCallBack = req.getParameter("icallback")
             if (StringUtils.isNotBlank(iframeCallBack)){
                 def out = response.getWriter()
                 out.println("<script>top.${iframeCallBack}({\"code\":1,\"data\":{\"pic_url\":\"${pic_domain}${filePath}\"}});</script>")
@@ -78,16 +78,17 @@ class Controller extends BaseController{
             logger.debug("request cookies : {}", c.getName()+":"+c.getValue())
         }
         logger.debug("request parameters : {}", request.getParameterMap())*/
-        String input = request[auth_code]
-        String ver = request['ver'] ?: '0'
+        String input = request.getParameter(auth_code)
+        String ver = request.getParameter('ver') ?: '0'
         if (!isTest) {
             if (codeVerifError(request, input)) {
                 return [code: 30419, msg: '验证码错误']
             }
         }
 
-        String name = request["name"]
-        String password = MsgDigestUtil.SHA.digest2HEX(request["password"].toString())
+        String name = request.getParameter("name")
+        String pwd = request.getParameter("password")
+        String password = MsgDigestUtil.SHA.digest2HEX(pwd)
         def user = adminMongo.getCollection("admins").findOne(new BasicDBObject(name:name,password:password))
         if (null == user){
             return [code: 0,msg:'密码错误']
@@ -131,7 +132,7 @@ class Controller extends BaseController{
         if (null == user){
             return [code: 0]
         }
-        String pwd = MsgDigestUtil.SHA.digest2HEX(req['password'].toString())
+        String pwd = MsgDigestUtil.SHA.digest2HEX(req.getParameter('password').toString())
         adminMongo.getCollection('admins')
                 .update(new BasicDBObject(_id,user.get(_id) as Integer),new BasicDBObject('$set',[password:pwd]))
         [code: 1]

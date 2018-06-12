@@ -34,13 +34,13 @@ class BlackwordController extends BaseController{
 
 
     def add(HttpServletRequest req){
-        String words = req[_id]
+        String words = req.getParameter(_id)
         if(StringUtils.isBlank(words)){
             return OK()
         }
         def tmp = System.currentTimeMillis()
         def coll = table()
-        def type = req['type'] as Integer
+        def type = req.getParameter('type') as Integer
         words.split('\\s+').collect {
             new BasicDBObject(_id,it).append(timestamp,tmp).append('type',type)
         }.each {
@@ -54,8 +54,8 @@ class BlackwordController extends BaseController{
     }
 
     def del(HttpServletRequest req){
-        table().remove(new BasicDBObject(_id,[$in:req[_id].toString().split('\\s+')]));
-        Crud.opLog(OpType.blackwords_del,[del:req[_id]])
+        table().remove(new BasicDBObject(_id,[$in:req.getParameter(_id).toString().split('\\s+')]));
+        Crud.opLog(OpType.blackwords_del,[del:req.getParameter(_id)])
         this.cleanCache(0)
         this.cleanCache(1)
         OK()

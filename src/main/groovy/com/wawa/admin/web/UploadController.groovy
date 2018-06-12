@@ -39,7 +39,7 @@ class UploadController extends BaseController {
     def swf(HttpServletRequest request,HttpServletResponse response){
         def parse = new CommonsMultipartResolver()
         def req = parse.resolveMultipart(request)
-        String iframeCallBack = req["icallback"]
+        String iframeCallBack = req.getParameter("icallback")
         try{
             String filePath = "swf/"
             for(Map.Entry<String, MultipartFile> entry  : req.getFileMap().entrySet()){

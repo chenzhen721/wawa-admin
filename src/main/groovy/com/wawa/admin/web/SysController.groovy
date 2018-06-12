@@ -36,8 +36,8 @@ class SysController extends BaseController{
         publish(KeyUtils.CHANNEL.all(),[
                 action:'sys.notice',
                 data_d:[
-                        msg:request['msg'],
-                        url:request['url']
+                        msg:request.getParameter('msg'),
+                        url:request.getParameter('url')
                 ] as Map<String, Object>
         ])
         OK()
@@ -48,7 +48,7 @@ class SysController extends BaseController{
 
     def save_download_info(HttpServletRequest req){
 
-        String id = req[_id]
+        String id = req.getParameter(_id)
         if (StringUtils.isBlank(id))
             id =  download
 
@@ -140,7 +140,7 @@ class SysController extends BaseController{
         }
 
         def rows = users().updateMulti(query,new BasicDBObject($inc,inc)).getN()
-        Crud.opLog(OpType.sys_fill_bag,[query:[_id:req[_id],priv:req['priv']],gifts:gifts,rows:rows])
+        Crud.opLog(OpType.sys_fill_bag,[query:[_id:req.getParameter(_id),priv:req.getParameter('priv')],gifts:gifts,rows:rows])
         OK()
     }
 
@@ -148,7 +148,7 @@ class SysController extends BaseController{
     def list_inform(HttpServletRequest req){
         QueryBuilder query = QueryBuilder.start();
 
-        String id = req[_id]
+        String id = req.getParameter(_id)
         if (StringUtils.isNotBlank(id))
             query.and("_id").is(id)
 
@@ -162,9 +162,9 @@ class SysController extends BaseController{
      */
     def add_inform(HttpServletRequest req)
     {
-        String msg = req['msg'] as String
-        String url = req['url'] as String
-        Integer type = req['type'] as Integer
+        String msg = req.getParameter('msg') as String
+        String url = req.getParameter('url') as String
+        Integer type = req.getParameter('type') as Integer
         long begin = Web.getStime(req).getTime()
         long end = Web.getEtime(req).getTime()
         Long tmp = System.currentTimeMillis()
@@ -184,10 +184,10 @@ class SysController extends BaseController{
 
     def edit_inform(HttpServletRequest req)
     {
-        String msg = req['msg'] as String
-        String url = req['url'] as String
-        Long _id = req['_id'] as Long
-        Integer type = req['type'] as Integer
+        String msg = req.getParameter('msg') as String
+        String url = req.getParameter('url') as String
+        Long _id = req.getParameter('_id') as Long
+        Integer type = req.getParameter('type') as Integer
         long begin = Web.getStime(req).getTime()
         long end = Web.getEtime(req).getTime()
         def prop = [
@@ -203,7 +203,7 @@ class SysController extends BaseController{
     }
 
     def del_inform(HttpServletRequest req){
-        Long _id = req['_id'] as Long
+        Long _id = req.getParameter('_id') as Long
         informs().remove($$(_id:_id))
         Crud.opLog(OpType.informs_del,[_id:_id])
         [code:1]

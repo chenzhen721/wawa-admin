@@ -33,10 +33,10 @@ class PhotoController extends BaseController {
 
     def list(HttpServletRequest req) {
         def query = Web.fillTimeBetween(req)
-        def userId = req['user_id'] as Integer
-        def status = req['status'] as Integer
-        def type = req['type'] as Integer
-        def path = req['path'] as String
+        def userId = req.getParameter('user_id') as Integer
+        def status = req.getParameter('status') as Integer
+        def type = req.getParameter('type') as Integer
+        def path = req.getParameter('path') as String
         if (userId != null) {
             query.put('user_id').is(userId)
         }
@@ -54,8 +54,8 @@ class PhotoController extends BaseController {
     }
 
     def edit(HttpServletRequest req) {
-        def status = req['status'] as String
-        def path = req['path'] as String
+        def status = req.getParameter('status') as String
+        def path = req.getParameter('path') as String
         if (StringUtils.isBlank(status) || StringUtils.isBlank(path)) {
             return [code: 0]
         }
@@ -95,7 +95,7 @@ class PhotoController extends BaseController {
      */
     def user_pic_list(HttpServletRequest req){
         def query = Web.fillTimeBetween(req)
-        def userId = req['user_id'] as Integer
+        def userId = req.getParameter('user_id') as Integer
         if (userId != null) {
             query.put('user_id').is(userId)
         }
@@ -106,8 +106,8 @@ class PhotoController extends BaseController {
     private final static String DEFAULT_PIC = "https://img.lezhuale.com/49/1/1500964546481.png";
 
     def handle_user_pic(HttpServletRequest req) {
-        Integer status = req['status'] as Integer
-        def _id = req['_id'] as String
+        Integer status = req.getParameter('status') as Integer
+        def _id = req.getParameter('_id') as String
         if (status == null || StringUtils.isBlank(_id)) {
             return Web.missParam();
         }

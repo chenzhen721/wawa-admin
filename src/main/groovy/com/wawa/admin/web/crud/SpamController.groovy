@@ -33,9 +33,9 @@ class SpamController extends BaseController
 
     def add(HttpServletRequest req)
     {
-         def field = req['field_id'] as String
+         def field = req.getParameter('field_id') as String
 
-         def field_content = req['field_content']
+         def field_content = req.getParameter('field_content')
 
          def tmp =   System.currentTimeMillis()
          def update = new BasicDBObject(field,field_content).append("modify",tmp)
@@ -50,7 +50,7 @@ class SpamController extends BaseController
 
     def edit(HttpServletRequest req){
 
-        def field = req['field_id'] as String
+        def field = req.getParameter('field_id') as String
         adminMongo.getCollection('spam_info').update(new BasicDBObject(_id, 'field_id_field_content_20131121'),
                 new BasicDBObject($unset,new BasicDBObject(field,1)))
 
